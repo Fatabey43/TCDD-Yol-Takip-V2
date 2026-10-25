@@ -1,4 +1,4 @@
-import { RailwayPoint, PointNote, PointPhoto, TakyidatSpeedRestriction, RailwayParcel } from '../types.ts';
+import { RailwayPoint, PointNote, PointPhoto, TakyidatSpeedRestriction, RailwayParcel, FieldWorkItem } from '../types.ts';
 import { DEFAULT_SAMPLE_IDS } from '../data/samplePoints.ts';
 import { extractKmFromText } from '../utils/categoryColors.ts';
 import { compressImage } from '../utils/imageCompressor.ts';
@@ -1685,4 +1685,201 @@ export async function bulkDeleteTakyidat(ids: string[]): Promise<boolean> {
     return true;
   }
 }
+
+// ---------------- SAHA İŞ LİSTESİ (FIELD WORKS) CLIENT API ----------------
+const FIELD_WORKS_STORAGE_KEY = 'demiryolu_field_works_cache_v1';
+const DELETED_FIELD_WORKS_KEY = 'demiryolu_field_works_deleted_ids_v1';
+
+export function getLocalDeletedFieldWorkIds(): Set<string> {
+  const set = new Set<string>();
+  try {
+    const raw = localStorage.getItem(DELETED_FIELD_WORKS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        parsed.forEach((id) => typeof id === 'string' && set.add(id));
+      }
+    }
+  } catch {}
+  return set;
+}
+
+export function saveLocalDeletedFieldWorkId(id: string): void {
+  try {
+    const set = getLocalDeletedFieldWorkIds();
+    set.add(id);
+    localStorage.setItem(DELETED_FIELD_WORKS_KEY, JSON.stringify(Array.from(set)));
+  } catch {}
+}
+
+export function removeLocalDeletedFieldWorkId(id: string): void {
+  try {
+    const set = getLocalDeletedFieldWorkIds();
+    if (set.has(id)) {
+      set.delete(id);
+      localStorage.setItem(DELETED_FIELD_WORKS_KEY, JSON.stringify(Array.from(set)));
+    }
+  } catch {}
+}
+
+export function getLocalCachedFieldWorks(): FieldWorkItem[] {
+  try {
+    const raw = localStorage.getItem(FIELD_WORKS_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        const deleted = getLocalDeletedFieldWorkIds();
+        return parsed.filter((w) => w && w.id && !deleted.has(w.id));
+      }
+    }
+  } catch {}
+  return [];
+}
+
+export function saveLocalCachedFieldWorks(list: FieldWorkItem[]): void {
+  try {
+    const deleted = getLocalDeletedFieldWorkIds();
+    const cleanList = (list || []).filter((w) => w && w.id && !deleted.has(w.id));
+    localStorage.setItem(FIELD_WORKS_STORAGE_KEY, JSON.stringify(cleanList));
+  } catch {}
+}
+
+export async function fetchFieldWorksList(): Promise<FieldWorkItem[]> {
+  try {
+    const [res, delRes] = await Promise.all([
+      fetch(`/api/field-works?_t=${Date.now()}`, { cache: 'no-store' }),
+      fetch(`/api/field-works/deleted-ids?_t=${Date.now()}`, { cache: 'no-store' }).catch(() => null),
+    ]);
+
+    const deleted = getLocalDeletedFieldWorkIds();
+    if (delRes && delRes.ok) {
+      const serverDeleted = await delRes.json();
+      if (Array.isArray(serverDeleted)) {
+        serverDeleted.forEach((id: string) => {
+          if (typeof id === 'string') {
+            deleted.add(id);
+            saveLocalDeletedFieldWorkId(id);
+          }
+        });
+      }
+    }
+
+    if (res.ok) {
+      const list = await res.json();
+      if (Array.isArray(list)) {
+        const cleanList = list.filter((w) => w && w.id && !deleted.has(w.id));
+        saveLocalCachedFieldWorks(cleanList);
+        return cleanList;
+      }
+    }
+  } catch (err) {
+    console.warn('İş listesi sunucudan çekilemedi, çevrimdışı veriler kullanılıyor:', err);
+  }
+  return getLocalCachedFieldWorks();
+}
+
+export async function saveNewFieldWork(
+  entry: Omit<FieldWorkItem, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<FieldWorkItem> {
+  const kmNum = typeof entry.kmNum === 'number' ? entry.kmNum : (parseKmToNumber(entry.kmValue) || 0);
+  const tempId = `work-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+  removeLocalDeletedFieldWorkId(tempId);
+
+  const newObj: FieldWorkItem = {
+    ...entry,
+    id: tempId,
+    kmNum,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  const local = getLocalCachedFieldWorks();
+  saveLocalCachedFieldWorks([newObj, ...local.filter((w) => w.id !== newObj.id)]);
+
+  try {
+    const res = await fetch('/api/field-works', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newObj),
+    });
+    if (res.ok) {
+      const created = await res.json();
+      removeLocalDeletedFieldWorkId(created.id);
+      const updatedList = [created, ...local.filter((w) => w.id !== tempId && w.id !== created.id)];
+      saveLocalCachedFieldWorks(updatedList);
+      return created;
+    }
+  } catch (err) {
+    console.warn('İş kaydı çevrimdışı kaydedildi:', err);
+  }
+  return newObj;
+}
+
+export async function updateExistingFieldWork(
+  entry: FieldWorkItem
+): Promise<FieldWorkItem> {
+  removeLocalDeletedFieldWorkId(entry.id);
+  const kmNum = typeof entry.kmNum === 'number' ? entry.kmNum : (parseKmToNumber(entry.kmValue) || 0);
+
+  const updatedObj: FieldWorkItem = {
+    ...entry,
+    kmNum,
+    updatedAt: new Date().toISOString(),
+    completedAt: entry.status === 'tamamlandi' ? (entry.completedAt || new Date().toISOString()) : undefined,
+  };
+
+  const local = getLocalCachedFieldWorks();
+  const updatedList = local.map((w) => (w.id === updatedObj.id ? updatedObj : w));
+  saveLocalCachedFieldWorks(updatedList);
+
+  try {
+    const res = await fetch(`/api/field-works/${encodeURIComponent(entry.id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedObj),
+    });
+    if (res.ok) {
+      const serverUpdated = await res.json();
+      saveLocalCachedFieldWorks(local.map((w) => (w.id === serverUpdated.id ? serverUpdated : w)));
+      return serverUpdated;
+    }
+  } catch (err) {
+    console.warn('İş kaydı güncellemesi çevrimdışı kaydedildi:', err);
+  }
+  return updatedObj;
+}
+
+export async function deleteFieldWorkById(id: string): Promise<boolean> {
+  saveLocalDeletedFieldWorkId(id);
+  const local = getLocalCachedFieldWorks();
+  saveLocalCachedFieldWorks(local.filter((w) => w.id !== id));
+
+  try {
+    const res = await fetch(`/api/field-works/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    return res.ok;
+  } catch {
+    return true;
+  }
+}
+
+export async function bulkDeleteFieldWorks(ids: string[]): Promise<boolean> {
+  if (!Array.isArray(ids) || ids.length === 0) return true;
+  ids.forEach((id) => saveLocalDeletedFieldWorkId(id));
+  const idsSet = new Set(ids);
+  const local = getLocalCachedFieldWorks();
+  const filtered = local.filter((w) => !idsSet.has(w.id));
+  saveLocalCachedFieldWorks(filtered);
+
+  try {
+    const res = await fetch('/api/field-works/bulk-delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids }),
+    });
+    return res.ok;
+  } catch {
+    return true;
+  }
+}
+
 

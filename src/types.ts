@@ -206,4 +206,30 @@ export interface RailwayParcel {
   updatedAt: string;
 }
 
+/**
+ * TCDD Canlı Konum / Saha İş Listesi Kaydı (Haritada kalabalık yapmayan, bağımsız iş takip listesi)
+ */
+export interface FieldWorkItem {
+  id: string;
+  title: string;           // İş Başlığı (Örn: Travers Değişimi, Balast Tamiri, Ray Çatlağı Onarımı)
+  kmValue: string;         // KM Değeri (Örn: "66+850")
+  kmNum?: number;          // Sıralama için sayısal KM
+  lineName: string;        // Demiryolu Hattı (Eskişehir-Konya veya Alayunt-Balıkesir)
+  lat: number;             // Enlem koordinatı
+  lng: number;             // Boylam koordinatı
+  workType: 'bakim' | 'onarim' | 'kontrol' | 'emniyet' | 'diger'; // İş Türü
+  status: 'bekliyor' | 'devam' | 'tamamlandi';                   // Durum
+  priority: 'dusuk' | 'normal' | 'acil';                         // Öncelik
+  assignedTo?: string;     // Sorumlu Ekip / Personel (Örn: 712 Yol Bakım Ekibi)
+  description?: string;    // Detaylı Açıklama / Talimat
+  materialsUsed?: string;  // Kullanılan Malzeme ve Parçalar
+  crewCount?: string;      // Ekip Personel Sayısı
+  photos?: string[];       // Saha Fotoğrafları (base64)
+  notes?: string[];        // Ekstra Notlar
+  createdAt: string;       // Oluşturulma tarihi
+  updatedAt?: string;      // Güncellenme tarihi
+  completedAt?: string;    // Tamamlanma tarihi
+}
+
+
 

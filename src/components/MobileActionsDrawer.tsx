@@ -18,6 +18,7 @@ import {
   Compass,
   Landmark,
   Navigation2,
+  Wrench,
 } from 'lucide-react';
 
 interface MobileActionsDrawerProps {
@@ -32,6 +33,8 @@ interface MobileActionsDrawerProps {
   onOpenReports?: () => void;
   onOpenTakyidat?: () => void;
   onOpenParcels?: () => void;
+  onOpenFieldWorks?: () => void;
+  fieldWorksCount?: number;
   onOpenSelectPoint?: () => void;
   activeTakyidatCount?: number;
   totalParcelsCount?: number;
@@ -54,6 +57,8 @@ export const MobileActionsDrawer: React.FC<MobileActionsDrawerProps> = ({
   onOpenReports,
   onOpenTakyidat,
   onOpenParcels,
+  onOpenFieldWorks,
+  fieldWorksCount = 0,
   onOpenSelectPoint,
   activeTakyidatCount = 0,
   totalParcelsCount = 0,
@@ -234,6 +239,30 @@ export const MobileActionsDrawer: React.FC<MobileActionsDrawerProps> = ({
                   )}
                 </span>
                 <span className="text-[10px] text-indigo-300/80">Kamulaştırma &amp; Mülkiyet</span>
+              </div>
+            </button>
+          )}
+
+          {/* Saha İş Listesi */}
+          {onOpenFieldWorks && (
+            <button
+              onClick={() => {
+                onOpenFieldWorks();
+                onClose();
+              }}
+              className="flex items-center gap-2 p-3 bg-amber-950/80 hover:bg-amber-900 active:bg-amber-850 rounded-xl border border-amber-500/50 transition-all font-semibold text-amber-200"
+            >
+              <Wrench className="w-4 h-4 text-amber-400" />
+              <div className="text-left leading-tight">
+                <span className="block font-bold flex items-center gap-1.5">
+                  <span>Saha İş Listesi</span>
+                  {fieldWorksCount > 0 && (
+                    <span className="bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded-full text-[9px] font-black">
+                      {fieldWorksCount}
+                    </span>
+                  )}
+                </span>
+                <span className="text-[10px] text-amber-300/80">KM İş &amp; Görev Defteri</span>
               </div>
             </button>
           )}

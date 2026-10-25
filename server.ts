@@ -59,6 +59,8 @@ const TAKYIDAT_FILE = path.join(DATA_DIR, 'takyidat_restrictions.json');
 const PARCELS_FILE = path.join(DATA_DIR, 'railway_parcels.json');
 const PARCELS_BACKUP_FILE = path.join(DATA_DIR, 'railway_parcels_backup.json');
 const DELETED_PARCELS_FILE = path.join(DATA_DIR, 'deleted_parcels.json');
+const FIELD_WORKS_FILE = path.join(DATA_DIR, 'field_works.json');
+const DELETED_FIELD_WORKS_FILE = path.join(DATA_DIR, 'deleted_field_works.json');
 const AUTH_SECRET = process.env.AUTH_SECRET || 'tcdd-demiryolu-auth-secret-key-2026';
 
 // Audit Log Interface & Helpers
@@ -1929,6 +1931,183 @@ app.post('/api/parcels/bulk-delete', (req, res) => {
 app.get('/api/parcels/deleted-ids', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.json(Array.from(getDeletedParcelIds()));
+});
+
+// ---------------- SAHA İŞ LİSTESİ (FIELD WORKS) HELPERS & API ----------------
+function getFieldWorks(): any[] {
+  try {
+    if (fs.existsSync(FIELD_WORKS_FILE)) {
+      const data = fs.readFileSync(FIELD_WORKS_FILE, 'utf-8');
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch (err) {
+    console.error('Error reading field_works file:', err);
+  }
+  return [];
+}
+
+function saveFieldWorks(works: any[]) {
+  try {
+    fs.writeFileSync(FIELD_WORKS_FILE, JSON.stringify(works, null, 2), 'utf-8');
+  } catch (err) {
+    console.error('Error saving field_works file:', err);
+  }
+}
+
+function getDeletedFieldWorkIds(): Set<string> {
+  const set = new Set<string>();
+  try {
+    if (fs.existsSync(DELETED_FIELD_WORKS_FILE)) {
+      const data = fs.readFileSync(DELETED_FIELD_WORKS_FILE, 'utf-8');
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed)) {
+        parsed.forEach((id) => typeof id === 'string' && set.add(id));
+      }
+    }
+  } catch (err) {
+    console.error('Error reading deleted field works:', err);
+  }
+  return set;
+}
+
+function recordDeletedFieldWorkId(id: string) {
+  try {
+    const set = getDeletedFieldWorkIds();
+    set.add(id);
+    fs.writeFileSync(DELETED_FIELD_WORKS_FILE, JSON.stringify(Array.from(set), null, 2), 'utf-8');
+  } catch (err) {
+    console.error('Error recording deleted field work:', err);
+  }
+}
+
+function unrecordDeletedFieldWorkId(id: string) {
+  try {
+    const set = getDeletedFieldWorkIds();
+    if (set.has(id)) {
+      set.delete(id);
+      fs.writeFileSync(DELETED_FIELD_WORKS_FILE, JSON.stringify(Array.from(set), null, 2), 'utf-8');
+    }
+  } catch (err) {}
+}
+
+// GET /api/field-works
+app.get('/api/field-works', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  const deleted = getDeletedFieldWorkIds();
+  const works = getFieldWorks().filter((w) => w && w.id && !deleted.has(w.id));
+  res.json(works);
+});
+
+// GET /api/field-works/deleted-ids
+app.get('/api/field-works/deleted-ids', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.json(Array.from(getDeletedFieldWorkIds()));
+});
+
+// POST /api/field-works
+app.post('/api/field-works', (req, res) => {
+  const body = req.body;
+  if (!body) return res.status(400).json({ error: 'Geçersiz veri' });
+
+  const id = body.id || `work-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+  unrecordDeletedFieldWorkId(id);
+
+  const newWork = {
+    ...body,
+    id,
+    title: String(body.title || 'Saha İşi').trim(),
+    kmValue: String(body.kmValue || '').trim(),
+    kmNum: typeof body.kmNum === 'number' ? body.kmNum : (parseKmToNumber(body.kmValue) || 0),
+    lineName: body.lineName || 'Eskişehir-Konya',
+    lat: Number(body.lat) || 0,
+    lng: Number(body.lng) || 0,
+    workType: body.workType || 'bakim',
+    status: body.status || 'bekliyor',
+    priority: body.priority || 'normal',
+    assignedTo: body.assignedTo || '712 Yol Bakım Şefliği',
+    description: body.description || '',
+    materialsUsed: body.materialsUsed || '',
+    crewCount: body.crewCount || '',
+    photos: Array.isArray(body.photos) ? body.photos : [],
+    notes: Array.isArray(body.notes) ? body.notes : [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  const works = getFieldWorks();
+  const updated = [newWork, ...works.filter((w) => w.id !== id)];
+  saveFieldWorks(updated);
+
+  recordAuditLog({
+    action: 'FIELD_WORK_ADD',
+    status: 'success',
+    details: `Saha işi eklendi: ${newWork.title} (KM ${newWork.kmValue})`,
+  });
+
+  notifyPointsChanged('field_works_changed');
+  res.status(201).json(newWork);
+});
+
+// PUT /api/field-works/:id
+app.put('/api/field-works/:id', (req, res) => {
+  const { id } = req.params;
+  const body = req.body;
+  unrecordDeletedFieldWorkId(id);
+
+  const works = getFieldWorks();
+  const index = works.findIndex((w) => w.id === id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'İş kaydı bulunamadı' });
+  }
+
+  const existing = works[index];
+  const updatedWork = {
+    ...existing,
+    ...body,
+    id,
+    updatedAt: new Date().toISOString(),
+    completedAt: body.status === 'tamamlandi' ? (existing.completedAt || new Date().toISOString()) : undefined,
+  };
+
+  works[index] = updatedWork;
+  saveFieldWorks(works);
+
+  notifyPointsChanged('field_works_changed');
+  res.json(updatedWork);
+});
+
+// DELETE /api/field-works/:id
+app.delete('/api/field-works/:id', (req, res) => {
+  const { id } = req.params;
+  recordDeletedFieldWorkId(id);
+  const works = getFieldWorks();
+  const filtered = works.filter((w) => w.id !== id);
+  saveFieldWorks(filtered);
+
+  recordAuditLog({
+    action: 'FIELD_WORK_DELETE',
+    status: 'warning',
+    details: `Saha işi silindi: ID ${id}`,
+  });
+
+  notifyPointsChanged('field_works_changed');
+  res.json({ success: true, message: 'İş kaydı silindi' });
+});
+
+// POST /api/field-works/bulk-delete
+app.post('/api/field-works/bulk-delete', (req, res) => {
+  const { ids } = req.body;
+  if (!Array.isArray(ids)) return res.status(400).json({ error: 'Geçersiz id listesi' });
+
+  ids.forEach((id) => recordDeletedFieldWorkId(id));
+  const idSet = new Set(ids);
+  const works = getFieldWorks();
+  const remaining = works.filter((w) => !idSet.has(w.id));
+  saveFieldWorks(remaining);
+
+  notifyPointsChanged('field_works_changed');
+  res.json({ success: true, count: remaining.length, deletedCount: ids.length });
 });
 
 // POST reset: cleans all points and keeps default points blacklisted

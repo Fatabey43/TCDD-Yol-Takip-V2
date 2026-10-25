@@ -29,6 +29,7 @@ import {
   Landmark,
   Navigation2,
   MapPin,
+  Wrench,
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -40,6 +41,8 @@ interface HeaderProps {
   isOnline?: boolean;
   activeTakyidatCount?: number;
   totalParcelsCount?: number;
+  fieldWorksCount?: number;
+  onOpenFieldWorks?: () => void;
   isLiveGpsActive?: boolean;
   onToggleLiveGps?: () => void;
   currentLiveKm?: string | null;
@@ -88,6 +91,8 @@ export const Header: React.FC<HeaderProps> = ({
   isOnline = true,
   activeTakyidatCount = 0,
   totalParcelsCount = 0,
+  fieldWorksCount = 0,
+  onOpenFieldWorks,
   isLiveGpsActive = false,
   onToggleLiveGps,
   currentLiveKm,
@@ -331,6 +336,25 @@ export const Header: React.FC<HeaderProps> = ({
               {totalParcelsCount > 0 && (
                 <span className="bg-indigo-600 text-white px-1.5 py-0.2 rounded-full text-[10px] font-black">
                   {totalParcelsCount}
+                </span>
+              )}
+            </button>
+          )}
+
+          {/* TCDD Saha İş & Görev Listesi Butonu */}
+          {onOpenFieldWorks && (
+            <button
+              id="header-open-field-works-btn"
+              onClick={onOpenFieldWorks}
+              className="flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold px-2.5 py-1.5 rounded-lg transition-all cursor-pointer shadow-xs"
+              title="TCDD Saha İş & Görev Listesi (Canlı Konum İş Kayıtları)"
+            >
+              <Wrench className="w-3.5 h-3.5 text-amber-600" />
+              <span className="hidden md:inline">İş Listesi</span>
+              <span className="md:hidden">İşler</span>
+              {fieldWorksCount > 0 && (
+                <span className="bg-amber-500 text-slate-950 px-1.5 py-0.2 rounded-full text-[10px] font-black">
+                  {fieldWorksCount}
                 </span>
               )}
             </button>

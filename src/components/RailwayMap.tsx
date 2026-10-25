@@ -40,6 +40,14 @@ interface RailwayMapProps {
   onToggleLiveGps?: () => void;
   nearestRailwayKm?: NearestKmResult | null;
   onPanToMyLocation?: () => void;
+  targetWorkLocation?: {
+    lat: number;
+    lng: number;
+    title: string;
+    kmValue?: string;
+    lineName?: string;
+  } | null;
+  onClearTargetWorkLocation?: () => void;
 }
 
 function createMarkerIcon(
@@ -133,6 +141,8 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
   onToggleLiveGps,
   nearestRailwayKm,
   onPanToMyLocation,
+  targetWorkLocation,
+  onClearTargetWorkLocation,
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -964,6 +974,58 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
     }
   }, [selectedPoint]);
 
+  // Pan to target work location from Field Work List ("İş Listesi")
+  const targetWorkMarkerRef = useRef<L.Marker | null>(null);
+
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    if (targetWorkMarkerRef.current) {
+      map.removeLayer(targetWorkMarkerRef.current);
+      targetWorkMarkerRef.current = null;
+    }
+
+    if (!targetWorkLocation) return;
+
+    const lat = typeof targetWorkLocation.lat === 'number' ? targetWorkLocation.lat : parseFloat(String(targetWorkLocation.lat));
+    const lng = typeof targetWorkLocation.lng === 'number' ? targetWorkLocation.lng : parseFloat(String(targetWorkLocation.lng));
+
+    if (isNaN(lat) || isNaN(lng) || lat === 0) return;
+
+    map.invalidateSize();
+    map.flyTo([lat, lng], 17, { duration: 1 });
+
+    const icon = L.divIcon({
+      className: 'target-work-location-marker',
+      html: `
+        <div style="position: relative; display: flex; flex-direction: column; align-items: center; pointer-events: none;">
+          <div style="position: absolute; width: 44px; height: 44px; border-radius: 9999px; background: rgba(245, 158, 11, 0.4); animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; top: -10px; left: -10px;"></div>
+          <div style="width: 24px; height: 24px; border-radius: 9999px; background: #f59e0b; border: 3px solid #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; font-size: 11px; z-index: 10;">
+            🔧
+          </div>
+          <div style="margin-top: 4px; background: #0f172a; color: #ffffff; padding: 4px 10px; border-radius: 10px; font-size: 11px; font-weight: 800; white-space: nowrap; border: 1.5px solid #f59e0b; box-shadow: 0 4px 12px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 5px;">
+            <span style="color: #fbbf24; font-family: monospace;">KM ${targetWorkLocation.kmValue || ''}</span>
+            <span>•</span>
+            <span>${(targetWorkLocation.title || 'Saha İşi').slice(0, 26)}</span>
+          </div>
+        </div>
+      `,
+      iconSize: [24, 24],
+      iconAnchor: [12, 12],
+    });
+
+    const marker = L.marker([lat, lng], { icon, zIndexOffset: 2500 }).addTo(map);
+    targetWorkMarkerRef.current = marker;
+
+    return () => {
+      if (targetWorkMarkerRef.current) {
+        map.removeLayer(targetWorkMarkerRef.current);
+        targetWorkMarkerRef.current = null;
+      }
+    };
+  }, [targetWorkLocation]);
+
   // Fit all points
   const handleFitAll = () => {
     const map = mapInstanceRef.current;
@@ -1555,6 +1617,38 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Target Work Location Floating Banner */}
+      {targetWorkLocation && (
+        <div
+          id="target-work-floating-banner"
+          className="absolute top-16 left-1/2 -translate-x-1/2 z-30 bg-slate-900/95 text-white backdrop-blur-md border border-amber-500/70 rounded-2xl shadow-2xl px-4 py-2 flex items-center gap-3 animate-in fade-in slide-in-from-top-3 duration-200 select-none max-w-[90vw]"
+        >
+          <div className="w-7 h-7 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+            🔧
+          </div>
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-1.5 text-xs font-bold truncate">
+              <span className="text-amber-400 font-mono">KM {targetWorkLocation.kmValue || ''}</span>
+              <span>•</span>
+              <span className="text-white truncate">{targetWorkLocation.title}</span>
+            </div>
+            <span className="text-[10px] text-slate-400 truncate">
+              {targetWorkLocation.lineName} • Haritada hedeflenen iş konumu
+            </span>
+          </div>
+          {onClearTargetWorkLocation && (
+            <button
+              type="button"
+              onClick={onClearTargetWorkLocation}
+              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors ml-1 cursor-pointer shrink-0"
+              title="Hedef İşaretini Kaldır"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

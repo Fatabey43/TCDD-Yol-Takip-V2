@@ -11,6 +11,7 @@ import {
   X,
   Gauge,
   Radio,
+  Wrench,
 } from 'lucide-react';
 import { NearestKmResult } from '../utils/liveRailwayKm.ts';
 
@@ -31,6 +32,9 @@ interface LiveKmIndicatorProps {
   isManualPointMode?: boolean;
   selectedPointTitle?: string | null;
   onAddPointAtLiveKm?: () => void;
+  onAddWorkAtLiveKm?: () => void;
+  onOpenWorkList?: () => void;
+  workListCount?: number;
 }
 
 export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
@@ -45,6 +49,9 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
   isManualPointMode = false,
   selectedPointTitle,
   onAddPointAtLiveKm,
+  onAddWorkAtLiveKm,
+  onOpenWorkList,
+  workListCount,
 }) => {
   const [isMinimized, setIsMinimized] = useState<boolean>(false);
 
@@ -223,17 +230,37 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
               )}
             </div>
 
-            {/* Quick Action: Add Point at this Live KM */}
-            {onAddPointAtLiveKm && (
-              <button
-                type="button"
-                onClick={onAddPointAtLiveKm}
-                className="mt-2.5 w-full flex items-center justify-center gap-1.5 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-[0.99]"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Bu KM'ye Saha Kaydı / Not Ekle</span>
-              </button>
-            )}
+            {/* Action Buttons: Add Field Work at Live KM & Open Work List */}
+            <div className="mt-2.5 flex flex-col gap-1.5">
+              {onAddWorkAtLiveKm && (
+                <button
+                  type="button"
+                  onClick={onAddWorkAtLiveKm}
+                  className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-[0.99]"
+                >
+                  <Wrench className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span>Bu Konuma İş Ekle</span>
+                </button>
+              )}
+
+              {onOpenWorkList && (
+                <button
+                  type="button"
+                  onClick={onOpenWorkList}
+                  className="w-full flex items-center justify-between px-3 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded-xl text-[11px] font-semibold transition-all cursor-pointer"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <Wrench className="w-3 h-3 text-amber-600" />
+                    <span>Saha İş Listesi</span>
+                  </span>
+                  {workListCount !== undefined && workListCount > 0 && (
+                    <span className="bg-amber-500 text-slate-950 font-bold px-1.5 py-0.2 rounded-full text-[10px]">
+                      {workListCount}
+                    </span>
+                  )}
+                </button>
+              )}
+            </div>
 
             {nearestKm.isOffTrack && !isManualPointMode && (
               <div className="mt-2 text-[10px] bg-amber-50 border border-amber-200 text-amber-800 px-2 py-1.5 rounded-xl flex items-center gap-1.5">

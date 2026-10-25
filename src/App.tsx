@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { RailwayPoint, RailwayPointCategory, FilterOptions } from './types.ts';
+import { WorkLog, TakyidatSpeedRestriction, RailwayParcel, FieldWorkItem } from './types.ts';
 import {
   fetchRailwayPoints,
   getLocalCachedPoints,
@@ -28,6 +29,12 @@ import {
   bulkDeleteParcels,
   clearAllParcels,
   saveParcelsBatch,
+  fetchFieldWorksList,
+  getLocalCachedFieldWorks,
+  saveNewFieldWork,
+  updateExistingFieldWork,
+  deleteFieldWorkById,
+  bulkDeleteFieldWorks,
 } from './services/api.ts';
 import { exportToJSON } from './utils/kmlParser.ts';
 import { RailwayMap } from './components/RailwayMap.tsx';
@@ -40,10 +47,10 @@ import { ReportModal } from './components/ReportModal.tsx';
 import { WorkLogModal } from './components/WorkLogModal.tsx';
 import { TakyidatModal, TakyidatFormDraft } from './components/TakyidatModal.tsx';
 import { RailwayParcelModal } from './components/RailwayParcelModal.tsx';
+import { FieldWorkListModal } from './components/FieldWorkListModal.tsx';
 import { SelectPointModal } from './components/SelectPointModal.tsx';
 import { LiveKmIndicator } from './components/LiveKmIndicator.tsx';
 import { calculateLiveRailwayKm, NearestKmResult } from './utils/liveRailwayKm.ts';
-import { WorkLog, TakyidatSpeedRestriction, RailwayParcel } from './types.ts';
 import { Header } from './components/Header.tsx';
 import { PointListSidebar } from './components/PointListSidebar.tsx';
 import { ColorPaletteTabBar } from './components/ColorPaletteTabBar.tsx';
@@ -64,7 +71,7 @@ import {
 } from './utils/categoryColors.ts';
 import { sortPointsByKm, upsertPointInKmOrder, parseKmToNumber } from './utils/kmUtils.ts';
 import { getStoredLines } from './utils/customLinesStorage.ts';
-import { List, Map as MapIcon, Loader2, Plus, Wifi, Smartphone, X } from 'lucide-react';
+import { List, Map as MapIcon, Loader2, Plus, Wifi, Smartphone, X, Wrench } from 'lucide-react';
 import { TrainLoadingAnimation } from './components/TrainLoadingAnimation.tsx';
 import { TrainTransitionOverlay } from './components/TrainTransitionOverlay.tsx';
 
@@ -129,6 +136,30 @@ export default function App() {
       return [];
     }
   });
+
+  // Field Works (Saha İş Listesi - Haritada kalabalık yapmayan, tıklandığında KM'ye giden sistem)
+  const [fieldWorksList, setFieldWorksList] = useState<FieldWorkItem[]>(() => {
+    try {
+      const cached = getLocalCachedFieldWorks();
+      return Array.isArray(cached) ? cached : [];
+    } catch {
+      return [];
+    }
+  });
+  const [isFieldWorksModalOpen, setIsFieldWorksModalOpen] = useState<boolean>(false);
+  const [initialWorkLocationDraft, setInitialWorkLocationDraft] = useState<{
+    lat: number;
+    lng: number;
+    kmValue?: string;
+    lineName?: string;
+  } | null>(null);
+  const [targetWorkLocation, setTargetWorkLocation] = useState<{
+    lat: number;
+    lng: number;
+    title: string;
+    kmValue?: string;
+    lineName?: string;
+  } | null>(null);
   
   // Live GPS KM State
   const [liveGpsCoords, setLiveGpsCoords] = useState<{
@@ -202,13 +233,14 @@ export default function App() {
   const currentPointCountRef = useRef<number>(0);
   const broadcastChannelRef = useRef<BroadcastChannel | null>(null);
 
-  // Load points, takyidat & parcels on mount
+  // Load points, takyidat, parcels & field works on mount
   const loadPoints = useCallback(async () => {
     try {
-      const [data, takData, parcelsData, verRes] = await Promise.all([
+      const [data, takData, parcelsData, worksData, verRes] = await Promise.all([
         fetchRailwayPoints(),
         fetchTakyidatList().catch(() => []),
         fetchParcelsList().catch(() => []),
+        fetchFieldWorksList().catch(() => []),
         fetch(`/api/points/version?_t=${Date.now()}`, { cache: 'no-store' }).catch(() => null),
       ]);
 
@@ -230,6 +262,7 @@ export default function App() {
       });
       setTakyidatList(takData);
       setParcelsList(parcelsData);
+      setFieldWorksList(worksData);
       currentPointCountRef.current = data.length;
       // If a point was selected, refresh its data reference
       setSelectedPoint((curr) => (curr ? data.find((p) => p.id === curr.id) || null : null));
@@ -246,18 +279,20 @@ export default function App() {
     try {
       lastRevisionRef.current = 0;
       currentPointCountRef.current = -1;
-      const [data, takData, parcelsData] = await Promise.all([
+      const [data, takData, parcelsData, worksData] = await Promise.all([
         fetchRailwayPoints(),
         fetchTakyidatList().catch(() => []),
         fetchParcelsList().catch(() => []),
+        fetchFieldWorksList().catch(() => []),
       ]);
       const sorted = sortPointsByKm(data);
       setPoints(sorted);
       setTakyidatList(takData);
       setParcelsList(parcelsData);
+      setFieldWorksList(worksData);
       currentPointCountRef.current = sorted.length;
       setSelectedPoint((curr) => (curr ? sorted.find((p) => p.id === curr.id) || null : null));
-      showToast(`Harita, demiryolu noktaları, takyidat ve kadastro arazileri güncellendi.`);
+      showToast(`Harita, demiryolu noktaları, takyidat ve iş listesi güncellendi.`);
     } catch (err) {
       console.error('Yenileme hatası:', err);
       showToast('Güncelleme sırasında bir sorun oluştu, çevrimdışı veriler korunuyor.');
@@ -478,27 +513,10 @@ export default function App() {
     setDeferredPrompt(null);
   };
 
-  // Extract distinct lines for filter (combining points lines and user-added custom lines)
-  const [customStoredLines, setCustomStoredLines] = useState<string[]>(() => getStoredLines());
-
-  useEffect(() => {
-    const handleLinesUpdate = () => {
-      setCustomStoredLines(getStoredLines());
-    };
-    window.addEventListener('demiryolu_lines_updated', handleLinesUpdate);
-    return () => window.removeEventListener('demiryolu_lines_updated', handleLinesUpdate);
-  }, []);
-
+  // Strictly restricted to user-requested lines: Eskişehir-Konya and Alayunt-Balıkesir
   const availableLines = useMemo(() => {
-    const lines = new Set<string>();
-    points.forEach((p) => {
-      if (p.lineName) lines.add(p.lineName);
-    });
-    customStoredLines.forEach((l) => {
-      if (l) lines.add(l);
-    });
-    return Array.from(lines).sort();
-  }, [points, customStoredLines]);
+    return ['Eskişehir-Konya', 'Alayunt-Balıkesir'];
+  }, []);
 
   // Point count per category for tab bar badges
   const pointCountsByCategory = useMemo(() => {
@@ -1046,7 +1064,7 @@ export default function App() {
         id: 'live-gps-position',
         title: `Bulunduğunuz Konum (KM ${nearestRailwayKm?.chainageKm || '?'})`,
         kmValue: nearestRailwayKm?.chainageKm || '',
-        lineName: nearestRailwayKm?.lineName || 'Eskişehir - Konya',
+        lineName: nearestRailwayKm?.lineName || 'Eskişehir-Konya',
         category: 'other',
         lat: liveGpsCoords.lat,
         lng: liveGpsCoords.lng,
@@ -1075,6 +1093,56 @@ export default function App() {
     setIsFormModalOpen(true);
     showToast(`Canlı GPS konumu (KM ${nearestRailwayKm?.chainageKm || ''}) formuna aktarıldı.`);
   }, [liveGpsCoords, nearestRailwayKm]);
+
+  // Saha İş Listesi (Field Works) Handlers
+  const handleSaveFieldWork = async (workData: Omit<FieldWorkItem, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const saved = await saveNewFieldWork(workData);
+    setFieldWorksList((prev) => [saved, ...prev.filter((w) => w.id !== saved.id)]);
+    showToast(`✅ "${saved.title}" iş listesine başarıyla eklendi.`);
+    return saved;
+  };
+
+  const handleUpdateFieldWork = async (updatedWork: FieldWorkItem) => {
+    const res = await updateExistingFieldWork(updatedWork);
+    setFieldWorksList((prev) => prev.map((w) => (w.id === res.id ? res : w)));
+    showToast(`✅ "${res.title}" güncellendi.`);
+    return res;
+  };
+
+  const handleDeleteFieldWork = async (id: string) => {
+    const success = await deleteFieldWorkById(id);
+    setFieldWorksList((prev) => prev.filter((w) => w.id !== id));
+    showToast('İş kaydı silindi.');
+    return success;
+  };
+
+  const handleGoToWorkLocation = (lat: number, lng: number, kmValue: string, title: string, lineName: string) => {
+    setIsFieldWorksModalOpen(false);
+    if (viewMode === 'list') {
+      setViewMode('map');
+      setActiveTab('map');
+    }
+    setTargetWorkLocation({ lat, lng, kmValue, title, lineName });
+    showToast(`📍 "${title}" konumuna gidildi (KM ${kmValue}).`);
+  };
+
+  const handleAddWorkAtLiveKm = useCallback(() => {
+    if (!liveGpsCoords) {
+      handleToggleLiveGps();
+      showToast('Canlı GPS konumu alınıyor, lütfen bekleyin...');
+      return;
+    }
+    const currentKm = nearestRailwayKm?.chainageKm || '';
+    const currentLine = nearestRailwayKm?.lineName || availableLines[0] || 'Eskişehir-Konya';
+    setInitialWorkLocationDraft({
+      lat: liveGpsCoords.lat,
+      lng: liveGpsCoords.lng,
+      kmValue: currentKm,
+      lineName: currentLine,
+    });
+    setIsFieldWorksModalOpen(true);
+    showToast(`Canlı KM ${currentKm} için iş ekleme penceresi açıldı.`);
+  }, [liveGpsCoords, nearestRailwayKm, availableLines, handleToggleLiveGps]);
 
   // Batch import
   const handleImportSuccess = async (importedPoints: Partial<RailwayPoint>[], replaceAll: boolean) => {
@@ -1400,6 +1468,11 @@ export default function App() {
         isOnline={isOnline}
         activeTakyidatCount={takyidatList.filter((r) => r.status === 'active').length}
         totalParcelsCount={parcelsList.length}
+        fieldWorksCount={fieldWorksList.length}
+        onOpenFieldWorks={() => {
+          setInitialWorkLocationDraft(null);
+          setIsFieldWorksModalOpen(true);
+        }}
         isLiveGpsActive={isLiveGpsActive}
         onToggleLiveGps={handleToggleLiveGps}
         currentLiveKm={nearestRailwayKm?.chainageKm}
@@ -1505,6 +1578,8 @@ export default function App() {
                 onToggleLiveGps={handleToggleLiveGps}
                 nearestRailwayKm={nearestRailwayKm}
                 onPanToMyLocation={handlePanToMyGps}
+                targetWorkLocation={targetWorkLocation}
+                onClearTargetWorkLocation={() => setTargetWorkLocation(null)}
               />
 
               {/* Toggle Sidebar Button for Desktop - Clean White Institutional Pill */}
@@ -1566,6 +1641,12 @@ export default function App() {
         onPanToMyLocation={handlePanToMyGps}
         onOpenSelectPoint={() => setIsSelectPointModalOpen(true)}
         onAddPointAtLiveKm={handleAddPointAtLiveKm}
+        onAddWorkAtLiveKm={handleAddWorkAtLiveKm}
+        onOpenWorkList={() => {
+          setInitialWorkLocationDraft(null);
+          setIsFieldWorksModalOpen(true);
+        }}
+        workListCount={fieldWorksList.length}
         onClose={() => {
           setLiveGpsCoords(null);
           setNearestRailwayKm(null);
@@ -1697,6 +1778,11 @@ export default function App() {
         onOpenReports={() => setIsReportModalOpen(true)}
         onOpenTakyidat={() => setIsTakyidatModalOpen(true)}
         onOpenParcels={() => setIsParcelModalOpen(true)}
+        onOpenFieldWorks={() => {
+          setInitialWorkLocationDraft(null);
+          setIsFieldWorksModalOpen(true);
+        }}
+        fieldWorksCount={fieldWorksList.length}
         totalParcelsCount={parcelsList.length}
         onOpenSelectPoint={() => setIsSelectPointModalOpen(true)}
         activeTakyidatCount={takyidatList.filter((r) => r.status === 'active').length}
@@ -1705,6 +1791,22 @@ export default function App() {
         onSyncPhotos={handleSyncPhotos}
         onOpenUserManagement={isAdmin ? () => setIsUserMgmtOpen(true) : undefined}
         isRefreshing={isRefreshing}
+      />
+
+      {/* TCDD Saha İş Listesi & Takip Modalı (Haritada kalabalık yapmayan, tıklandığında KM'ye giden sistem) */}
+      <FieldWorkListModal
+        isOpen={isFieldWorksModalOpen}
+        onClose={() => {
+          setIsFieldWorksModalOpen(false);
+          setInitialWorkLocationDraft(null);
+        }}
+        worksList={fieldWorksList}
+        onSaveWork={handleSaveFieldWork}
+        onUpdateWork={handleUpdateFieldWork}
+        onDeleteWork={handleDeleteFieldWork}
+        onGoToWorkLocation={handleGoToWorkLocation}
+        initialLiveLocation={initialWorkLocationDraft}
+        availableLines={availableLines}
       />
 
       {/* TCDD Takyidat Hız Sınırları & Yol Emirleri Modalı */}

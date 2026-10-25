@@ -1,10 +1,11 @@
-// Demiryolu Hat Yönetimi Servisi (Kalıcı Özel Hatlar)
-// Kullanıcı tarafından eklenen ve kayıtlı noktalardan otomatik toplanan hatlar
+// Demiryolu Hat Yönetimi Servisi (Kalıcı Hatlar)
+// Yalnızca aktif tanımlı hatlar: Eskişehir-Konya ve Alayunt-Balıkesir
 
-const SAVED_LINES_KEY = 'demiryolu_saved_custom_lines_v1';
+const SAVED_LINES_KEY = 'demiryolu_saved_custom_lines_v2';
 
 export const DEFAULT_LINES_PRESET: string[] = [
   'Eskişehir-Konya',
+  'Alayunt-Balıkesir',
 ];
 
 export function getStoredLines(): string[] {
@@ -13,7 +14,12 @@ export function getStoredLines(): string[] {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed.filter((l) => typeof l === 'string' && l.trim().length > 0);
+        const valid = parsed.filter((l) => typeof l === 'string' && (l === 'Eskişehir-Konya' || l === 'Alayunt-Balıkesir'));
+        if (valid.length > 0) {
+          // Ensure both canonical lines exist
+          const merged = Array.from(new Set([...valid, ...DEFAULT_LINES_PRESET]));
+          return merged;
+        }
       }
     }
   } catch {}
@@ -43,6 +49,8 @@ export function addCustomLine(newLineName: string): string[] {
 
 export function removeCustomLine(lineToRemove: string): string[] {
   const current = getStoredLines().filter((l) => l.toLowerCase() !== lineToRemove.trim().toLowerCase());
-  saveStoredLines(current);
-  return current;
+  // Ensure we don't end up with empty list
+  const finalList = current.length > 0 ? current : [...DEFAULT_LINES_PRESET];
+  saveStoredLines(finalList);
+  return finalList;
 }
