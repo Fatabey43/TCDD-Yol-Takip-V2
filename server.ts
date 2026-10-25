@@ -25,7 +25,7 @@ app.use(
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Serve static assets from public folder (manifest, icons, etc.)
+// Serve static assets from public folder (manifest, icons, etc.) with strict cache-busting
 app.get('/sw.js', (req, res) => {
   res.setHeader('Content-Type', 'application/javascript');
   res.setHeader('Service-Worker-Allowed', '/');
@@ -33,10 +33,16 @@ app.get('/sw.js', (req, res) => {
   res.sendFile(path.join(process.cwd(), 'public', 'sw.js'));
 });
 
-app.get('/manifest.json', (req, res) => {
+app.get(['/manifest.json', '/manifest-v2.json', '/manifest.webmanifest'], (req, res) => {
   res.setHeader('Content-Type', 'application/manifest+json');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.sendFile(path.join(process.cwd(), 'public', 'manifest.json'));
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.sendFile(path.join(process.cwd(), 'public', 'manifest-v2.json'));
+});
+
+// Explicit icon routes to prevent any stale icon caching by mobile browsers
+app.get(['/apple-touch-icon*', '/pwa-*', '/favicon*'], (req, res, next) => {
+  res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+  next();
 });
 
 app.use(express.static(path.join(process.cwd(), 'public')));
@@ -1997,6 +2003,7 @@ async function startServer() {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }

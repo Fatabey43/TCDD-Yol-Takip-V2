@@ -1,12 +1,17 @@
-const CACHE_NAME = 'demiryolu-km-v5';
+const CACHE_NAME = 'demiryolu-km-v10';
 const TILE_CACHE_NAME = 'demiryolu-km-tiles-v1';
 
 const STATIC_ASSETS = [
   '/',
+  '/manifest-v2.json',
   '/manifest.json',
-  '/pwa-192x192.png',
-  '/pwa-512x512.png',
-  '/apple-touch-icon.png'
+  '/pwa-192x192-v2.png',
+  '/pwa-512x512-v2.png',
+  '/pwa-maskable-512x512-v2.png',
+  '/apple-touch-icon-v2.png',
+  '/apple-touch-icon-180-v2.png',
+  '/app_icon.svg',
+  '/favicon-v2.png'
 ];
 
 self.addEventListener('install', (event) => {
