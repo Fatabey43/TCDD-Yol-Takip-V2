@@ -1,0 +1,46 @@
+[
+  {
+    "id": "usr-admin-1",
+    "name": "Hasan Polat Türkmen",
+    "email": "turkmenhassan34@gmail.com",
+    "role": "admin",
+    "department": "TCDD Sistem Yöneticisi / Saha Sorumlusu",
+    "passwordSalt": "8a23b0d7070fbd824df932f65d223a95",
+    "passwordHash": "802b2ef9e8b048e66216880fcbb4512c9172e847f7aeb8e8c830c8738e848852e7a7ec99f86f3398afb62d098d5b280290320f9cb9ef5f843207a05622c54391",
+    "createdAt": "2026-09-21T14:40:39.732Z",
+    "lastLoginAt": "2026-10-06T19:43:04.552Z"
+  },
+  {
+    "id": "usr-editor-2",
+    "name": "Saha Bakım Şefliği",
+    "email": "saha@tcdd.gov.tr",
+    "role": "editor",
+    "department": "Yol Bakım ve Onarım Müdürlüğü",
+    "passwordSalt": "880b5920d8c87db267aafe130415bcae",
+    "passwordHash": "e6293cf0d4f1e873b52d8010ff697e4b029959fb5b8a82890efc38e07644deb2b237e4345ff42d6cbbf0366eb575f375dc71e40bcfd12898cf549a9788aa61f5",
+    "createdAt": "2026-09-21T14:36:31.629Z",
+    "lastLoginAt": "2026-09-21T14:37:19.851Z"
+  },
+  {
+    "id": "usr-viewer-3",
+    "name": "Gözlemci / Denetmen",
+    "email": "izleyici@tcdd.gov.tr",
+    "role": "viewer",
+    "department": "Demiryolu Emniyet ve Denetim",
+    "passwordSalt": "3e42f4f35a0ca0bb805a0333493cb272",
+    "passwordHash": "5721999b6a056955b5d9fe493be1bd55d2eb4127415280aea25b20b4fcd033ed4728e3a2cb791538ef287dbb404f61080dc30da1a0ff3f05e5316fab2a6dce8c",
+    "createdAt": "2026-09-21T14:36:31.629Z",
+    "lastLoginAt": "2026-09-21T14:37:22.125Z"
+  },
+  {
+    "id": "usr-admin-bahadir",
+    "name": "Bahadır Efet",
+    "email": "bahadirefet@gmail.com",
+    "role": "admin",
+    "department": "TCDD Demiryolu Proje & Hat Koordinatörü",
+    "passwordSalt": "62972867bced5a031a85981d204d0885",
+    "passwordHash": "ad1e234c0e808166241aa3b5e5574532d7d2617e6c4ead25d37c9c43df1a5e715c7714009c0a60fce7fc86afbcbcc09098db647d0edbee12ec54dcad25d3d3f0",
+    "createdAt": "2026-09-25T21:37:31.029Z",
+    "lastLoginAt": "2026-10-06T20:04:02.931Z"
+  }
+]

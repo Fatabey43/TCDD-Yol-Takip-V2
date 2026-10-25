@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+@keyframes trainTracks {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-40px); }
+}
+
+@keyframes trainWheels {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes trainDiagonalPass {
+  0% {
+    transform: translate(-120vw, 120vh) rotate(-22deg) scale(0.65);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(130vw, -130vh) rotate(-22deg) scale(1.4);
+    opacity: 0;
+  }
+}
+
+@keyframes trackSleeperMove {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-60px); }
+}
+
+.animate-train-diagonal {
+  animation: trainDiagonalPass 1.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+.animate-track-move {
+  animation: trackSleeperMove 0.8s linear infinite;
+}
+
+/* Custom Smooth Scrollbar Styling */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Prominent Draggable Scrollbar / Hareket Çubuğu */
+.prominent-scrollbar {
+  scrollbar-width: auto;
+  scrollbar-color: #64748b #f1f5f9;
+}
+.prominent-scrollbar::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+.prominent-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 9999px;
+  border: 1px solid #e2e8f0;
+}
+.prominent-scrollbar::-webkit-scrollbar-thumb {
+  background: #64748b;
+  border-radius: 9999px;
+  border: 2px solid #f1f5f9;
+}
+.prominent-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+.prominent-scrollbar::-webkit-scrollbar-thumb:active {
+  background: #2563eb;
+}
+
+/* TCDD Railway Marker Custom Styling */
+.tcdd-marker-cluster-badge,
+.custom-railway-marker,
+.custom-railway-dot-marker,
+.custom-railway-shield-marker,
+.takyidat-warning-marker,
+.parcel-center-marker {
+  background: transparent !important;
+  border: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}

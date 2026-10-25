@@ -1,0 +1,11 @@
+{
+  "name": "Remix Demiryolu KM \u0026 Nokta Takip",
+  "description": "Demiryolu hatları kilometre noktası takibi, harita konumu, yol tarifi navigasyonu, saha notları ve fotoğraf kayıt sistemi.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
