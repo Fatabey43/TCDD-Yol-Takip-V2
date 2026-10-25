@@ -175,6 +175,7 @@ export default function App() {
   const [isLivePointPickMode, setIsLivePointPickMode] = useState<boolean>(false);
   const [manualLivePointTitle, setManualLivePointTitle] = useState<string | null>(null);
   const gpsWatchIdRef = useRef<number | null>(null);
+  const isTrackingActiveRef = useRef<boolean>(false);
 
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallBannerDismissed, setIsInstallBannerDismissed] = useState<boolean>(() => {
@@ -885,20 +886,28 @@ export default function App() {
     showToast('İş kaydı silindi.');
   };
 
+  // Fully stop and clean up continuous live GPS tracking
+  const stopLiveGps = useCallback(() => {
+    isTrackingActiveRef.current = false;
+    if (gpsWatchIdRef.current !== null) {
+      try {
+        navigator.geolocation.clearWatch(gpsWatchIdRef.current);
+      } catch {}
+      gpsWatchIdRef.current = null;
+    }
+    setIsLiveGpsActive(false);
+    setIsGpsLocating(false);
+    setLiveGpsCoords(null);
+    setNearestRailwayKm(null);
+    setManualLivePointTitle(null);
+    showToast('Canlı konum takibi kapatıldı.');
+  }, []);
+
   // Continuous Live GPS KM Tracking (Toggling watchPosition)
   const handleToggleLiveGps = useCallback(() => {
-    if (isLiveGpsActive) {
+    if (isLiveGpsActive || isTrackingActiveRef.current) {
       // Turn OFF
-      if (gpsWatchIdRef.current !== null) {
-        navigator.geolocation.clearWatch(gpsWatchIdRef.current);
-        gpsWatchIdRef.current = null;
-      }
-      setIsLiveGpsActive(false);
-      setIsGpsLocating(false);
-      setLiveGpsCoords(null);
-      setNearestRailwayKm(null);
-      setManualLivePointTitle(null);
-      showToast('Canlı konum takibi durduruldu.');
+      stopLiveGps();
       return;
     }
 
@@ -908,6 +917,7 @@ export default function App() {
       return;
     }
 
+    isTrackingActiveRef.current = true;
     setIsLiveGpsActive(true);
     setIsGpsLocating(true);
     setManualLivePointTitle(null);
@@ -921,11 +931,23 @@ export default function App() {
 
     // Clear any previous watcher
     if (gpsWatchIdRef.current !== null) {
-      navigator.geolocation.clearWatch(gpsWatchIdRef.current);
+      try {
+        navigator.geolocation.clearWatch(gpsWatchIdRef.current);
+      } catch {}
       gpsWatchIdRef.current = null;
     }
 
     const onPosSuccess = (pos: GeolocationPosition) => {
+      // Guard: If tracking was stopped by user, ignore and clear watcher immediately
+      if (!isTrackingActiveRef.current) {
+        if (gpsWatchIdRef.current !== null) {
+          try {
+            navigator.geolocation.clearWatch(gpsWatchIdRef.current);
+          } catch {}
+          gpsWatchIdRef.current = null;
+        }
+        return;
+      }
       setIsGpsLocating(false);
       const coords = {
         lat: pos.coords.latitude,
@@ -939,11 +961,16 @@ export default function App() {
     };
 
     const onPosError = (err: GeolocationPositionError) => {
+      if (!isTrackingActiveRef.current) return;
       console.warn('Canlı GPS izleme uyarısı:', err);
       // Fallback single getCurrentPosition if watchPosition had a glitch
       navigator.geolocation.getCurrentPosition(
-        onPosSuccess,
+        (posFallback) => {
+          if (!isTrackingActiveRef.current) return;
+          onPosSuccess(posFallback);
+        },
         (errFallback) => {
+          if (!isTrackingActiveRef.current) return;
           setIsGpsLocating(false);
           console.warn('GPS hatası:', errFallback);
           showToast('GPS sinyali alınamadı. Açık alanda olduğunuzdan veya konum izinlerinizin açık olduğundan emin olun.');
@@ -958,18 +985,34 @@ export default function App() {
         onPosError,
         { enableHighAccuracy: true, timeout: 15000, maximumAge: 3000 }
       );
-      gpsWatchIdRef.current = watchId;
+      if (!isTrackingActiveRef.current) {
+        navigator.geolocation.clearWatch(watchId);
+      } else {
+        gpsWatchIdRef.current = watchId;
+      }
     } catch (e) {
       console.warn('watchPosition başlatılamadı:', e);
-      navigator.geolocation.getCurrentPosition(onPosSuccess, onPosError, { enableHighAccuracy: true });
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          if (isTrackingActiveRef.current) onPosSuccess(pos);
+        },
+        (err) => {
+          if (isTrackingActiveRef.current) onPosError(err);
+        },
+        { enableHighAccuracy: true }
+      );
     }
-  }, [isLiveGpsActive, points, viewMode]);
+  }, [isLiveGpsActive, points, viewMode, stopLiveGps]);
 
   // Clean up watcher on unmount
   useEffect(() => {
     return () => {
+      isTrackingActiveRef.current = false;
       if (gpsWatchIdRef.current !== null) {
-        navigator.geolocation.clearWatch(gpsWatchIdRef.current);
+        try {
+          navigator.geolocation.clearWatch(gpsWatchIdRef.current);
+        } catch {}
+        gpsWatchIdRef.current = null;
       }
     };
   }, []);
@@ -1017,6 +1060,7 @@ export default function App() {
 
   // Select a registered point as the live reference point
   const handleSelectPointAsLive = useCallback((point: RailwayPoint) => {
+    isTrackingActiveRef.current = true;
     setIsLivePointPickMode(false);
     setLiveGpsCoords({ lat: point.lat, lng: point.lng });
     setManualLivePointTitle(point.title);
@@ -1046,6 +1090,7 @@ export default function App() {
 
   // Called when user clicks on map during isLivePointPickMode
   const handleMapClickPickLivePoint = (lat: number, lng: number) => {
+    isTrackingActiveRef.current = true;
     setIsLivePointPickMode(false);
     setLiveGpsCoords({ lat, lng });
     setIsLiveGpsActive(true);
@@ -1647,12 +1692,7 @@ export default function App() {
           setIsFieldWorksModalOpen(true);
         }}
         workListCount={fieldWorksList.length}
-        onClose={() => {
-          setLiveGpsCoords(null);
-          setNearestRailwayKm(null);
-          setIsLiveGpsActive(false);
-          setManualLivePointTitle(null);
-        }}
+        onClose={stopLiveGps}
         isManualPointMode={Boolean(manualLivePointTitle)}
         selectedPointTitle={manualLivePointTitle}
       />

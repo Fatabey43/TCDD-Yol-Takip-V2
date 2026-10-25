@@ -55,8 +55,8 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
 }) => {
   const [isMinimized, setIsMinimized] = useState<boolean>(false);
 
-  // If live mode is not active and no location is set, do not render
-  if (!isLiveActive && !gpsLocation && !isLocating) {
+  // If live mode is not active, do not render
+  if (!isLiveActive) {
     return null;
   }
 
