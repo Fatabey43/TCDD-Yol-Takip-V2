@@ -375,15 +375,42 @@ export function extractLocationFromPoint(point: RailwayPoint): {
 /**
  * Poligonun ağırlık merkezini (Centroid) hesaplar
  */
+/**
+ * Ensures coordinate pair is [lat, lng] within Turkey territory
+ * Swaps [lng, lat] to [lat, lng] if inverted (e.g. from GeoJSON or GIS tools).
+ */
+export function normalizeTurkeyCoordinates(c1: number, c2: number): [number, number] {
+  if (isNaN(c1) || isNaN(c2)) return [39.4215, 29.9856];
+  // If first is lat (~35.5 - 43.5) and second is lng (~25.0 - 45.0) -> already [lat, lng]
+  if (c1 >= 35.5 && c1 <= 43.5 && c2 >= 25.0 && c2 <= 45.0) {
+    return [c1, c2];
+  }
+  // If reversed (e.g. GeoJSON [lng, lat] where c1 ~ 29-32 and c2 ~ 38-41)
+  if (c2 >= 35.5 && c2 <= 43.5 && c1 >= 25.0 && c1 <= 45.0) {
+    return [c2, c1];
+  }
+  // Fallback: If c1 < c2 (typically lng ~30 < lat ~39 in Turkey)
+  if (c1 < 35 && c2 >= 35) {
+    return [c2, c1];
+  }
+  return [c1, c2];
+}
+
+export function normalizePolygonCoordinates(coords: [number, number][]): [number, number][] {
+  if (!Array.isArray(coords)) return [];
+  return coords.map((c) => normalizeTurkeyCoordinates(Number(c[0]), Number(c[1])));
+}
+
 export function calculateParcelCenter(coords: [number, number][]): [number, number] {
   if (!coords || coords.length === 0) return [39.4215, 29.9856]; // default Alayunt/Kütahya
+  const normalized = normalizePolygonCoordinates(coords);
   let sumLat = 0;
   let sumLng = 0;
-  for (const [lat, lng] of coords) {
+  for (const [lat, lng] of normalized) {
     sumLat += lat;
     sumLng += lng;
   }
-  return [sumLat / coords.length, sumLng / coords.length];
+  return [sumLat / normalized.length, sumLng / normalized.length];
 }
 
 /**
@@ -518,12 +545,14 @@ export function parseKmlOrGeoJsonParcels(fileContent: string): Partial<RailwayPa
         const geom = feat.geometry;
         const props = feat.properties || {};
 
-        let coords: [number, number][] = [];
+        let rawCoords: [number, number][] = [];
         if (geom.type === 'Polygon' && Array.isArray(geom.coordinates?.[0])) {
-          coords = geom.coordinates[0].map((c: any) => [c[1], c[0]]);
+          rawCoords = geom.coordinates[0].map((c: any) => [c[1], c[0]]);
         } else if (geom.type === 'MultiPolygon' && Array.isArray(geom.coordinates?.[0]?.[0])) {
-          coords = geom.coordinates[0][0].map((c: any) => [c[1], c[0]]);
+          rawCoords = geom.coordinates[0][0].map((c: any) => [c[1], c[0]]);
         }
+
+        const coords = normalizePolygonCoordinates(rawCoords);
 
         if (coords.length >= 3) {
           const area = calculateParcelArea(coords);
@@ -538,6 +567,7 @@ export function parseKmlOrGeoJsonParcels(fileContent: string): Partial<RailwayPa
             alanM2: props.alanM2 || area || 25000,
             malik: props.malik || 'TCDD İşletmesi Genel Müdürlüğü',
             ownershipStatus: 'tcdd',
+            lineName: props.lineName || (props.mahalle?.includes('Balıkesir') ? 'Alayunt-Balıkesir' : 'Eskişehir-Konya'),
             coordinates: coords,
             notes: props.notes || 'GeoJSON İçe Aktarımı',
           });
@@ -585,18 +615,20 @@ export function parseKmlOrGeoJsonParcels(fileContent: string): Partial<RailwayPa
         if (coordMatch) {
           const rawCoordText = coordMatch[1].trim();
           const tupleStrings = rawCoordText.split(/\s+/);
-          const coords: [number, number][] = [];
+          const rawCoords: [number, number][] = [];
 
           for (const tuple of tupleStrings) {
             const parts = tuple.split(',');
             if (parts.length >= 2) {
-              const lng = parseFloat(parts[0]);
-              const lat = parseFloat(parts[1]);
-              if (!isNaN(lat) && !isNaN(lng) && lat !== 0) {
-                coords.push([lat, lng]);
+              const p0 = parseFloat(parts[0]);
+              const p1 = parseFloat(parts[1]);
+              if (!isNaN(p0) && !isNaN(p1) && (p0 !== 0 || p1 !== 0)) {
+                rawCoords.push(normalizeTurkeyCoordinates(p1, p0));
               }
             }
           }
+
+          const coords = normalizePolygonCoordinates(rawCoords);
 
           if (coords.length >= 3) {
             const area = calculateParcelArea(coords);

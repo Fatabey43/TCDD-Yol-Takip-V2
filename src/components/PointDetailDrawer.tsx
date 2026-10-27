@@ -651,7 +651,7 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
 
         {/* Expandable Content Area */}
         {isExpanded && (
-          <div className="overflow-y-auto px-3 sm:px-4 py-3 flex-1 space-y-3">
+          <div className="overflow-y-auto prominent-scrollbar px-3 sm:px-4 py-3 flex-1 space-y-3">
             {/* Tabs for Organization - Modern Segmented Control */}
             <div className="bg-slate-100/90 p-1.5 rounded-2xl flex items-center gap-1 border border-slate-200 shadow-inner">
               <button

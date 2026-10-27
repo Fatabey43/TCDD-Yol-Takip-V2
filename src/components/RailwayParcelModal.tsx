@@ -28,8 +28,6 @@ import {
   Layers,
   CheckCircle2,
   AlertTriangle,
-  ArrowUp,
-  ArrowDown,
   CheckSquare,
   Square,
 } from 'lucide-react';
@@ -81,16 +79,6 @@ export const RailwayParcelModal: React.FC<RailwayParcelModalProps> = ({
   const [isClearAllModalOpen, setIsClearAllModalOpen] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const listContainerRef = React.useRef<HTMLDivElement | null>(null);
-
-  const handleScrollToTop = () => {
-    listContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleScrollToBottom = () => {
-    if (listContainerRef.current) {
-      listContainerRef.current.scrollTo({ top: listContainerRef.current.scrollHeight, behavior: 'smooth' });
-    }
-  };
 
   // Batch Import Modal State
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
@@ -922,7 +910,8 @@ export const RailwayParcelModal: React.FC<RailwayParcelModalProps> = ({
         <div className="relative flex-1 min-h-0 flex flex-col overflow-hidden">
           <div
             ref={listContainerRef}
-            className="flex-1 overflow-y-auto min-h-0 prominent-scrollbar p-3 sm:p-5 bg-slate-100/60 flex flex-col gap-4"
+            className="flex-1 overflow-y-scroll min-h-0 prominent-scrollbar p-3 sm:p-5 bg-slate-100/60 flex flex-col gap-4"
+            style={{ overflowY: 'scroll', scrollbarGutter: 'stable' }}
           >
           {Object.keys(groupedParcels).length === 0 ? (
             <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center flex flex-col items-center justify-center shadow-xs">
@@ -1174,30 +1163,6 @@ export const RailwayParcelModal: React.FC<RailwayParcelModalProps> = ({
               );
             })
           )}
-          </div>
-
-          {/* Hareket Çubuğu / Hızlı Kaydırma Butonları (Floating Up/Down Scroll Controls) */}
-          <div
-            className="absolute right-4 bottom-4 z-20 flex flex-col items-center bg-white/95 backdrop-blur-md border border-slate-300 shadow-xl rounded-2xl p-1 gap-1 text-slate-700 select-none"
-            title="Aşağı / Yukarı Hızlı Hareket Çubuğu"
-          >
-            <button
-              type="button"
-              onClick={handleScrollToTop}
-              className="p-2 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition-all cursor-pointer group flex items-center justify-center"
-              title="En Başa Dön (Yukarı)"
-            >
-              <ArrowUp className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
-            </button>
-            <div className="w-4 h-[1px] bg-slate-200" />
-            <button
-              type="button"
-              onClick={handleScrollToBottom}
-              className="p-2 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition-all cursor-pointer group flex items-center justify-center"
-              title="En Alta İn (Aşağı)"
-            >
-              <ArrowDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
-            </button>
           </div>
         </div>
 

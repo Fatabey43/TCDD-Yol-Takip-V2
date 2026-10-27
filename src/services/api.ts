@@ -547,8 +547,27 @@ export async function fetchRailwayPoints(): Promise<RailwayPoint[]> {
         return sp;
       });
 
-      if (pendingUpsertMap.size === 0 && mergedPoints.length > 0) {
-        const finalPoints = sortPointsByKm(mergedPoints);
+      // Preserve any local points that are not yet on the server (never drop user-added points)
+      const serverIdSet = new Set(validServerPoints.map((sp) => sp.id));
+      const localOnlyPoints = localPoints.filter(
+        (lp) => lp && lp.id && !serverIdSet.has(lp.id) && !deletedIds.has(lp.id) && !isDefaultSamplePoint(lp.id)
+      );
+
+      const allMergedPoints = [...mergedPoints, ...localOnlyPoints];
+
+      if (localOnlyPoints.length > 0) {
+        // Automatically sync locally added points to server so they become permanent
+        setTimeout(() => {
+          fetch('/api/points/import', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ points: localOnlyPoints, replaceAll: false }),
+          }).catch(() => {});
+        }, 800);
+      }
+
+      if (pendingUpsertMap.size === 0 && allMergedPoints.length > 0) {
+        const finalPoints = sortPointsByKm(allMergedPoints);
         saveLocalCachedPoints(finalPoints);
         if (anyLocalDataMerged) {
           setTimeout(() => syncAllPhotosToServer().catch(() => {}), 1000);
@@ -1488,6 +1507,18 @@ export async function fetchParcelsList(): Promise<RailwayParcel[]> {
     if (res.ok) {
       const serverList = await res.json();
       if (Array.isArray(serverList)) {
+        // Any parcel present on server is active and definitely not deleted
+        let deletedModified = false;
+        serverList.forEach((sp: any) => {
+          if (sp && sp.id && deletedIds.has(sp.id)) {
+            deletedIds.delete(sp.id);
+            deletedModified = true;
+          }
+        });
+        if (deletedModified) {
+          saveDeletedParcelIds(deletedIds);
+        }
+
         const cleanServer = serverList.filter((p: any) => p && p.id && !deletedIds.has(p.id));
         if (cleanServer.length > 0) {
           // Merge server with any local items that might have been added offline
@@ -1497,8 +1528,11 @@ export async function fetchParcelsList(): Promise<RailwayParcel[]> {
           const allParcels = Array.from(combinedMap.values());
           saveLocalCachedParcels(allParcels);
           return allParcels;
+        } else if (mergedLocal.length > 0) {
+          // Preserve local/IDB parcels and automatically sync to server
+          saveParcelsBatch(mergedLocal).catch(() => {});
+          return mergedLocal;
         } else {
-          // Server was empty (or all parcels were cleared by user). Do NOT resurrect!
           saveLocalCachedParcels([]);
           clearParcelsFromIDB().catch(() => {});
           return [];

@@ -560,7 +560,7 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-4 max-h-[78vh] overflow-y-auto">
+        <div className="p-6 space-y-4 max-h-[78vh] overflow-y-auto prominent-scrollbar">
           {activeTab === 'import' ? (
             <div className="space-y-4">
               {/* Category Selector Banner & Quick Buttons */}

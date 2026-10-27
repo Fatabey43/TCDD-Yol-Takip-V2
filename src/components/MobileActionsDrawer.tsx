@@ -83,7 +83,7 @@ export const MobileActionsDrawer: React.FC<MobileActionsDrawerProps> = ({
       <div className="flex-1" onClick={onClose} />
 
       {/* Drawer content */}
-      <div className="bg-slate-900 border-t border-slate-800 rounded-t-3xl shadow-2xl p-4 max-h-[85vh] overflow-y-auto flex flex-col gap-3 text-white animate-in slide-in-from-bottom duration-250 pb-safe">
+      <div className="bg-slate-900 border-t border-slate-800 rounded-t-3xl shadow-2xl p-4 max-h-[85vh] overflow-y-auto prominent-scrollbar flex flex-col gap-3 text-white animate-in slide-in-from-bottom duration-250 pb-safe">
         {/* Drag handle & close */}
         <div className="flex items-center justify-between pb-2 border-b border-slate-800">
           <div className="flex items-center gap-2.5">

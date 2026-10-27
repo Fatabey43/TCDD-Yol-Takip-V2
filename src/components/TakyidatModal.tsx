@@ -25,8 +25,6 @@ import {
   ListFilter,
   Navigation,
   BarChart2,
-  ArrowUp,
-  ArrowDown,
   CheckSquare,
   Square,
 } from 'lucide-react';
@@ -91,19 +89,6 @@ export const TakyidatModal: React.FC<TakyidatModalProps> = ({
   const [itemToDelete, setItemToDelete] = useState<TakyidatSpeedRestriction | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  const handleScrollToTop = () => {
-    scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleScrollToBottom = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTo({
-        top: scrollContainerRef.current.scrollHeight,
-        behavior: 'smooth',
-      });
-    }
-  };
 
   const toggleSelect = (id: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -1026,32 +1011,6 @@ export const TakyidatModal: React.FC<TakyidatModalProps> = ({
                   </div>
                 );
               })}
-            </div>
-          )}
-
-          {/* Hareket Çubuğu (Floating Up/Down Scroll Controls) */}
-          {filteredList.length > 2 && (
-            <div
-              className="absolute right-4 bottom-4 z-20 flex flex-col items-center bg-white/95 backdrop-blur-md border border-slate-300 shadow-xl rounded-2xl p-1 gap-1 text-slate-700 select-none animate-in fade-in"
-              title="Aşağı / Yukarı Hızlı Hareket Çubuğu"
-            >
-              <button
-                type="button"
-                onClick={handleScrollToTop}
-                className="p-2 hover:bg-amber-50 hover:text-amber-700 rounded-xl transition-all cursor-pointer group flex items-center justify-center"
-                title="En Başa Dön (Yukarı)"
-              >
-                <ArrowUp className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
-              </button>
-              <div className="w-3 h-[1px] bg-slate-200" />
-              <button
-                type="button"
-                onClick={handleScrollToBottom}
-                className="p-2 hover:bg-amber-50 hover:text-amber-700 rounded-xl transition-all cursor-pointer group flex items-center justify-center"
-                title="En Alta İn (Aşağı)"
-              >
-                <ArrowDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
-              </button>
             </div>
           )}
         </div>

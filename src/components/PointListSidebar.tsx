@@ -9,16 +9,13 @@ import {
   Navigation,
   MessageSquare,
   Image,
-  Train,
   ChevronRight,
   Trash2,
   Globe,
   X,
-  ArrowUp,
-  ArrowDown,
   CheckSquare,
   Square,
-  CheckCheck,
+  Search,
 } from 'lucide-react';
 
 interface PointListSidebarProps {
@@ -30,6 +27,8 @@ interface PointListSidebarProps {
   categoryColors?: Record<RailwayPointCategory, CategoryColorConfig>;
   onDeletePoint?: (point: RailwayPoint) => void;
   onBulkDeletePoints?: (ids: string[]) => Promise<void>;
+  searchQuery?: string;
+  onSearchChange?: (val: string) => void;
 }
 
 export const PointListSidebar: React.FC<PointListSidebarProps> = ({
@@ -41,6 +40,8 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
   categoryColors = DEFAULT_CATEGORY_COLORS,
   onDeletePoint,
   onBulkDeletePoints,
+  searchQuery = '',
+  onSearchChange,
 }) => {
   const { canDelete } = useAuth();
   const sortedPoints = useMemo(() => sortPointsByKm(points), [points]);
@@ -52,21 +53,8 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
   const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState<boolean>(false);
   const [singlePointToDelete, setSinglePointToDelete] = useState<RailwayPoint | null>(null);
 
-  // Scroll Container Ref for Up/Down Movement Bar
+  // Scroll Container Ref
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  const handleScrollToTop = () => {
-    scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleScrollToBottom = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTo({
-        top: scrollContainerRef.current.scrollHeight,
-        behavior: 'smooth',
-      });
-    }
-  };
 
   const toggleSelectPoint = (id: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -106,79 +94,117 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
     }
   };
 
+  // Helper for Technical Shell category sys-tag colors
+  const getCategoryTagInfo = (cat: string) => {
+    switch (cat) {
+      case 'switch':
+        return { label: 'MAKAS', color: '#ef4444' };
+      case 'station':
+        return { label: 'GAR', color: '#16a34a' };
+      case 'crossing':
+        return { label: 'GEÇİT', color: '#eab308' };
+      case 'culvert':
+        return { label: 'MENFEZ', color: '#06b6d4' };
+      case 'bridge':
+        return { label: 'KÖPRÜ', color: '#8b5cf6' };
+      case 'signal':
+        return { label: 'SİNYAL', color: '#ec4899' };
+      default:
+        return { label: 'KM TAŞI', color: '#00ff88' };
+    }
+  };
+
   return (
     <aside
       id="point-list-sidebar"
-      className={`bg-white border-r border-slate-200 flex flex-col h-full z-10 transition-all duration-300 relative ${
+      className={`bg-[#16161a] border-r border-[#2d2d33] flex flex-col h-full z-10 transition-all duration-300 relative font-mono-tech ${
         isOpen ? 'w-full sm:w-80 md:w-96' : 'w-0 hidden'
       }`}
     >
-      {/* Sidebar Header */}
-      <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <Train className="w-4 h-4 text-sky-600" />
-          <span className="text-xs font-bold text-slate-800">
-            Kayıtlı Noktalar ({sortedPoints.length})
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          {canDelete && sortedPoints.length > 0 && (
-            <button
-              type="button"
-              onClick={() => {
-                setIsSelectMode((prev) => !prev);
-                if (isSelectMode) setSelectedIds(new Set());
-              }}
-              className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border transition-colors flex items-center gap-1 cursor-pointer ${
-                isSelectMode
-                  ? 'bg-indigo-600 text-white border-indigo-700 shadow-xs'
-                  : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
-              }`}
-              title="Toplu silme ve seçim modunu aç/kapat"
-            >
-              {isSelectMode ? <CheckSquare className="w-3 h-3" /> : <Square className="w-3 h-3" />}
-              <span>{isSelectMode ? 'Seçimi Bitir' : 'Toplu Seçim'}</span>
-            </button>
-          )}
+      {/* Aside Header - Variation 6: Sistem 712 with QUERY:// KM_LOC field */}
+      <div className="p-4 sm:p-5 border-b border-[#2d2d33] bg-[#16161a] flex-shrink-0">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-syne text-xl sm:text-2xl font-black uppercase tracking-tight text-white flex items-center gap-2">
+            <span>Sistem 712</span>
+            <span className="text-[10px] font-mono-tech text-[#00ff88] bg-[#00ff88]/10 px-2 py-0.5 rounded border border-[#00ff88]/30 font-bold">
+              {sortedPoints.length}
+            </span>
+          </h2>
 
-          <span
-            className="text-[10px] font-semibold text-blue-700 bg-blue-50 border border-blue-200/80 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs"
-            title="KM chainage değerlerine göre sıralı"
-          >
-            <span>KM</span>
-            <span className="text-[10px] text-blue-600 font-bold">↑</span>
-          </span>
-          <button
-            id="close-sidebar-btn"
-            type="button"
-            onClick={onToggle}
-            className="p-1 text-slate-400 hover:text-slate-800 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
-            title="Listeyi Kapat"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-1.5">
+            {canDelete && sortedPoints.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSelectMode((prev) => !prev);
+                  if (isSelectMode) setSelectedIds(new Set());
+                }}
+                className={`px-2 py-1 rounded text-[10px] font-bold border transition-colors flex items-center gap-1 cursor-pointer ${
+                  isSelectMode
+                    ? 'bg-[#00ff88] text-black border-[#00ff88] shadow-xs'
+                    : 'bg-black text-[#e0e0e4]/80 border-[#2d2d33] hover:text-white hover:border-[#00ff88]/40'
+                }`}
+                title="Toplu silme ve seçim modunu aç/kapat"
+              >
+                {isSelectMode ? <CheckSquare className="w-3 h-3" /> : <Square className="w-3 h-3" />}
+                <span>{isSelectMode ? 'BİTİR' : 'SEÇ'}</span>
+              </button>
+            )}
+
+            <button
+              id="close-sidebar-btn"
+              type="button"
+              onClick={onToggle}
+              className="p-1.5 text-[#e0e0e4]/50 hover:text-white hover:bg-white/5 rounded transition-colors cursor-pointer"
+              title="Listeyi Kapat"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
+
+        {/* Monospace Query Field (QUERY:// KM_LOC) */}
+        {onSearchChange && (
+          <div className="search-field bg-black border border-[#2d2d33] px-3 py-2 flex items-center gap-2 focus-within:border-[#00ff88]/70 transition-colors">
+            <Search className="w-3.5 h-3.5 text-[#e0e0e4]/40 flex-shrink-0" />
+            <input
+              type="text"
+              placeholder="QUERY:// KM_LOC"
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="bg-transparent border-none text-[#e0e0e4] font-mono-tech w-full outline-none text-xs placeholder-[#e0e0e4]/30"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => onSearchChange('')}
+                className="text-[#e0e0e4]/40 hover:text-white text-xs px-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Bulk Action Bar (when in select mode or items selected) */}
+      {/* Bulk Action Bar (when in select mode) */}
       {isSelectMode && canDelete && sortedPoints.length > 0 && (
-        <div className="bg-indigo-50/90 border-b border-indigo-200 px-3 py-2 flex items-center justify-between gap-2 flex-wrap text-xs shrink-0 animate-in fade-in duration-150">
+        <div className="bg-black border-b border-[#2d2d33] px-4 py-2 flex items-center justify-between gap-2 flex-wrap text-xs shrink-0">
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={handleSelectAll}
-              className="flex items-center gap-1.5 text-indigo-900 font-bold hover:text-indigo-950 cursor-pointer"
+              className="flex items-center gap-1.5 text-white font-bold hover:text-[#00ff88] cursor-pointer"
             >
               {selectedIds.size === sortedPoints.length ? (
-                <CheckSquare className="w-4 h-4 text-indigo-600" />
+                <CheckSquare className="w-4 h-4 text-[#00ff88]" />
               ) : (
-                <Square className="w-4 h-4 text-indigo-600" />
+                <Square className="w-4 h-4 text-[#e0e0e4]/60" />
               )}
-              <span>Tümünü Seç ({sortedPoints.length})</span>
+              <span>TÜMÜNÜ SEÇ ({sortedPoints.length})</span>
             </button>
             {selectedIds.size > 0 && (
-              <span className="bg-indigo-200 text-indigo-900 font-bold px-2 py-0.2 rounded-full text-[10px]">
-                {selectedIds.size} seçildi
+              <span className="bg-[#00ff88]/20 text-[#00ff88] font-bold px-2 py-0.5 rounded text-[10px]">
+                {selectedIds.size} SEÇİLDİ
               </span>
             )}
           </div>
@@ -187,30 +213,30 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
             <button
               type="button"
               onClick={() => setIsBulkDeleteModalOpen(true)}
-              className="flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white font-bold px-2.5 py-1 rounded-lg text-xs shadow-xs transition-colors cursor-pointer"
+              className="flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white font-bold px-2.5 py-1 rounded text-xs shadow-xs transition-colors cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              <span>Seçilenleri Sil ({selectedIds.size})</span>
+              <span>SİL ({selectedIds.size})</span>
             </button>
           )}
         </div>
       )}
 
-      {/* Points Scroll Area with Prominent Scrollbar & Height Constraint */}
+      {/* Points Scroll Area - Variation 6 entry list */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto divide-y divide-slate-100 prominent-scrollbar relative min-h-0"
+        className="entry-list flex-1 overflow-y-auto prominent-scrollbar relative min-h-0 divide-y divide-[#2d2d33]"
       >
         {sortedPoints.length === 0 ? (
-          <div className="p-8 text-center text-xs text-slate-400">
-            Filtreye uygun demiryolu noktası bulunamadı.
+          <div className="p-8 text-center text-xs text-[#e0e0e4]/40 font-mono-tech">
+            QUERY:// NO_RECORDS_FOUND
           </div>
         ) : (
           sortedPoints.map((point) => {
             const isSelected = selectedPoint?.id === point.id;
             const isChecked = selectedIds.has(point.id);
-            const conf = categoryColors[point.category] || categoryColors.km_marker || DEFAULT_CATEGORY_COLORS.km_marker;
             const cleanKm = formatKmDisplay(point.kmValue, point.title);
+            const tagInfo = getCategoryTagInfo(point.category);
 
             return (
               <div
@@ -223,94 +249,75 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
                     onSelectPoint(point);
                   }
                 }}
-                className={`p-3.5 cursor-pointer transition-colors flex items-center justify-between gap-3 ${
+                className={`entry p-4 cursor-pointer transition-colors ${
                   isChecked
-                    ? 'bg-indigo-50/70 border-l-4 border-indigo-600'
+                    ? 'bg-[#00ff88]/15 border-l-4 border-l-[#00ff88]'
                     : isSelected
-                    ? 'bg-sky-50/80 border-l-4 border-sky-600'
-                    : 'hover:bg-slate-50'
+                    ? 'bg-[#e0e0e4]/10 border-l-4 border-l-[#00ff88]'
+                    : 'hover:bg-white/[0.03]'
                 }`}
               >
-                {/* Left: Checkbox if select mode is active */}
+                {/* Checkbox if select mode is active */}
                 {isSelectMode && canDelete && (
                   <div
                     onClick={(e) => toggleSelectPoint(point.id, e)}
-                    className="pr-1 cursor-pointer shrink-0"
+                    className="pr-2 pb-1 cursor-pointer"
                   >
                     <input
                       type="checkbox"
                       checked={isChecked}
-                      onChange={() => {}} // handled by click
-                      className="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500 cursor-pointer pointer-events-none"
+                      onChange={() => {}}
+                      className="w-4 h-4 rounded text-[#00ff88] border-[#2d2d33] focus:ring-0 cursor-pointer pointer-events-none"
                     />
                   </div>
                 )}
 
-                <div className="space-y-1 flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    {cleanKm && (
-                      <span
-                        className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-blue-600 text-white shadow-xs notranslate"
-                        translate="no"
-                      >
-                        KM {cleanKm}
-                      </span>
-                    )}
-                    <span
-                      className="text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs notranslate"
-                      translate="no"
-                      style={{
-                        backgroundColor: conf.bg,
-                        color: conf.text || '#ffffff',
-                        borderColor: conf.border,
-                      }}
-                    >
-                      <span className="w-3 h-3 flex items-center justify-center flex-shrink-0" dangerouslySetInnerHTML={{ __html: conf.svgIcon }} />
-                      <span>{conf.shortLabel || conf.label}</span>
-                    </span>
-                    <span
-                      className="text-xs font-bold text-slate-900 truncate notranslate"
-                      translate="no"
-                      style={point.titleTextStyle ? getTextStyleInline(point.titleTextStyle) : undefined}
-                    >
-                      {point.title}
-                    </span>
-                  </div>
+                {/* Entry Header: km-label in accent & tag-sys badge */}
+                <div className="entry-header flex items-center justify-between gap-2 mb-1">
+                  <span className="km-label text-[#00ff88] font-bold text-sm tracking-tight font-mono-tech notranslate" translate="no">
+                    {cleanKm ? `KM ${cleanKm}` : 'HAT NOKTASI'}
+                  </span>
+                  <span
+                    className="tag-sys bg-[#2d2d33] text-[9px] font-bold px-2 py-0.5 rounded tracking-wider uppercase font-mono-tech flex items-center gap-1 shadow-2xs notranslate"
+                    translate="no"
+                    style={{ color: tagInfo.color }}
+                  >
+                    <span>{tagInfo.label}</span>
+                  </span>
+                </div>
 
-                  <div className="text-[11px] text-slate-500 truncate">
-                    {point.lineName}
-                    {point.locationDesc ? ` • ${point.locationDesc}` : ''}
-                  </div>
+                {/* Entry Title */}
+                <div
+                  className="entry-title font-bold text-sm text-[#e0e0e4] truncate notranslate mb-0.5"
+                  translate="no"
+                  style={point.titleTextStyle ? getTextStyleInline(point.titleTextStyle) : undefined}
+                >
+                  {point.title}
+                </div>
 
-                  {/* Badges: notes count, photos count, navigation shortcut */}
-                  <div className="flex items-center gap-3 text-[11px] text-slate-400 pt-0.5">
-                    {cleanKm && (
-                      <span className="font-mono text-slate-700 font-bold text-[10px] bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 notranslate" translate="no">
-                        KM {cleanKm}
-                      </span>
-                    )}
-                    {point.notes && point.notes.length > 0 && (
-                      <span className="flex items-center gap-1 text-slate-600">
-                        <MessageSquare className="w-3 h-3 text-sky-500" />
-                        <span>{point.notes.length}</span>
-                      </span>
-                    )}
+                {/* Entry Sub: line name & location */}
+                <div className="entry-sub text-[10px] text-[#e0e0e4]/50 uppercase tracking-wider truncate font-mono-tech flex items-center justify-between gap-2">
+                  <span className="truncate">{point.lineName} Line {point.locationDesc ? `• ${point.locationDesc}` : ''}</span>
+                  
+                  {/* Photo & Note Counters */}
+                  <div className="flex items-center gap-2 text-[#e0e0e4]/40 flex-shrink-0">
                     {point.photos && point.photos.length > 0 && (
-                      <span className="flex items-center gap-1 text-slate-600">
-                        <Image className="w-3 h-3 text-emerald-500" />
+                      <span className="flex items-center gap-1 text-emerald-400">
+                        <Image className="w-3 h-3" />
                         <span>{point.photos.length}</span>
                       </span>
                     )}
-                    {point.category === 'crossing' && point.levelCrossing && Object.values(point.levelCrossing).some(Boolean) && (
-                      <span className="flex items-center gap-0.5 text-amber-700 bg-amber-50 px-1 py-0.2 rounded border border-amber-200 text-[10px] font-bold">
-                        <span>Geçit Verisi</span>
+                    {point.notes && point.notes.length > 0 && (
+                      <span className="flex items-center gap-1 text-sky-400">
+                        <MessageSquare className="w-3 h-3" />
+                        <span>{point.notes.length}</span>
                       </span>
                     )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 flex-shrink-0">
-                  {/* Direct navigation shortcut */}
+                {/* Actions row: Quick Nav & Delete */}
+                <div className="flex items-center justify-end gap-1.5 mt-2 pt-2 border-t border-[#2d2d33]/50">
                   <button
                     id={`quick-nav-${point.id}-btn`}
                     onClick={(e) => {
@@ -325,13 +332,12 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
                         );
                       }
                     }}
-                    title="Google Haritalar'da Yol Tarifi Al"
-                    className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors cursor-pointer"
+                    title="Google Haritalar Navigasyonu"
+                    className="p-1 text-[#e0e0e4]/50 hover:text-[#00ff88] hover:bg-white/5 rounded transition-colors cursor-pointer"
                   >
-                    <Navigation className="w-3.5 h-3.5" />
+                    <Navigation className="w-3 h-3" />
                   </button>
 
-                  {/* Google Earth shortcut */}
                   <a
                     id={`quick-earth-${point.id}-btn`}
                     href={
@@ -341,23 +347,13 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
                     }
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const lat = Number(point.lat);
-                      const lng = Number(point.lng);
-                      if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0) {
-                        e.preventDefault();
-                      } else if (navigator.clipboard) {
-                        navigator.clipboard.writeText(`${lat.toFixed(6)}, ${lng.toFixed(6)}`).catch(() => {});
-                      }
-                    }}
-                    title="Google Earth Web'de bu koordinatı ara ve aç"
-                    className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-colors cursor-pointer flex items-center justify-center"
+                    onClick={(e) => e.stopPropagation()}
+                    title="Google Earth"
+                    className="p-1 text-[#e0e0e4]/50 hover:text-emerald-400 hover:bg-white/5 rounded transition-colors cursor-pointer"
                   >
-                    <Globe className="w-3.5 h-3.5" />
+                    <Globe className="w-3 h-3" />
                   </a>
 
-                  {/* Delete button (Only for admin) */}
                   {onDeletePoint && canDelete && !isSelectMode && (
                     <button
                       id={`quick-delete-${point.id}-btn`}
@@ -365,46 +361,20 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
                         e.stopPropagation();
                         setSinglePointToDelete(point);
                       }}
-                      title="Noktayı Sil (Yalnızca Yönetici)"
-                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                      title="Noktayı Sil"
+                      className="p-1 text-[#e0e0e4]/40 hover:text-red-400 hover:bg-red-950/40 rounded transition-colors cursor-pointer"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-3 h-3" />
                     </button>
                   )}
 
-                  {!isSelectMode && <ChevronRight className="w-4 h-4 text-slate-300" />}
+                  {!isSelectMode && <ChevronRight className="w-3.5 h-3.5 text-[#e0e0e4]/30" />}
                 </div>
               </div>
             );
           })
         )}
       </div>
-
-      {/* Hareket Çubuğu / Hızlı Aşağı Yukarı Kaydırma Butonları (Floating Up/Down Movement Bar) */}
-      {sortedPoints.length > 5 && (
-        <div
-          className="absolute right-3 bottom-4 z-20 flex flex-col items-center bg-white/95 backdrop-blur-md border border-slate-300 shadow-xl rounded-2xl p-1 gap-1 text-slate-700 select-none animate-in fade-in"
-          title="Aşağı / Yukarı Hızlı Hareket Çubuğu"
-        >
-          <button
-            type="button"
-            onClick={handleScrollToTop}
-            className="p-2 hover:bg-sky-50 hover:text-sky-600 rounded-xl transition-all cursor-pointer group flex items-center justify-center"
-            title="En Başa Dön (Yukarı)"
-          >
-            <ArrowUp className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
-          </button>
-          <div className="w-3 h-[1px] bg-slate-200" />
-          <button
-            type="button"
-            onClick={handleScrollToBottom}
-            className="p-2 hover:bg-sky-50 hover:text-sky-600 rounded-xl transition-all cursor-pointer group flex items-center justify-center"
-            title="En Alta İn (Aşağı)"
-          >
-            <ArrowDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
-          </button>
-        </div>
-      )}
 
       {/* SINGLE POINT DELETE CONFIRMATION MODAL */}
       <DeleteConfirmModal

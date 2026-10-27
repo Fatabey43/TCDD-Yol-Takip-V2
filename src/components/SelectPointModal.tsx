@@ -169,7 +169,7 @@ export const SelectPointModal: React.FC<SelectPointModalProps> = ({
         </div>
 
         {/* Points List */}
-        <div className="flex-1 overflow-y-auto divide-y divide-slate-100 p-2 space-y-1">
+        <div className="flex-1 overflow-y-auto prominent-scrollbar divide-y divide-slate-100 p-2 space-y-1">
           {filteredPoints.length === 0 ? (
             <div className="p-8 text-center space-y-2">
               <MapPin className="w-8 h-8 text-slate-300 mx-auto" />

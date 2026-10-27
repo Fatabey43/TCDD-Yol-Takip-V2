@@ -258,7 +258,7 @@ export const OfflineMapModal: React.FC<OfflineMapModalProps> = ({
           </div>
 
           {/* Scrollable Body */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-4 text-slate-800 text-xs">
+          <div className="flex-1 overflow-y-auto prominent-scrollbar p-5 space-y-4 text-slate-800 text-xs">
             {/* Top Status Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {/* Card 1: Connection Status */}

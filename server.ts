@@ -362,28 +362,32 @@ function sortPointsByKm(points: any[]): any[] {
   return [...points].sort(compareRailwayPointsByKm);
 }
 
-// In-memory cache for ultra-fast point reads (prevents reading & parsing 18MB JSON on every request/check)
+// In-memory cache for ultra-fast point reads with mtime invalidation
 let cachedPoints: any[] | null = null;
+let lastPointsMtime: number = 0;
 
 // Helper to read points, strictly filtering out deleted, default, and duplicate points
 function getPoints(): any[] {
-  if (cachedPoints !== null) {
-    return cachedPoints;
-  }
   try {
     if (fs.existsSync(DATA_FILE)) {
+      const stat = fs.statSync(DATA_FILE);
+      if (cachedPoints !== null && stat.mtimeMs === lastPointsMtime) {
+        return cachedPoints;
+      }
       const content = fs.readFileSync(DATA_FILE, 'utf-8');
       const data = JSON.parse(content);
       if (Array.isArray(data)) {
         const deleted = getDeletedIds();
         const clean = data.filter((p) => p && p.id && !deleted.has(p.id) && !isDefaultPoint(p.id));
         cachedPoints = sortPointsByKm(deduplicatePoints(clean));
+        lastPointsMtime = stat.mtimeMs;
         return cachedPoints;
       }
     }
   } catch (err) {
     console.error('Error reading railway points file:', err);
   }
+  if (cachedPoints !== null) return cachedPoints;
   cachedPoints = [];
   return cachedPoints;
 }
@@ -1732,15 +1736,34 @@ function getParcels(): any[] {
             if (!p || typeof p !== 'object') return null;
             const id = p.id || `parsel-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 6)}`;
             if (!p.id) hasFixed = true;
+            const rawLine = String(p.lineName || '');
+            const lineName = rawLine.includes('Balıkesir')
+              ? 'Alayunt-Balıkesir'
+              : 'Eskişehir-Konya';
+
+            const rawCoords = Array.isArray(p.coordinates) ? p.coordinates : [];
+            const coordinates = rawCoords
+              .filter((c: any) => Array.isArray(c) && c.length >= 2)
+              .map((c: any) => {
+                const c0 = Number(c[0]);
+                const c1 = Number(c[1]);
+                if (isNaN(c0) || isNaN(c1)) return null;
+                if (c0 >= 35.5 && c0 <= 43.5 && c1 >= 25.0 && c1 <= 45.0) return [c0, c1];
+                if (c1 >= 35.5 && c1 <= 43.5 && c0 >= 25.0 && c0 <= 45.0) return [c1, c0];
+                if (c0 < 35 && c1 >= 35) return [c1, c0];
+                return [c0, c1];
+              })
+              .filter(Boolean);
+
             return {
               ...p,
               id,
               adaNo: String(p.adaNo || ''),
               parselNo: String(p.parselNo || ''),
-              lineName: p.lineName || 'Enveriye - Konya Hattı',
+              lineName,
               alanM2: typeof p.alanM2 === 'number' ? p.alanM2 : Number(p.alanM2) || 0,
-              coordinates: Array.isArray(p.coordinates) ? p.coordinates : [],
-              il: p.il || 'Eskişehir',
+              coordinates,
+              il: p.il || 'Kütahya',
               ilce: p.ilce || 'Merkez',
               mahalleKoy: p.mahalleKoy || '',
               malik: p.malik || 'TCDD İşletmesi Genel Müdürlüğü',
@@ -1797,16 +1820,18 @@ app.post('/api/parcels', (req, res) => {
     body.forEach((p: any, idx: number) => {
       if (p && typeof p === 'object') {
         const id = p.id || `parsel-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 6)}`;
-        if (deletedIds.has(id)) return; // Silinen parsel asla tekrar kaydedilemez
+        unrecordDeletedParcelId(id);
+        const rawLine = String(p.lineName || '');
+        const lineName = rawLine.includes('Balıkesir') ? 'Alayunt-Balıkesir' : 'Eskişehir-Konya';
         const cleanItem = {
           ...p,
           id,
           adaNo: String(p.adaNo || ''),
           parselNo: String(p.parselNo || ''),
-          lineName: p.lineName || 'Enveriye - Konya Hattı',
+          lineName,
           alanM2: typeof p.alanM2 === 'number' ? p.alanM2 : Number(p.alanM2) || 0,
           coordinates: Array.isArray(p.coordinates) ? p.coordinates : [],
-          il: p.il || 'Eskişehir',
+          il: p.il || 'Kütahya',
           ilce: p.ilce || 'Merkez',
           mahalleKoy: p.mahalleKoy || '',
           malik: p.malik || 'TCDD İşletmesi Genel Müdürlüğü',

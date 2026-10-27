@@ -1,5 +1,5 @@
 import React from 'react';
-import { Map as MapIcon, List, Plus, Search, MoreHorizontal, Palette } from 'lucide-react';
+import { Map as MapIcon, List, Plus, Search, MoreHorizontal } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.tsx';
 
 interface MobileBottomNavProps {
@@ -28,34 +28,34 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   return (
     <nav
       id="mobile-bottom-nav"
-      className="fixed bottom-0 left-0 right-0 z-20 sm:hidden bg-white border-t border-slate-200 text-slate-600 select-none pb-safe shadow-md"
+      className="fixed bottom-0 left-0 right-0 z-20 sm:hidden bg-black border-t border-[#2d2d33] text-[#e0e0e4] select-none pb-safe font-mono-tech"
     >
       <div className="flex items-center justify-around h-14 px-2">
         {/* Map Tab */}
         <button
           onClick={() => setViewMode('map')}
           className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
-            viewMode === 'map' ? 'text-red-600 font-bold' : 'text-slate-500 hover:text-slate-900'
+            viewMode === 'map' ? 'text-[#00ff88] font-bold' : 'text-[#e0e0e4]/50 hover:text-white'
           }`}
         >
-          <div className={`p-1 rounded-lg ${viewMode === 'map' ? 'bg-red-50' : ''}`}>
+          <div className={`p-1 rounded ${viewMode === 'map' ? 'bg-[#00ff88]/15 border border-[#00ff88]/30' : ''}`}>
             <MapIcon className="w-5 h-5" />
           </div>
-          <span className="text-[10px] mt-0.5">Harita</span>
+          <span className="text-[10px] mt-0.5">HARİTA</span>
         </button>
 
         {/* List Tab */}
         <button
           onClick={() => setViewMode('list')}
           className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors relative ${
-            viewMode === 'list' ? 'text-red-600 font-bold' : 'text-slate-500 hover:text-slate-900'
+            viewMode === 'list' ? 'text-[#00ff88] font-bold' : 'text-[#e0e0e4]/50 hover:text-white'
           }`}
         >
-          <div className={`p-1 rounded-lg ${viewMode === 'list' ? 'bg-red-50' : ''}`}>
+          <div className={`p-1 rounded ${viewMode === 'list' ? 'bg-[#00ff88]/15 border border-[#00ff88]/30' : ''}`}>
             <List className="w-5 h-5" />
           </div>
           <span className="text-[10px] mt-0.5">
-            Liste <span className="text-[9px] opacity-75">({pointCount})</span>
+            LİSTE <span className="text-[9px] opacity-75 font-mono">({pointCount})</span>
           </span>
         </button>
 
@@ -66,20 +66,20 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             className="flex flex-col items-center justify-center -mt-4 flex-none px-2 group cursor-pointer"
           >
             <div
-              className={`w-12 h-12 rounded-full flex items-center justify-center shadow-md group-active:scale-95 transition-all border-2 border-white ${
+              className={`w-12 h-12 rounded-full flex items-center justify-center group-active:scale-95 transition-all border border-[#00ff88] ${
                 isAddMode
-                  ? 'bg-amber-500 text-slate-950'
-                  : 'bg-red-600 text-white'
+                  ? 'bg-amber-400 text-black shadow-[0_0_15px_rgba(251,191,36,0.5)]'
+                  : 'bg-[#00ff88] text-black shadow-[0_0_15px_rgba(0,255,136,0.5)]'
               }`}
             >
-              <Plus className="w-6 h-6 stroke-[2.5]" />
+              <Plus className="w-6 h-6 stroke-[3]" />
             </div>
             <span
-              className={`text-[10px] font-bold mt-1 ${
-                isAddMode ? 'text-amber-600' : 'text-red-700'
+              className={`text-[9px] font-bold mt-1 tracking-wider ${
+                isAddMode ? 'text-amber-400' : 'text-[#00ff88]'
               }`}
             >
-              {isAddMode ? 'İşaretle' : 'Ekle'}
+              {isAddMode ? 'İŞARETLE' : '+EKLE'}
             </span>
           </button>
         )}
@@ -88,27 +88,27 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         <button
           onClick={onToggleSearch}
           className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
-            isSearchActive ? 'text-red-600 font-bold' : 'text-slate-500 hover:text-slate-900'
+            isSearchActive ? 'text-[#00ff88] font-bold' : 'text-[#e0e0e4]/50 hover:text-white'
           }`}
         >
-          <div className={`p-1 rounded-lg relative ${isSearchActive ? 'bg-red-50' : ''}`}>
+          <div className={`p-1 rounded relative ${isSearchActive ? 'bg-[#00ff88]/15 border border-[#00ff88]/30' : ''}`}>
             <Search className="w-5 h-5" />
             {isSearchActive && (
-              <span className="w-2 h-2 rounded-full bg-red-600 absolute top-0.5 right-0.5 ring-2 ring-white" />
+              <span className="w-2 h-2 rounded-full bg-[#00ff88] absolute top-0.5 right-0.5 status-dot-glow" />
             )}
           </div>
-          <span className="text-[10px] mt-0.5">Filtrele</span>
+          <span className="text-[10px] mt-0.5">FİLTRE</span>
         </button>
 
         {/* Actions Menu */}
         <button
           onClick={onOpenMenu}
-          className="flex flex-col items-center justify-center flex-1 py-1 text-slate-500 hover:text-slate-900 transition-colors"
+          className="flex flex-col items-center justify-center flex-1 py-1 text-[#e0e0e4]/50 hover:text-white transition-colors"
         >
-          <div className="p-1 rounded-lg">
+          <div className="p-1 rounded">
             <MoreHorizontal className="w-5 h-5" />
           </div>
-          <span className="text-[10px] mt-0.5">Menü</span>
+          <span className="text-[10px] mt-0.5">MENÜ</span>
         </button>
       </div>
     </nav>

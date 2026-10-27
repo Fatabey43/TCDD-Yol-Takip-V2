@@ -54,6 +54,9 @@ import { LiveKmIndicator } from './components/LiveKmIndicator.tsx';
 import { calculateLiveRailwayKm, NearestKmResult } from './utils/liveRailwayKm.ts';
 import { isForceOfflineMode } from './utils/offlineMapStorage.ts';
 import { Header } from './components/Header.tsx';
+import { TechnicalNavDock } from './components/TechnicalNavDock.tsx';
+import { TechnicalTopHud } from './components/TechnicalTopHud.tsx';
+import { TechnicalFooter } from './components/TechnicalFooter.tsx';
 import { PointListSidebar } from './components/PointListSidebar.tsx';
 import { ColorPaletteTabBar } from './components/ColorPaletteTabBar.tsx';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal.tsx';
@@ -78,7 +81,7 @@ import { TrainLoadingAnimation } from './components/TrainLoadingAnimation.tsx';
 import { TrainTransitionOverlay } from './components/TrainTransitionOverlay.tsx';
 
 export default function App() {
-  const { user, isLoading: authLoading, canEdit, canDelete, isAdmin, canAddPoint } = useAuth();
+  const { user, isLoading: authLoading, canEdit, canDelete, isAdmin, canAddPoint, canManageUsers } = useAuth();
   const [points, setPoints] = useState<RailwayPoint[]>(() => {
     try {
       const cached = getLocalCachedPoints();
@@ -1536,109 +1539,111 @@ export default function App() {
   }
 
   return (
-    <div className="fixed inset-0 w-full h-full h-[100dvh] flex flex-col overflow-hidden bg-slate-100 font-sans select-none">
+    <div className="fixed inset-0 w-full h-full h-[100dvh] flex flex-col overflow-hidden bg-[#0c0c0e] text-[#e0e0e4] font-mono-tech select-none">
       {/* Cinematic Diagonal Speed Train Transition Overlay */}
       <TrainTransitionOverlay
         isActive={isTransitioning}
         onAnimationComplete={() => setIsTransitioning(false)}
       />
 
-      {/* Top Navigation & Filter Bar */}
-      <Header
-        filters={filters}
-        setFilters={setFilters}
-        availableLines={availableLines}
-        totalPoints={points.length}
-        filteredCount={filteredPoints.length}
-        isOnline={isOnline}
-        isOfflineMode={isForceOffline || !isOnline}
-        onOpenOfflineModal={() => setIsOfflineModalOpen(true)}
-        activeTakyidatCount={takyidatList.filter((r) => r.status === 'active').length}
-        totalParcelsCount={parcelsList.length}
-        fieldWorksCount={fieldWorksList.length}
-        onOpenFieldWorks={() => {
-          setInitialWorkLocationDraft(null);
-          setIsFieldWorksModalOpen(true);
-        }}
-        isLiveGpsActive={isLiveGpsActive}
-        onToggleLiveGps={handleToggleLiveGps}
-        currentLiveKm={nearestRailwayKm?.chainageKm}
-        onOpenTakyidat={() => setIsTakyidatModalOpen(true)}
-        onOpenParcels={() => setIsParcelModalOpen(true)}
-        onOpenSelectPoint={() => setIsSelectPointModalOpen(true)}
-        onOpenAddModal={handleOpenAddModal}
-        onOpenImportExport={() => setIsImportExportOpen(true)}
-        onOpenMobileInstall={() => setIsMobileInstallOpen(true)}
-        onOpenReports={() => setIsReportModalOpen(true)}
-        onToggleAddMode={() => setIsAddMode((prev) => !prev)}
-        onOpenPalette={() => setActiveTab('palette')}
-        isPaletteActive={activeTab === 'palette'}
-        onRefresh={handleRefresh}
-        onExportJSON={handleExportJSON}
-        onSyncPhotos={handleSyncPhotos}
-        onOpenLogin={() => setIsLoginModalOpen(true)}
-        onOpenUserManagement={() => setIsUserMgmtOpen(true)}
-        onOpenMobileActions={() => setIsMobileMenuOpen(true)}
-        isMobileSearchOpen={isMobileSearchOpen}
-        setIsMobileSearchOpen={setIsMobileSearchOpen}
-        isRefreshing={isRefreshing}
-        isAddMode={isAddMode}
-        viewMode={viewMode}
-        setViewMode={(mode) => {
-          setViewMode(mode);
-          setActiveTab(mode);
-        }}
-      />
+      {/* Main 3-Column Technical Shell: Nav Dock (80px) | Aside Sistem 712 (320px) | Main Viewport & Map */}
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* 1. Left Vertical Nav Dock (Variation 6) */}
+        <TechnicalNavDock
+          activeTab={activeTab}
+          setActiveTab={handleTabChange}
+          isSidebarOpen={isSidebarOpen}
+          setIsSidebarOpen={setIsSidebarOpen}
+          isLiveGpsActive={isLiveGpsActive}
+          onToggleLiveGps={handleToggleLiveGps}
+          onOpenTakyidat={() => setIsTakyidatModalOpen(true)}
+          activeTakyidatCount={takyidatList.filter((r) => r.status === 'active').length}
+          onOpenParcels={() => setIsParcelModalOpen(true)}
+          totalParcelsCount={parcelsList.length}
+          onOpenFieldWorks={() => {
+            setInitialWorkLocationDraft(null);
+            setIsFieldWorksModalOpen(true);
+          }}
+          fieldWorksCount={fieldWorksList.length}
+          onOpenOfflineModal={() => setIsOfflineModalOpen(true)}
+          isOfflineMode={isForceOffline || !isOnline}
+          onOpenReports={() => setIsReportModalOpen(true)}
+          onOpenImportExport={() => setIsImportExportOpen(true)}
+          onOpenUserManagement={() => setIsUserMgmtOpen(true)}
+          canManageUsers={canManageUsers}
+          onOpenAddModal={handleOpenAddModal}
+          canAddPoint={canAddPoint}
+          onRefresh={handleRefresh}
+          isRefreshing={isRefreshing}
+        />
 
-      {/* Automatic Tab Bar with Color Palette & Categories (Makaslar: Kırmızı, KM: Mavi, Geçit: Sarı vb.) */}
-      <ColorPaletteTabBar
-        categoryColors={categoryColors}
-        onUpdateColor={handleUpdateCategoryColor}
-        onResetColors={handleResetColors}
-        activeTab={activeTab}
-        setActiveTab={handleTabChange}
-        pointCountsByCategory={pointCountsByCategory}
-      />
+        {/* 2. Aside / Point List Sidebar (Variation 6: Sistem 712) */}
+        <div
+          className={`${
+            viewMode === 'list' ? 'flex flex-1' : isSidebarOpen ? 'hidden sm:flex' : 'hidden'
+          } h-full z-10 flex-shrink-0`}
+        >
+          <PointListSidebar
+            points={filteredPoints}
+            selectedPoint={selectedPoint}
+            categoryColors={categoryColors}
+            onSelectPoint={(point) => {
+              setSelectedPoint(point);
+              if (viewMode === 'list') {
+                setViewMode('map');
+                setActiveTab('map');
+              }
+            }}
+            isOpen={isSidebarOpen}
+            onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+            onDeletePoint={(point) => setPointToDelete(point)}
+            onBulkDeletePoints={handleBulkDeletePoints}
+            searchQuery={filters.search}
+            onSearchChange={(val) => setFilters((prev) => ({ ...prev, search: val }))}
+          />
+        </div>
 
-      {/* Main Content Area */}
-      <main className="flex-1 relative flex overflow-hidden pb-14 sm:pb-0 bg-slate-50">
-        {loading ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-3 bg-slate-50 text-slate-800">
-            <Loader2 className="w-8 h-8 animate-spin text-red-600" />
-            <p className="text-sm font-bold text-slate-700">Demiryolu KM Verileri Yükleniyor...</p>
-          </div>
-        ) : (
-          <>
-            {/* Sidebar with Point List (Desktop or Mobile List View) */}
-            <div
-              className={`${
-                viewMode === 'list' ? 'flex flex-1' : 'hidden sm:flex'
-              } h-full z-10`}
-            >
-              <PointListSidebar
-                points={filteredPoints}
-                selectedPoint={selectedPoint}
-                categoryColors={categoryColors}
-                onSelectPoint={(point) => {
-                  setSelectedPoint(point);
-                  if (viewMode === 'list') {
-                    setViewMode('map');
-                    setActiveTab('map');
-                  }
-                }}
-                isOpen={isSidebarOpen}
-                onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-                onDeletePoint={(point) => setPointToDelete(point)}
-                onBulkDeletePoints={handleBulkDeletePoints}
-              />
-            </div>
+        {/* 3. Main Viewport & Map Container */}
+        <div className="flex-1 flex flex-col relative h-full overflow-hidden bg-[#0c0c0e] technical-grid-bg">
+          {/* Top Technical Telemetry HUD Bar */}
+          <TechnicalTopHud
+            filters={filters}
+            setFilters={setFilters}
+            availableLines={availableLines}
+            totalPoints={points.length}
+            filteredCount={filteredPoints.length}
+            isOnline={isOnline}
+            mapBounds={mapBounds}
+            currentLiveKm={nearestRailwayKm?.chainageKm}
+            isLiveGpsActive={isLiveGpsActive}
+            onToggleLiveGps={handleToggleLiveGps}
+            onOpenMobileActions={() => setIsMobileMenuOpen(true)}
+            onOpenLogin={() => setIsLoginModalOpen(true)}
+            onOpenUserManagement={() => setIsUserMgmtOpen(true)}
+          />
 
-            {/* Map Container */}
-            <div
-              className={`flex-1 relative h-full ${
-                viewMode === 'list' ? 'hidden sm:block' : 'block'
-              }`}
-            >
+          {/* Color Palette Bar (if active) */}
+          <ColorPaletteTabBar
+            categoryColors={categoryColors}
+            onUpdateColor={handleUpdateCategoryColor}
+            onResetColors={handleResetColors}
+            activeTab={activeTab}
+            setActiveTab={handleTabChange}
+            pointCountsByCategory={pointCountsByCategory}
+          />
+
+          {/* Map Content */}
+          <div
+            className={`flex-1 relative h-full ${
+              viewMode === 'list' ? 'hidden sm:block' : 'block'
+            }`}
+          >
+            {loading ? (
+              <div className="flex-1 h-full flex flex-col items-center justify-center gap-3 bg-[#0c0c0e] text-[#e0e0e4]">
+                <Loader2 className="w-8 h-8 animate-spin text-[#00ff88]" />
+                <p className="text-xs font-mono font-bold text-[#e0e0e4]/70">DEMİRYOLU KM TELEMETRİSİ YÜKLENİYOR...</p>
+              </div>
+            ) : (
               <RailwayMap
                 points={filteredPoints}
                 selectedPoint={selectedPoint}
@@ -1670,22 +1675,37 @@ export default function App() {
                 onOpenOfflineModal={() => setIsOfflineModalOpen(true)}
                 onBoundsChange={setMapBounds}
               />
+            )}
 
-              {/* Toggle Sidebar Button for Desktop - Clean White Institutional Pill */}
-              {!isSidebarOpen && (
-                <button
-                  id="toggle-sidebar-btn"
-                  onClick={() => setIsSidebarOpen(true)}
-                  title="Nokta Listesini Göster"
-                  className="hidden sm:flex absolute top-3 left-3 z-20 bg-white text-slate-800 hover:text-slate-950 px-3 py-2 rounded-lg shadow-sm border border-slate-200 transition-colors cursor-pointer items-center gap-2 text-xs font-semibold"
-                >
-                  <List className="w-4 h-4 text-red-600" />
-                  <span>Kayıtlı Noktalar ({filteredPoints.length})</span>
-                </button>
-              )}
-            </div>
-          </>
-        )}
+            {/* Toggle Sidebar Button for Desktop when closed */}
+            {!isSidebarOpen && (
+              <button
+                id="toggle-sidebar-btn"
+                onClick={() => setIsSidebarOpen(true)}
+                title="Sistem 712 Nokta Listesini Aç"
+                className="hidden sm:flex absolute top-3 left-3 z-20 bg-black/90 hover:bg-black text-[#00ff88] border border-[#2d2d33] hover:border-[#00ff88]/50 px-3 py-1.5 rounded shadow-xl transition-all cursor-pointer items-center gap-2 text-xs font-bold font-mono-tech"
+              >
+                <List className="w-3.5 h-3.5" />
+                <span>SİSTEM 712 ({filteredPoints.length})</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* 4. Bottom Technical Status Footer Bar */}
+      <TechnicalFooter
+        totalPoints={points.length}
+        totalSwitches={pointCountsByCategory['switch'] || 32}
+        totalParcels={parcelsList.length}
+        totalTakyidat={takyidatList.filter((r) => r.status === 'active').length}
+        isOnline={isOnline}
+        isLiveGpsActive={isLiveGpsActive}
+        gpsAccuracy={liveGpsCoords?.accuracy}
+        onFilterSwitches={() => setFilters((prev) => ({ ...prev, category: 'switch' }))}
+        onOpenParcels={() => setIsParcelModalOpen(true)}
+        onOpenTakyidat={() => setIsTakyidatModalOpen(true)}
+      />
 
         {/* Selected Point Bottom Drawer with ErrorBoundary protection */}
         <ErrorBoundary
@@ -1718,7 +1738,6 @@ export default function App() {
             }}
           />
         </ErrorBoundary>
-      </main>
 
       {/* Live Railway GPS KM Chainage Indicator */}
       <LiveKmIndicator

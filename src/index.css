@@ -1,5 +1,48 @@
 @import "tailwindcss";
 
+:root {
+  --bg: #0c0c0e;
+  --ink: #e0e0e4;
+  --accent: #00ff88;
+  --accent-faint: rgba(0, 255, 136, 0.12);
+  --surface: #16161a;
+  --surface-elevated: #1e1e24;
+  --border: #2d2d33;
+  --border-glow: rgba(0, 255, 136, 0.25);
+  --ink-faint: rgba(224, 224, 228, 0.1);
+  --ink-muted: #8e8e99;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.font-syne {
+  font-family: 'Syne', sans-serif;
+}
+
+.font-mono-tech {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.technical-grid-bg {
+  background-color: #0c0c0e;
+  background-image: radial-gradient(#2d2d33 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.status-dot-glow {
+  box-shadow: 0 0 10px #00ff88, 0 0 18px rgba(0, 255, 136, 0.5);
+}
+
+.technical-hud-border {
+  border: 1px solid var(--border);
+  background-color: rgba(22, 22, 26, 0.95);
+  backdrop-filter: blur(12px);
+}
+
 @keyframes trainTracks {
   0% { transform: translateX(0); }
   100% { transform: translateX(-40px); }
@@ -61,30 +104,100 @@
   background: #94a3b8;
 }
 
-/* Prominent Draggable Scrollbar / Hareket Çubuğu */
+/* Prominent Draggable Scrollbar / Belirgin Tutulabilir Kaydırma Çubuğu */
 .prominent-scrollbar {
   scrollbar-width: auto;
-  scrollbar-color: #64748b #f1f5f9;
+  scrollbar-color: #475569 #e2e8f0;
+  scrollbar-gutter: stable;
 }
 .prominent-scrollbar::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
+  display: block;
 }
 .prominent-scrollbar::-webkit-scrollbar-track {
   background: #f1f5f9;
   border-radius: 9999px;
-  border: 1px solid #e2e8f0;
+  border: 1.5px solid #cbd5e1;
 }
 .prominent-scrollbar::-webkit-scrollbar-thumb {
-  background: #64748b;
+  background: #475569;
   border-radius: 9999px;
-  border: 2px solid #f1f5f9;
+  border: 2.5px solid #f1f5f9;
+  min-height: 48px;
 }
 .prominent-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #1e293b;
 }
 .prominent-scrollbar::-webkit-scrollbar-thumb:active {
   background: #2563eb;
+}
+
+/* Specific High-Visibility Scrollbar for Tapu Kadastro Portalı (#railway-parcel-modal) */
+#railway-parcel-modal .prominent-scrollbar {
+  scrollbar-width: auto !important;
+  scrollbar-color: #334155 #e2e8f0 !important;
+  overflow-y: scroll !important;
+}
+#railway-parcel-modal .prominent-scrollbar::-webkit-scrollbar {
+  width: 14px !important;
+  height: 14px !important;
+  display: block !important;
+}
+#railway-parcel-modal .prominent-scrollbar::-webkit-scrollbar-track {
+  background: #e2e8f0 !important;
+  border-radius: 8px !important;
+  border: 1.5px solid #cbd5e1 !important;
+}
+#railway-parcel-modal .prominent-scrollbar::-webkit-scrollbar-thumb {
+  background: #334155 !important;
+  border-radius: 8px !important;
+  border: 2px solid #e2e8f0 !important;
+  min-height: 50px !important;
+}
+#railway-parcel-modal .prominent-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #0f172a !important;
+}
+#railway-parcel-modal .prominent-scrollbar::-webkit-scrollbar-thumb:active {
+  background: #4f46e5 !important;
+}
+
+/* Dark mode prominent scrollbar for Technical Shell / dark containers */
+.entry-list.prominent-scrollbar,
+.bg-\[\#16161a\] .prominent-scrollbar,
+.bg-\[\#0c0c0e\] .prominent-scrollbar,
+.prominent-scrollbar-dark {
+  scrollbar-width: thin;
+  scrollbar-color: #52525e #1c1c22;
+}
+.entry-list.prominent-scrollbar::-webkit-scrollbar,
+.bg-\[\#16161a\] .prominent-scrollbar::-webkit-scrollbar,
+.bg-\[\#0c0c0e\] .prominent-scrollbar::-webkit-scrollbar,
+.prominent-scrollbar-dark::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.entry-list.prominent-scrollbar::-webkit-scrollbar-track,
+.bg-\[\#16161a\] .prominent-scrollbar::-webkit-scrollbar-track,
+.bg-\[\#0c0c0e\] .prominent-scrollbar::-webkit-scrollbar-track,
+.prominent-scrollbar-dark::-webkit-scrollbar-track {
+  background: #16161a;
+  border: 1px solid #2d2d33;
+  border-radius: 9999px;
+}
+.entry-list.prominent-scrollbar::-webkit-scrollbar-thumb,
+.bg-\[\#16161a\] .prominent-scrollbar::-webkit-scrollbar-thumb,
+.bg-\[\#0c0c0e\] .prominent-scrollbar::-webkit-scrollbar-thumb,
+.prominent-scrollbar-dark::-webkit-scrollbar-thumb {
+  background: #52525e;
+  border-radius: 9999px;
+  border: 2px solid #16161a;
+}
+.entry-list.prominent-scrollbar::-webkit-scrollbar-thumb:hover,
+.bg-\[\#16161a\] .prominent-scrollbar::-webkit-scrollbar-thumb:hover,
+.bg-\[\#0c0c0e\] .prominent-scrollbar::-webkit-scrollbar-thumb:hover,
+.prominent-scrollbar-dark::-webkit-scrollbar-thumb:hover {
+  background: #00ff88;
 }
 
 /* TCDD Railway Marker Custom Styling */

@@ -358,7 +358,7 @@ export const FieldWorkListModal: React.FC<FieldWorkListModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 flex flex-col gap-4">
+        <div className="flex-1 overflow-y-auto prominent-scrollbar p-4 sm:p-5 flex flex-col gap-4">
           {formMode !== null ? (
             /* CREATE / EDIT FORM */
             <form onSubmit={handleSubmitForm} className="space-y-4 max-w-2xl mx-auto w-full">

@@ -1,1 +1,928 @@
-[]
+[
+  {
+    "id": "parsel-tcdd-101-1",
+    "adaNo": "101",
+    "parselNo": "1",
+    "il": "Kütahya",
+    "ilce": "Merkez",
+    "mahalleKoy": "Alayunt Köyü",
+    "paftaNo": "K28-d-01-c",
+    "nitelik": "Demiryolu Müselles Sahası",
+    "alanM2": 15000,
+    "malik": "TCDD İşletmesi Genel Müdürlüğü",
+    "ownershipStatus": "tcdd",
+    "startKm": "0+813",
+    "endKm": "0+885",
+    "lineName": "Alayunt-Balıkesir",
+    "kamulastirmaGenisligiMetre": 35,
+    "coordinates": [
+      [
+        39.3914639,
+        30.0984292
+      ],
+      [
+        39.3914646,
+        30.0982205
+      ],
+      [
+        39.3914772,
+        30.0983256
+      ],
+      [
+        39.3914975,
+        30.0977877
+      ],
+      [
+        39.3911825,
+        30.0977723
+      ],
+      [
+        39.3911628,
+        30.0982944
+      ],
+      [
+        39.3911514,
+        30.0981735
+      ],
+      [
+        39.3911487,
+        30.0984262
+      ],
+      [
+        39.3914639,
+        30.0984292
+      ]
+    ],
+    "encroachmentStatus": "none",
+    "encroachmentNote": "",
+    "notes": "TCDD Mülkiyeti Resmi Demiryolu Güzergah ve Kamulaştırma Parseli",
+    "tkgmUrl": "https://parselsorgu.tkgm.gov.tr/#ara/cografi/39.391319/30.098179",
+    "createdAt": "2026-10-27T07:51:03.116Z",
+    "updatedAt": "2026-10-27T07:51:03.116Z"
+  },
+  {
+    "id": "parsel-tcdd-103-1",
+    "adaNo": "103",
+    "parselNo": "1",
+    "il": "Kütahya",
+    "ilce": "Merkez",
+    "mahalleKoy": "Alayunt Batı Çatalı",
+    "paftaNo": "K28-d-03-c",
+    "nitelik": "Demiryolu Makas ve İltisak Hattı",
+    "alanM2": 15000,
+    "malik": "TCDD İşletmesi Genel Müdürlüğü",
+    "ownershipStatus": "tcdd",
+    "startKm": "67+716",
+    "endKm": "67+751",
+    "lineName": "Alayunt-Balıkesir",
+    "kamulastirmaGenisligiMetre": 35,
+    "coordinates": [
+      [
+        39.3885359,
+        30.1031969
+      ],
+      [
+        39.3880559,
+        30.1035539
+      ],
+      [
+        39.3882441,
+        30.1038801
+      ],
+      [
+        39.3887241,
+        30.1035231
+      ],
+      [
+        39.3885359,
+        30.1031969
+      ]
+    ],
+    "encroachmentStatus": "none",
+    "encroachmentNote": "",
+    "notes": "TCDD Mülkiyeti Resmi Demiryolu Güzergah ve Kamulaştırma Parseli",
+    "tkgmUrl": "https://parselsorgu.tkgm.gov.tr/#ara/cografi/39.388390/30.103538",
+    "createdAt": "2026-10-27T07:51:03.117Z",
+    "updatedAt": "2026-10-27T07:51:03.117Z"
+  },
+  {
+    "id": "parsel-tcdd-111-1",
+    "adaNo": "111",
+    "parselNo": "1",
+    "il": "Kütahya",
+    "ilce": "Merkez",
+    "mahalleKoy": "Uluköy",
+    "paftaNo": "K28-d-04-c",
+    "nitelik": "Uluköy İstasyon Girişi ve Makas Sahası",
+    "alanM2": 15000,
+    "malik": "TCDD İşletmesi Genel Müdürlüğü",
+    "ownershipStatus": "tcdd",
+    "startKm": "53+681",
+    "endKm": "54+000",
+    "lineName": "Eskişehir-Konya",
+    "kamulastirmaGenisligiMetre": 35,
+    "coordinates": [
+      [
+        39.492683,
+        30.158443
+      ],
+      [
+        39.4894831,
+        30.1577299
+      ],
+      [
+        39.4894145,
+        30.1581273
+      ],
+      [
+        39.4926144,
+        30.1588404
+      ],
+      [
+        39.492683,
+        30.158443
+      ]
+    ],
+    "encroachmentStatus": "none",
+    "encroachmentNote": "",
+    "notes": "TCDD Mülkiyeti Resmi Demiryolu Güzergah ve Kamulaştırma Parseli",
+    "tkgmUrl": "https://parselsorgu.tkgm.gov.tr/#ara/cografi/39.491049/30.158285",
+    "createdAt": "2026-10-27T07:51:03.117Z",
+    "updatedAt": "2026-10-27T07:51:03.117Z"
+  },
+  {
+    "id": "parsel-tcdd-112-1",
+    "adaNo": "112",
+    "parselNo": "1",
+    "il": "Kütahya",
+    "ilce": "Merkez",
+    "mahalleKoy": "Uluköy",
+    "paftaNo": "K28-d-05-c",
+    "nitelik": "Uluköy İstasyon Sahası ve Peron",
+    "alanM2": 39296,
+    "malik": "TCDD İşletmesi Genel Müdürlüğü",
+    "ownershipStatus": "tcdd",
+    "startKm": "54+000",
+    "endKm": "55+000",
+    "lineName": "Eskişehir-Konya",
+    "kamulastirmaGenisligiMetre": 40,
+    "coordinates": [
+      [
+        39.4894864,
+        30.1577011
+      ],
+      [
+        39.4881587,
+        30.1574218
+      ],
+      [
+        39.4853627,
+        30.1561477
+      ],
+      [
+        39.4844143,
+        30.1555229
+      ],
+      [
+        39.4842956,
+        30.1554465
+      ],
+      [
+        39.4831671,
+        30.1545946
+      ],
+      [
+        39.4814285,
+        30.1533285
+      ],
+      [
+        39.4812165,
+        30.1537045
+      ],
+      [
+        39.4829531,
+        30.1549688
+      ],
+      [
+        39.4840804,
+        30.1558195
+      ],
+      [
+        39.4842157,
+        30.1559111
+      ],
+      [
+        39.4851993,
+        30.1565623
+      ],
+      [
+        39.4880314,
+        30.1578571
+      ],
+      [
+        39.4894112,
+        30.1581561
+      ],
+      [
+        39.4894864,
+        30.1577011
+      ]
+    ],
+    "encroachmentStatus": "none",
+    "encroachmentNote": "",
+    "notes": "TCDD Mülkiyeti Resmi Demiryolu Güzergah ve Kamulaştırma Parseli",
+    "tkgmUrl": "https://parselsorgu.tkgm.gov.tr/#ara/cografi/39.485101/30.155939",
+    "createdAt": "2026-10-27T07:51:03.121Z",
+    "updatedAt": "2026-10-27T07:51:03.121Z"
+  },
+  {
+    "id": "parsel-tcdd-113-1",
+    "adaNo": "113",
+    "parselNo": "1",
+    "il": "Kütahya",
+    "ilce": "Merkez",
+    "mahalleKoy": "Uluköy",
+    "paftaNo": "K28-d-06-c",
+    "nitelik": "Demiryolu Kamulaştırma Sahası",
+    "alanM2": 30176,
+    "malik": "TCDD İşletmesi Genel Müdürlüğü",
+    "ownershipStatus": "tcdd",
+    "startKm": "55+000",
+    "endKm": "56+000",
+    "lineName": "Eskişehir-Konya",
+    "kamulastirmaGenisligiMetre": 30,
+    "coordinates": [
+      [
+        39.4814004,
+        30.153374
+      ],
+      [
+        39.4781454,
+        30.151076
+      ],
+      [
+        39.473135,
+        30.148449
+      ],
+      [
+        39.4730096,
+        30.148758
+      ],
+      [
+        39.4780072,
+        30.1513758
+      ],
+      [
+        39.4812446,
+        30.153659
+      ],
+      [
+        39.4814004,
+        30.153374
+      ]
+    ],
+    "encroachmentStatus": "none",
+    "encroachmentNote": "",
+    "notes": "TCDD Mülkiyeti Resmi Demiryolu Güzergah ve Kamulaştırma Parseli",
+    "tkgmUrl": "https://parselsorgu.tkgm.gov.tr/#ara/cografi/39.477490/30.151115",
+    "createdAt": "2026-10-27T07:51:03.121Z",
+    "updatedAt": "2026-10-27T07:51:03.121Z"
+  },
+  {
+    "id": "parsel-tcdd-115-1",
+    "adaNo": "115",
+    "parselNo": "1",
+    "il": "Kütahya",
+    "ilce": "Merkez",
+    "mahalleKoy": "Alayunt",
+    "paftaNo": "K28-d-07-c",
+    "nitelik": "Alayunt Giriş Baş Makas Sahası",
+    "alanM2": 31753,
+    "malik": "TCDD İşletmesi Genel Müdürlüğü",
+    "ownershipStatus": "tcdd",
+    "startKm": "65+000",
+    "endKm": "66+000",
+    "lineName": "Eskişehir-Konya",
+    "kamulastirmaGenisligiMetre": 35,
+    "coordinates": [
+      [
+        39.4084242,
+        30.1173392
+      ],
+      [
+        39.4044096,
+        30.1122893
+      ],
+      [
+        39.4048977,
+        30.1125714
+      ],
+      [
+        39.4023441,
+        30.1108518
+      ],
+      [
+        39.4021171,
+        30.1106562
+      ],
+      [
+        39.4019103,
+        30.110963
+      ],
+      [
+        39.4021651,
+        30.1111864
+      ],
+      [
+        39.4047194,
+        30.1129067
+      ],
+      [
+        39.404156,
+        30.1125309
+      ],
+      [
+        39.4081774,
+        30.1175922
+      ],
+      [
+        39.4084242,
+        30.1173392
+      ]
+    ],
+    "encroachmentStatus": "none",
+    "encroachmentNote": "",
+    "notes": "TCDD Mülkiyeti Resmi Demiryolu Güzergah ve Kamulaştırma Parseli",
+    "tkgmUrl": "https://parselsorgu.tkgm.gov.tr/#ara/cografi/39.404332/30.112889",
+    "createdAt": "2026-10-27T07:51:03.122Z",
+    "updatedAt": "2026-10-27T07:51:03.122Z"
+  },
+  {
+    "id": "parsel-tcdd-116-1",
+    "adaNo": "116",
+    "parselNo": "1",
+    "il": "Kütahya",
+    "ilce": "Merkez",
+    "mahalleKoy": "Alayunt",
+    "paftaNo": "K28-d-08-c",
+    "nitelik": "Alayunt Kuzey Makaslar Sahası",
+    "alanM2": 22533,
+    "malik": "TCDD İşletmesi Genel Müdürlüğü",
+    "ownershipStatus": "tcdd",
+    "startKm": "66+000",
+    "endKm": "66+557",
+    "lineName": "Eskişehir-Konya",
+    "kamulastirmaGenisligiMetre": 40,
+    "coordinates": [
+      [
+        39.4021266,
+        30.1106285
+      ],
+      [
+        39.4018599,
+        30.1104137
+      ],
+      [
+        39.3999615,
+        30.1089375
+      ],
+      [
+        39.3984618,
+        30.1077369
+      ],
+      [
+        39.3981303,
+        30.1075066
+      ],
+      [
+        39.3978543,
+        30.107373
+      ],
+      [
+        39.3979547,
+        30.1074582
+      ],
+      [
+        39.3976481,
+        30.107214
+      ],
+      [
+        39.3975497,
+        30.107621
+      ],
+      [
+        39.3979335,
+        30.1078958
+      ],
+      [
+        39.3982402,
+        30.1081031
+      ],
+      [
+        39.3997385,
+        30.1093025
+      ],
+      [
+        39.4016381,
+        30.1107799
+      ],
+      [
+        39.4019008,
+        30.1109907
+      ],
+      [
+        39.4021266,
+        30.1106285
+      ]
+    ],
+    "encroachmentStatus": "none",
+    "encroachmentNote": "",
+    "notes": "TCDD Mülkiyeti Resmi Demiryolu Güzergah ve Kamulaştırma Parseli",
+    "tkgmUrl": "https://parselsorgu.tkgm.gov.tr/#ara/cografi/39.399357/30.108712",
+    "createdAt": "2026-10-27T07:51:03.122Z",
+    "updatedAt": "2026-10-27T07:51:03.122Z"
+  },
+  {
+    "id": "parsel-tcdd-117-1",
+    "adaNo": "117",
+    "parselNo": "1",
+    "il": "Kütahya",
+    "ilce": "Merkez",
+    "mahalleKoy": "Alayunt",
+    "paftaNo": "K28-d-09-c",
+    "nitelik": "Alayunt Gar ve İstasyon Sahası",
+    "alanM2": 23935,
+    "malik": "TCDD İşletmesi Genel Müdürlüğü",
+    "ownershipStatus": "tcdd",
+    "startKm": "66+700",
+    "endKm": "67+176",
+    "lineName": "Eskişehir-Konya",
+    "kamulastirmaGenisligiMetre": 50,
+    "coordinates": [
+      [
+        39.3968518,
+        30.1062344
+      ],
+      [
+        39.3957165,
+        30.1053144
+      ],
+      [
+        39.3945697,
+        30.1043858
+      ],
+      [
+        39.39435,
+        30.1044408
+      ],
+      [
+        39.3941945,
+        30.1043143
+      ],
+      [
+        39.3942182,
+        30.1040185
+      ],
+      [
+        39.3938669,
+        30.1038405
+      ],
+      [
+        39.3937855,
+        30.1038611
+      ],
+      [
+        39.3936036,
+        30.1037045
+      ],
+      [
+        39.3935294,
+        30.1035667
+      ],
+      [
+        39.3932561,
+        30.1033296
+      ],
+      [
+        39.3929663,
+        30.103774
+      ],
+      [
+        39.3932008,
+        30.1039639
+      ],
+      [
+        39.393267,
+        30.1040903
+      ],
+      [
+        39.3935651,
+        30.1043675
+      ],
+      [
+        39.3938331,
+        30.1044195
+      ],
+      [
+        39.393809,
+        30.1042611
+      ],
+      [
+        39.3937815,
+        30.1045457
+      ],
+      [
+        39.39417,
+        30.1049732
+      ],
+      [
+        39.3943287,
+        30.1048764
+      ],
+      [
+        39.3954333,
+        30.1057658
+      ],
+      [
+        39.3965682,
+        30.1066856
+      ],
+      [
+        39.3968518,
+        30.1062344
+      ]
+    ],
+    "encroachmentStatus": "none",
+    "encroachmentNote": "",
+    "notes": "TCDD Mülkiyeti Resmi Demiryolu Güzergah ve Kamulaştırma Parseli",
+    "tkgmUrl": "https://parselsorgu.tkgm.gov.tr/#ara/cografi/39.394221/30.104488",
+    "createdAt": "2026-10-27T07:51:03.123Z",
+    "updatedAt": "2026-10-27T07:51:03.123Z"
+  },
+  {
+    "id": "parsel-tcdd-121-1",
+    "adaNo": "121",
+    "parselNo": "1",
+    "il": "Kütahya",
+    "ilce": "Merkez",
+    "mahalleKoy": "Parmakören",
+    "paftaNo": "K28-d-02-c",
+    "nitelik": "Demiryolu Güzergahı",
+    "alanM2": 30425,
+    "malik": "TCDD İşletmesi Genel Müdürlüğü",
+    "ownershipStatus": "tcdd",
+    "startKm": "76+000",
+    "endKm": "77+000",
+    "lineName": "Eskişehir-Konya",
+    "kamulastirmaGenisligiMetre": 30,
+    "coordinates": [
+      [
+        39.3389086,
+        30.1661924
+      ],
+      [
+        39.3322053,
+        30.1675522
+      ],
+      [
+        39.3298932,
+        30.1672957
+      ],
+      [
+        39.3298638,
+        30.1676417
+      ],
+      [
+        39.3322381,
+        30.1678978
+      ],
+      [
+        39.3389624,
+        30.1665336
+      ],
+      [
+        39.3389086,
+        30.1661924
+      ]
+    ],
+    "encroachmentStatus": "none",
+    "encroachmentNote": "",
+    "notes": "TCDD Mülkiyeti Resmi Demiryolu Güzergah ve Kamulaştırma Parseli",
+    "tkgmUrl": "https://parselsorgu.tkgm.gov.tr/#ara/cografi/39.333679/30.167186",
+    "createdAt": "2026-10-27T07:51:03.123Z",
+    "updatedAt": "2026-10-27T07:51:03.123Z"
+  },
+  {
+    "id": "parsel-tcdd-122-1",
+    "adaNo": "122",
+    "parselNo": "1",
+    "il": "Kütahya",
+    "ilce": "Merkez",
+    "mahalleKoy": "Parmakören",
+    "paftaNo": "K28-d-03-c",
+    "nitelik": "Demiryolu Güzergahı ve Sanat Yapıları",
+    "alanM2": 38116,
+    "malik": "TCDD İşletmesi Genel Müdürlüğü",
+    "ownershipStatus": "tcdd",
+    "startKm": "77+000",
+    "endKm": "78+300",
+    "lineName": "Eskişehir-Konya",
+    "kamulastirmaGenisligiMetre": 30,
+    "coordinates": [
+      [
+        39.3298549,
+        30.1672973
+      ],
+      [
+        39.3222626,
+        30.1686451
+      ],
+      [
+        39.3203602,
+        30.1691201
+      ],
+      [
+        39.3185848,
+        30.1686715
+      ],
+      [
+        39.318519,
+        30.1690091
+      ],
+      [
+        39.320362,
+        30.1694681
+      ],
+      [
+        39.3223134,
+        30.1689869
+      ],
+      [
+        39.3299021,
+        30.1676401
+      ],
+      [
+        39.3298549,
+        30.1672973
+      ]
+    ],
+    "encroachmentStatus": "none",
+    "encroachmentNote": "",
+    "notes": "TCDD Mülkiyeti Resmi Demiryolu Güzergah ve Kamulaştırma Parseli",
+    "tkgmUrl": "https://parselsorgu.tkgm.gov.tr/#ara/cografi/39.322770/30.168605",
+    "createdAt": "2026-10-27T07:51:03.124Z",
+    "updatedAt": "2026-10-27T07:51:03.124Z"
+  },
+  {
+    "id": "parsel-tcdd-125-1",
+    "adaNo": "125",
+    "parselNo": "1",
+    "il": "Kütahya",
+    "ilce": "Merkez",
+    "mahalleKoy": "Çöğürler",
+    "paftaNo": "K28-d-04-c",
+    "nitelik": "Çöğürler İstasyon Girişi ve Makas Sahası",
+    "alanM2": 19289,
+    "malik": "TCDD İşletmesi Genel Müdürlüğü",
+    "ownershipStatus": "tcdd",
+    "startKm": "85+770",
+    "endKm": "86+337",
+    "lineName": "Eskişehir-Konya",
+    "kamulastirmaGenisligiMetre": 35,
+    "coordinates": [
+      [
+        39.2718877,
+        30.1725156
+      ],
+      [
+        39.2711409,
+        30.1747819
+      ],
+      [
+        39.2710862,
+        30.1748988
+      ],
+      [
+        39.2697303,
+        30.1767829
+      ],
+      [
+        39.2692984,
+        30.1771567
+      ],
+      [
+        39.2689859,
+        30.1774082
+      ],
+      [
+        39.2691841,
+        30.1777238
+      ],
+      [
+        39.2695032,
+        30.1774651
+      ],
+      [
+        39.2699777,
+        30.1770345
+      ],
+      [
+        39.2713448,
+        30.1751307
+      ],
+      [
+        39.2714397,
+        30.1749117
+      ],
+      [
+        39.2721871,
+        30.1726426
+      ],
+      [
+        39.2718877,
+        30.1725156
+      ]
+    ],
+    "encroachmentStatus": "none",
+    "encroachmentNote": "",
+    "notes": "TCDD Mülkiyeti Resmi Demiryolu Güzergah ve Kamulaştırma Parseli",
+    "tkgmUrl": "https://parselsorgu.tkgm.gov.tr/#ara/cografi/39.270481/30.175704",
+    "createdAt": "2026-10-27T07:51:03.124Z",
+    "updatedAt": "2026-10-27T07:51:03.124Z"
+  },
+  {
+    "id": "parsel-tcdd-126-1",
+    "adaNo": "126",
+    "parselNo": "1",
+    "il": "Kütahya",
+    "ilce": "Merkez",
+    "mahalleKoy": "Çöğürler",
+    "paftaNo": "K28-d-05-c",
+    "nitelik": "Çöğürler Gar Sahası ve İstasyon Binası",
+    "alanM2": 26331,
+    "malik": "TCDD İşletmesi Genel Müdürlüğü",
+    "ownershipStatus": "tcdd",
+    "startKm": "86+505",
+    "endKm": "87+178",
+    "lineName": "Eskişehir-Konya",
+    "kamulastirmaGenisligiMetre": 40,
+    "coordinates": [
+      [
+        39.2677235,
+        30.1785376
+      ],
+      [
+        39.2675662,
+        30.1786403
+      ],
+      [
+        39.2661721,
+        30.1798035
+      ],
+      [
+        39.2659784,
+        30.1798921
+      ],
+      [
+        39.2641227,
+        30.1818147
+      ],
+      [
+        39.2630965,
+        30.1834602
+      ],
+      [
+        39.2634021,
+        30.1837058
+      ],
+      [
+        39.2644027,
+        30.1821065
+      ],
+      [
+        39.2662302,
+        30.1802237
+      ],
+      [
+        39.2663947,
+        30.1801681
+      ],
+      [
+        39.2677938,
+        30.1789997
+      ],
+      [
+        39.2679125,
+        30.1789324
+      ],
+      [
+        39.2677235,
+        30.1785376
+      ]
+    ],
+    "encroachmentStatus": "none",
+    "encroachmentNote": "",
+    "notes": "TCDD Mülkiyeti Resmi Demiryolu Güzergah ve Kamulaştırma Parseli",
+    "tkgmUrl": "https://parselsorgu.tkgm.gov.tr/#ara/cografi/39.265900/30.180524",
+    "createdAt": "2026-10-27T07:51:03.125Z",
+    "updatedAt": "2026-10-27T07:51:03.125Z"
+  },
+  {
+    "id": "parsel-tcdd-130-1",
+    "adaNo": "130",
+    "parselNo": "1",
+    "il": "Kütahya",
+    "ilce": "Merkez",
+    "mahalleKoy": "Değirmenözü",
+    "paftaNo": "K28-d-06-c",
+    "nitelik": "Değirmenözü Girişi ve Baş Makas",
+    "alanM2": 24338,
+    "malik": "TCDD İşletmesi Genel Müdürlüğü",
+    "ownershipStatus": "tcdd",
+    "startKm": "99+000",
+    "endKm": "99+582",
+    "lineName": "Eskişehir-Konya",
+    "kamulastirmaGenisligiMetre": 35,
+    "coordinates": [
+      [
+        39.2051578,
+        30.2850969
+      ],
+      [
+        39.205664,
+        30.2884405
+      ],
+      [
+        39.2065088,
+        30.2805075
+      ],
+      [
+        39.2061954,
+        30.2804645
+      ],
+      [
+        39.2053564,
+        30.2883513
+      ],
+      [
+        39.2054726,
+        30.2850731
+      ],
+      [
+        39.2051578,
+        30.2850969
+      ]
+    ],
+    "encroachmentStatus": "none",
+    "encroachmentNote": "",
+    "notes": "TCDD Mülkiyeti Resmi Demiryolu Güzergah ve Kamulaştırma Parseli",
+    "tkgmUrl": "https://parselsorgu.tkgm.gov.tr/#ara/cografi/39.205726/30.284656",
+    "createdAt": "2026-10-27T07:51:03.125Z",
+    "updatedAt": "2026-10-27T07:51:03.125Z"
+  },
+  {
+    "id": "parsel-tcdd-131-1",
+    "adaNo": "131",
+    "parselNo": "1",
+    "il": "Kütahya",
+    "ilce": "Merkez",
+    "mahalleKoy": "Değirmenözü",
+    "paftaNo": "K28-d-07-c",
+    "nitelik": "Değirmenözü Gar ve Çıkış Makas Sahası",
+    "alanM2": 15000,
+    "malik": "TCDD İşletmesi Genel Müdürlüğü",
+    "ownershipStatus": "tcdd",
+    "startKm": "100+450",
+    "endKm": "100+840",
+    "lineName": "Eskişehir-Konya",
+    "kamulastirmaGenisligiMetre": 40,
+    "coordinates": [
+      [
+        39.2059735,
+        30.2925464
+      ],
+      [
+        39.2062945,
+        30.2941164
+      ],
+      [
+        39.2066475,
+        30.2940236
+      ],
+      [
+        39.2063265,
+        30.2924536
+      ],
+      [
+        39.2059735,
+        30.2925464
+      ]
+    ],
+    "encroachmentStatus": "none",
+    "encroachmentNote": "",
+    "notes": "TCDD Mülkiyeti Resmi Demiryolu Güzergah ve Kamulaştırma Parseli",
+    "tkgmUrl": "https://parselsorgu.tkgm.gov.tr/#ara/cografi/39.206311/30.293285",
+    "createdAt": "2026-10-27T07:51:03.128Z",
+    "updatedAt": "2026-10-27T07:51:03.128Z"
+  }
+]

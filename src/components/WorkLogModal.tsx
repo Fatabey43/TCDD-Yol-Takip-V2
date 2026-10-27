@@ -83,7 +83,7 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({
         </div>
 
         {/* Body */}
-        <div className="p-5 overflow-y-auto space-y-4 flex-1">
+        <div className="p-5 overflow-y-auto prominent-scrollbar space-y-4 flex-1">
           {!isAddingNew ? (
             <>
               <div className="flex items-center justify-between">

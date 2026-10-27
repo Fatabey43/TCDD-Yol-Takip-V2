@@ -10,7 +10,7 @@ import {
   LatLngPoint,
 } from '../utils/measurement.ts';
 import { parseKmToNumber } from '../utils/kmUtils.ts';
-import { calculateParcelCenter } from '../utils/parcelUtils.ts';
+import { calculateParcelCenter, normalizePolygonCoordinates } from '../utils/parcelUtils.ts';
 import { NearestKmResult } from '../utils/liveRailwayKm.ts';
 import { Layers, Locate, Maximize2, Plus, Train, Ruler, RotateCcw, Undo2, Check, RotateCw, Globe, ExternalLink, MapPin, Crosshair, Gauge, AlertTriangle, X, Landmark, Sparkles, Navigation2, HardDriveDownload, WifiOff } from 'lucide-react';
 import { isForceOfflineMode, generateOfflinePlaceholderTileUrl } from '../utils/offlineMapStorage.ts';
@@ -987,6 +987,8 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
 
     railwayParcels.forEach((parcel) => {
       if (!parcel.coordinates || parcel.coordinates.length < 3) return;
+      const normalizedCoords = normalizePolygonCoordinates(parcel.coordinates);
+      if (normalizedCoords.length < 3) return;
 
       const isEncroached = parcel.encroachmentStatus === 'suspected' || parcel.encroachmentStatus === 'verified';
       const isTcdd = parcel.ownershipStatus === 'tcdd' || !parcel.ownershipStatus;
@@ -1003,7 +1005,7 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
         ? '#d97706'
         : '#8b5cf6';
 
-      const polygon = L.polygon(parcel.coordinates, {
+      const polygon = L.polygon(normalizedCoords, {
         color: color,
         fillColor: color,
         fillOpacity: isEncroached ? 0.32 : 0.22,
@@ -1057,7 +1059,7 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
       );
 
       // Midpoint badge
-      const center = calculateParcelCenter(parcel.coordinates);
+      const center = calculateParcelCenter(normalizedCoords);
       const badgeHtml = `
         <div class="cursor-pointer flex items-center justify-center notranslate" translate="no" title="Ada ${parcel.adaNo} / Parsel ${parcel.parselNo}">
           <div class="px-1.5 py-0.5 rounded-md ${isEncroached ? 'bg-red-950/90 text-red-200 border-red-500' : 'bg-slate-950/90 text-indigo-200 border-indigo-400'} font-mono font-bold text-[9px] border shadow-md whitespace-nowrap">

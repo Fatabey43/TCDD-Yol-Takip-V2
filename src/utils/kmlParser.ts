@@ -23,7 +23,16 @@ export function extractKmValue(text: string): string {
  */
 export function guessCategory(text: string): RailwayPointCategory {
   const lower = (text || '').toLowerCase();
-  if (lower.includes('makas') || lower.includes('switch')) return 'switch';
+  if (
+    lower.includes('makas') ||
+    lower.includes('switch') ||
+    lower.includes('çapraz') ||
+    lower.includes('kruvaz') ||
+    /\bm-?\d+\b/i.test(text) ||
+    /\b\d+\s*nolu\b/i.test(lower)
+  ) {
+    return 'switch';
+  }
   if (lower.includes('geçit') || lower.includes('hemzemin') || lower.includes('crossing')) return 'crossing';
   if (lower.includes('köprü') || lower.includes('viyadük') || lower.includes('bridge') || lower.includes('viaduct')) return 'bridge';
   if (lower.includes('menfez') || lower.includes('culvert')) return 'culvert';
