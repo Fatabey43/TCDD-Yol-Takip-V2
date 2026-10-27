@@ -154,14 +154,12 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
   const markerInstancesMapRef = useRef<Map<string, L.Marker>>(new Map());
   const markerDataCacheRef = useRef<Map<string, string>>(new Map());
-  const prevTrackSigRef = useRef<string>('');
   const prevTakyidatSigRef = useRef<string>('');
   const prevParcelsSigRef = useRef<string>('');
   const railwayLayerRef = useRef<L.TileLayer | null>(null);
   const measureLayerRef = useRef<L.LayerGroup | null>(null);
   const takyidatLayerRef = useRef<L.LayerGroup | null>(null);
   const parcelsLayerRef = useRef<L.LayerGroup | null>(null);
-  const offlineTrackLayerRef = useRef<L.LayerGroup | null>(null);
 
   const [isOfflineActive, setIsOfflineActive] = useState<boolean>(() => {
     return isForceOfflineMode() || (typeof navigator !== 'undefined' && !navigator.onLine);
@@ -313,14 +311,12 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
     const takyidatGroup = L.layerGroup().addTo(map);
     const parcelsGroup = L.layerGroup().addTo(map);
     const measureGroup = L.layerGroup().addTo(map);
-    const offlineTrackGroup = L.layerGroup().addTo(map);
 
     mapInstanceRef.current = map;
     takyidatLayerRef.current = takyidatGroup;
     parcelsLayerRef.current = parcelsGroup;
     railwayLayerRef.current = railwayOverlay;
     measureLayerRef.current = measureGroup;
-    offlineTrackLayerRef.current = offlineTrackGroup;
 
     // Emit current map bounds
     const emitBounds = () => {
@@ -391,7 +387,6 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
       parcelsLayerRef.current = null;
       measureLayerRef.current = null;
       railwayLayerRef.current = null;
-      offlineTrackLayerRef.current = null;
       markerInstancesMapRef.current.clear();
       markerDataCacheRef.current.clear();
     };
@@ -500,79 +495,6 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
       }
     }
   }, [mapType, showRailwayOverlay, isOfflineActive]);
-
-  // Render High-Contrast Continuous Vector Railway Baseline Track (Eskişehir-Konya & Alayunt-Balıkesir)
-  // Ensures complete railway line is beautifully drawn even with ZERO internet and ZERO raster tiles
-  useEffect(() => {
-    const map = mapInstanceRef.current;
-    const trackGroup = offlineTrackLayerRef.current;
-    if (!map || !trackGroup) return;
-
-    // Cache signature check: don't redraw polyline segments if points & offline status haven't changed!
-    const trackSig = `${isOfflineActive}:${points.length}:${points.map((p) => `${p.id}_${p.lat}_${p.lng}_${p.lineName}`).join('|')}`;
-    if (prevTrackSigRef.current === trackSig) return;
-    prevTrackSigRef.current = trackSig;
-
-    trackGroup.clearLayers();
-
-    // Group points by line
-    const linesMap = new Map<string, RailwayPoint[]>();
-    points.forEach((p) => {
-      const rawLine = p.lineName || 'Eskişehir-Konya';
-      const normLine = rawLine.toLowerCase().includes('alayunt') || rawLine.toLowerCase().includes('balıkesir')
-        ? 'Alayunt-Balıkesir'
-        : 'Eskişehir-Konya';
-
-      if (!linesMap.has(normLine)) linesMap.set(normLine, []);
-      linesMap.get(normLine)!.push(p);
-    });
-
-    linesMap.forEach((linePoints, lineName) => {
-      // Sort points sequentially by KM
-      const sorted = [...linePoints].sort((a, b) => {
-        const kmA = parseKmToNumber(a.kmValue, a.title) ?? 999999;
-        const kmB = parseKmToNumber(b.kmValue, b.title) ?? 999999;
-        return kmA - kmB;
-      });
-
-      if (sorted.length < 2) return;
-
-      const polylineCoords: [number, number][] = sorted.map((p) => [p.lat, p.lng]);
-      const isEskKonya = lineName === 'Eskişehir-Konya';
-      const railColor = isEskKonya ? '#dc2626' : '#0284c7';
-
-      // 1. Dark outer ballast casing
-      L.polyline(polylineCoords, {
-        color: '#0f172a',
-        weight: 7,
-        opacity: isOfflineActive ? 0.95 : 0.7,
-        lineCap: 'round',
-        lineJoin: 'round',
-      }).addTo(trackGroup);
-
-      // 2. White cross-tie sleepers (dashed)
-      L.polyline(polylineCoords, {
-        color: '#f8fafc',
-        weight: 6,
-        opacity: isOfflineActive ? 0.95 : 0.75,
-        dashArray: '2, 7',
-        lineCap: 'butt',
-      }).addTo(trackGroup);
-
-      // 3. Center high-visibility steel rail line
-      const rail = L.polyline(polylineCoords, {
-        color: railColor,
-        weight: 2.5,
-        opacity: 1,
-        lineCap: 'round',
-      }).addTo(trackGroup);
-
-      rail.bindTooltip(
-        `<div class="font-sans font-extrabold text-xs p-1">🚂 ${lineName} Demiryolu Hattı (${sorted.length} Kayıtlı KM Noktası)</div>`,
-        { sticky: true }
-      );
-    });
-  }, [points, isOfflineActive]);
 
   // Render Measurement Visuals (polyline, numbered pins, segment distance badges + dynamic rubber-band line & live cursor badge)
   useEffect(() => {
