@@ -12,7 +12,8 @@ import {
 import { parseKmToNumber } from '../utils/kmUtils.ts';
 import { calculateParcelCenter } from '../utils/parcelUtils.ts';
 import { NearestKmResult } from '../utils/liveRailwayKm.ts';
-import { Layers, Locate, Maximize2, Plus, Train, Ruler, RotateCcw, Undo2, Check, RotateCw, Globe, ExternalLink, MapPin, Crosshair, Gauge, AlertTriangle, X, Landmark, Sparkles, Navigation2 } from 'lucide-react';
+import { Layers, Locate, Maximize2, Plus, Train, Ruler, RotateCcw, Undo2, Check, RotateCw, Globe, ExternalLink, MapPin, Crosshair, Gauge, AlertTriangle, X, Landmark, Sparkles, Navigation2, HardDriveDownload, WifiOff } from 'lucide-react';
+import { isForceOfflineMode, generateOfflinePlaceholderTileUrl } from '../utils/offlineMapStorage.ts';
 
 interface RailwayMapProps {
   points: RailwayPoint[];
@@ -23,6 +24,8 @@ interface RailwayMapProps {
   setIsAddMode: (active: boolean) => void;
   categoryColors?: Record<RailwayPointCategory, CategoryColorConfig>;
   initialMeasurePoint?: LatLngPoint | null;
+  onOpenOfflineModal?: () => void;
+  onBoundsChange?: (bounds: { minLat: number; maxLat: number; minLng: number; maxLng: number }) => void;
   onRefresh?: () => void;
   isRefreshing?: boolean;
   takyidatRestrictions?: TakyidatSpeedRestriction[];
@@ -143,15 +146,43 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
   onPanToMyLocation,
   targetWorkLocation,
   onClearTargetWorkLocation,
+  onOpenOfflineModal,
+  onBoundsChange,
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
   const markerInstancesMapRef = useRef<Map<string, L.Marker>>(new Map());
+  const markerDataCacheRef = useRef<Map<string, string>>(new Map());
+  const prevTrackSigRef = useRef<string>('');
+  const prevTakyidatSigRef = useRef<string>('');
+  const prevParcelsSigRef = useRef<string>('');
   const railwayLayerRef = useRef<L.TileLayer | null>(null);
   const measureLayerRef = useRef<L.LayerGroup | null>(null);
   const takyidatLayerRef = useRef<L.LayerGroup | null>(null);
   const parcelsLayerRef = useRef<L.LayerGroup | null>(null);
+  const offlineTrackLayerRef = useRef<L.LayerGroup | null>(null);
+
+  const [isOfflineActive, setIsOfflineActive] = useState<boolean>(() => {
+    return isForceOfflineMode() || (typeof navigator !== 'undefined' && !navigator.onLine);
+  });
+
+  const onBoundsChangeRef = useRef(onBoundsChange);
+  onBoundsChangeRef.current = onBoundsChange;
+
+  useEffect(() => {
+    const checkOffline = () => {
+      setIsOfflineActive(isForceOfflineMode() || !navigator.onLine);
+    };
+    window.addEventListener('tcdd_offline_mode_changed', checkOffline);
+    window.addEventListener('online', checkOffline);
+    window.addEventListener('offline', checkOffline);
+    return () => {
+      window.removeEventListener('tcdd_offline_mode_changed', checkOffline);
+      window.removeEventListener('online', checkOffline);
+      window.removeEventListener('offline', checkOffline);
+    };
+  }, []);
 
   // Clean Railway Layout State: 'smart' (zoom-adaptive dots when zoomed out, badges when zoomed in) or 'all' (always full badges)
   const [labelMode, setLabelMode] = useState<'smart' | 'all'>(() => {
@@ -259,6 +290,8 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
       center: initialCenter,
       zoom: 7,
       zoomControl: false,
+      touchZoom: true,
+      bounceAtZoomLimits: false,
     });
 
     // Custom zoom control in bottom-right
@@ -280,12 +313,29 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
     const takyidatGroup = L.layerGroup().addTo(map);
     const parcelsGroup = L.layerGroup().addTo(map);
     const measureGroup = L.layerGroup().addTo(map);
+    const offlineTrackGroup = L.layerGroup().addTo(map);
 
     mapInstanceRef.current = map;
     takyidatLayerRef.current = takyidatGroup;
     parcelsLayerRef.current = parcelsGroup;
     railwayLayerRef.current = railwayOverlay;
     measureLayerRef.current = measureGroup;
+    offlineTrackLayerRef.current = offlineTrackGroup;
+
+    // Emit current map bounds
+    const emitBounds = () => {
+      if (onBoundsChangeRef.current) {
+        const b = map.getBounds();
+        onBoundsChangeRef.current({
+          minLat: b.getSouth(),
+          maxLat: b.getNorth(),
+          minLng: b.getWest(),
+          maxLng: b.getEast(),
+        });
+      }
+    };
+    map.on('moveend', emitBounds);
+    emitBounds();
 
     // Map click handler - strictly accesses current values via refs to avoid stale closure
     map.on('click', (e: L.LeafletMouseEvent) => {
@@ -318,12 +368,11 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
     // Real-time mouse movement listener like Google Earth / Maps ruler with requestAnimationFrame throttling
     let hoverRafId: number | null = null;
     map.on('mousemove', (e: L.LeafletMouseEvent) => {
-      if (isMeasuringRef.current && measurePointsRef.current.length > 0) {
-        if (hoverRafId) cancelAnimationFrame(hoverRafId);
-        hoverRafId = requestAnimationFrame(() => {
-          setHoverPoint({ lat: e.latlng.lat, lng: e.latlng.lng });
-        });
-      }
+      if (!isMeasuringRef.current || measurePointsRef.current.length === 0) return;
+      if (hoverRafId) cancelAnimationFrame(hoverRafId);
+      hoverRafId = requestAnimationFrame(() => {
+        setHoverPoint({ lat: e.latlng.lat, lng: e.latlng.lng });
+      });
     });
 
     map.on('mouseout', () => {
@@ -342,7 +391,9 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
       parcelsLayerRef.current = null;
       measureLayerRef.current = null;
       railwayLayerRef.current = null;
+      offlineTrackLayerRef.current = null;
       markerInstancesMapRef.current.clear();
+      markerDataCacheRef.current.clear();
     };
   }, []);
 
@@ -386,7 +437,7 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
     return () => clearTimeout(timer);
   }, [isAddMode, isMeasuring, isLivePointPickMode, isTakyidatPickMode]);
 
-  // Update map layer when mapType changes
+  // Update map layer when mapType or isOfflineActive changes
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -398,12 +449,22 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
       }
     });
 
-    if (mapType === 'google-earth') {
+    const errorPlaceholder = generateOfflinePlaceholderTileUrl(0, 0, 0);
+
+    if (isOfflineActive) {
+      // In offline mode, use cached OSM tiles with vector offline placeholder
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap (Çevrimdışı Önbellek)',
+        errorTileUrl: errorPlaceholder,
+      }).addTo(map);
+    } else if (mapType === 'google-earth') {
       // Google Earth / Hybrid Satellite (Crisp satellite imagery with railway/road/station labels)
       L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
         maxZoom: 21,
         subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
         attribution: '&copy; Google Earth / Harita Verileri',
+        errorTileUrl: errorPlaceholder,
       }).addTo(map);
     } else if (mapType === 'google-satellite') {
       // Google Earth / Pure Satellite (Crisp satellite imagery without labels)
@@ -411,6 +472,7 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
         maxZoom: 21,
         subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
         attribution: '&copy; Google Earth / Uydu Görüntüleri',
+        errorTileUrl: errorPlaceholder,
       }).addTo(map);
     } else if (mapType === 'esri-satellite') {
       L.tileLayer(
@@ -418,12 +480,14 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
         {
           maxZoom: 19,
           attribution: 'Tiles &copy; Esri',
+          errorTileUrl: errorPlaceholder,
         }
       ).addTo(map);
     } else {
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '&copy; OpenStreetMap',
+        errorTileUrl: errorPlaceholder,
       }).addTo(map);
     }
 
@@ -435,7 +499,80 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
         map.removeLayer(railwayLayerRef.current);
       }
     }
-  }, [mapType, showRailwayOverlay]);
+  }, [mapType, showRailwayOverlay, isOfflineActive]);
+
+  // Render High-Contrast Continuous Vector Railway Baseline Track (Eskişehir-Konya & Alayunt-Balıkesir)
+  // Ensures complete railway line is beautifully drawn even with ZERO internet and ZERO raster tiles
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const trackGroup = offlineTrackLayerRef.current;
+    if (!map || !trackGroup) return;
+
+    // Cache signature check: don't redraw polyline segments if points & offline status haven't changed!
+    const trackSig = `${isOfflineActive}:${points.length}:${points.map((p) => `${p.id}_${p.lat}_${p.lng}_${p.lineName}`).join('|')}`;
+    if (prevTrackSigRef.current === trackSig) return;
+    prevTrackSigRef.current = trackSig;
+
+    trackGroup.clearLayers();
+
+    // Group points by line
+    const linesMap = new Map<string, RailwayPoint[]>();
+    points.forEach((p) => {
+      const rawLine = p.lineName || 'Eskişehir-Konya';
+      const normLine = rawLine.toLowerCase().includes('alayunt') || rawLine.toLowerCase().includes('balıkesir')
+        ? 'Alayunt-Balıkesir'
+        : 'Eskişehir-Konya';
+
+      if (!linesMap.has(normLine)) linesMap.set(normLine, []);
+      linesMap.get(normLine)!.push(p);
+    });
+
+    linesMap.forEach((linePoints, lineName) => {
+      // Sort points sequentially by KM
+      const sorted = [...linePoints].sort((a, b) => {
+        const kmA = parseKmToNumber(a.kmValue, a.title) ?? 999999;
+        const kmB = parseKmToNumber(b.kmValue, b.title) ?? 999999;
+        return kmA - kmB;
+      });
+
+      if (sorted.length < 2) return;
+
+      const polylineCoords: [number, number][] = sorted.map((p) => [p.lat, p.lng]);
+      const isEskKonya = lineName === 'Eskişehir-Konya';
+      const railColor = isEskKonya ? '#dc2626' : '#0284c7';
+
+      // 1. Dark outer ballast casing
+      L.polyline(polylineCoords, {
+        color: '#0f172a',
+        weight: 7,
+        opacity: isOfflineActive ? 0.95 : 0.7,
+        lineCap: 'round',
+        lineJoin: 'round',
+      }).addTo(trackGroup);
+
+      // 2. White cross-tie sleepers (dashed)
+      L.polyline(polylineCoords, {
+        color: '#f8fafc',
+        weight: 6,
+        opacity: isOfflineActive ? 0.95 : 0.75,
+        dashArray: '2, 7',
+        lineCap: 'butt',
+      }).addTo(trackGroup);
+
+      // 3. Center high-visibility steel rail line
+      const rail = L.polyline(polylineCoords, {
+        color: railColor,
+        weight: 2.5,
+        opacity: 1,
+        lineCap: 'round',
+      }).addTo(trackGroup);
+
+      rail.bindTooltip(
+        `<div class="font-sans font-extrabold text-xs p-1">🚂 ${lineName} Demiryolu Hattı (${sorted.length} Kayıtlı KM Noktası)</div>`,
+        { sticky: true }
+      );
+    });
+  }, [points, isOfflineActive]);
 
   // Render Measurement Visuals (polyline, numbered pins, segment distance badges + dynamic rubber-band line & live cursor badge)
   useEffect(() => {
@@ -605,7 +742,7 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
     } catch {}
   }, [points]);
 
-  // 1. Update & Render Markers on the map (Clean Flat Layer without confusing clusters)
+  // 1. High-Performance Incremental Marker Diffing & In-Place Updates (Zero DOM thrashing, solid 60 FPS)
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -621,52 +758,110 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
       markersLayerRef.current = layer;
     }
 
-    layer.clearLayers();
-    markerInstancesMapRef.current.clear();
-
+    const currentMap = markerInstancesMapRef.current;
+    const cacheMap = markerDataCacheRef.current;
+    const currentPointIds = new Set<string>();
     const selectedId = selectedPoint?.id;
 
+    // A) Process all points: update in-place if exists, create only if new
     points.forEach((point) => {
+      currentPointIds.add(point.id);
       const isSelected = selectedId === point.id;
-      const icon = createMarkerIcon(point, isSelected, categoryColors, isCompact);
-
-      const marker = L.marker([point.lat, point.lng], { icon });
-
-      marker.on('click', (e) => {
-        L.DomEvent.stopPropagation(e);
-        if (isTakyidatPickModeRef.current && onPickTakyidatPointRef.current) {
-          onPickTakyidatPointRef.current(point.lat, point.lng, point.kmValue, point.title, point.lineName);
-          return;
-        }
-        if (isLivePointPickModeRef.current && onPickLivePointRef.current) {
-          onPickLivePointRef.current(point.lat, point.lng);
-          return;
-        }
-        if (isMeasuringRef.current) {
-          setMeasurePoints((prev) => [...prev, { lat: point.lat, lng: point.lng }]);
-          return;
-        }
-        onSelectPointRef.current(point);
-      });
-
       const cleanKm = formatKmDisplay(point.kmValue, point.title);
-      marker.bindTooltip(
-        `
-        <div class="text-xs font-sans notranslate p-0.5" translate="no">
-          <div class="font-bold text-slate-900" style="${point.titleTextStyle?.color ? `color: ${point.titleTextStyle.color};` : ''}${point.titleTextStyle?.fontStyle === 'italic' ? 'font-style: italic;' : ''}${point.titleTextStyle?.textDecoration === 'underline' ? 'text-decoration: underline;' : ''}">${point.title}</div>
-          <div class="text-sky-700 font-mono font-bold mt-0.5">📍 KM: ${cleanKm || 'Belirtilmemiş'}</div>
-          <div class="text-slate-500 text-[11px]">${point.lineName}${point.locationDesc ? ` • ${point.locationDesc}` : ''}</div>
-        </div>
-      `,
-        { direction: 'top', offset: [0, isCompact ? -12 : -32] }
-      );
+      const catColorObj = categoryColors[point.category] || DEFAULT_CATEGORY_COLORS[point.category] || {};
 
-      markerInstancesMapRef.current.set(point.id, marker);
-      layer.addLayer(marker);
+      // Signature captures every visual property
+      const signature = [
+        point.lat,
+        point.lng,
+        point.title,
+        cleanKm,
+        point.category,
+        point.lineName,
+        point.locationDesc,
+        point.photos?.length || 0,
+        point.notes?.length || 0,
+        point.workLogs?.length || 0,
+        isSelected ? '1' : '0',
+        isCompact ? '1' : '0',
+        catColorObj.bg || '',
+        catColorObj.border || '',
+        catColorObj.text || '',
+        point.titleTextStyle?.color || '',
+        point.titleTextStyle?.fontStyle || '',
+        point.titleTextStyle?.textDecoration || '',
+      ].join('::');
+
+      const existingMarker = currentMap.get(point.id);
+      const prevSig = cacheMap.get(point.id);
+
+      if (existingMarker) {
+        // Only touch Leaflet DOM if visual signature actually changed
+        if (prevSig !== signature) {
+          existingMarker.setLatLng([point.lat, point.lng]);
+          const newIcon = createMarkerIcon(point, isSelected, categoryColors, isCompact);
+          existingMarker.setIcon(newIcon);
+          existingMarker.setTooltipContent(`
+            <div class="text-xs font-sans notranslate p-0.5" translate="no">
+              <div class="font-bold text-slate-900" style="${point.titleTextStyle?.color ? `color: ${point.titleTextStyle.color};` : ''}${point.titleTextStyle?.fontStyle === 'italic' ? 'font-style: italic;' : ''}${point.titleTextStyle?.textDecoration === 'underline' ? 'text-decoration: underline;' : ''}">${point.title}</div>
+              <div class="text-sky-700 font-mono font-bold mt-0.5">📍 KM: ${cleanKm || 'Belirtilmemiş'}</div>
+              <div class="text-slate-500 text-[11px]">${point.lineName}${point.locationDesc ? ` • ${point.locationDesc}` : ''}</div>
+            </div>
+          `);
+          cacheMap.set(point.id, signature);
+        }
+      } else {
+        // Brand-new point: instantiate marker
+        const icon = createMarkerIcon(point, isSelected, categoryColors, isCompact);
+        const marker = L.marker([point.lat, point.lng], { icon });
+
+        marker.on('click', (e) => {
+          L.DomEvent.stopPropagation(e);
+          if (isTakyidatPickModeRef.current && onPickTakyidatPointRef.current) {
+            onPickTakyidatPointRef.current(point.lat, point.lng, point.kmValue, point.title, point.lineName);
+            return;
+          }
+          if (isLivePointPickModeRef.current && onPickLivePointRef.current) {
+            onPickLivePointRef.current(point.lat, point.lng);
+            return;
+          }
+          if (isMeasuringRef.current) {
+            setMeasurePoints((prev) => [...prev, { lat: point.lat, lng: point.lng }]);
+            return;
+          }
+          onSelectPointRef.current(point);
+        });
+
+        marker.bindTooltip(
+          `
+          <div class="text-xs font-sans notranslate p-0.5" translate="no">
+            <div class="font-bold text-slate-900" style="${point.titleTextStyle?.color ? `color: ${point.titleTextStyle.color};` : ''}${point.titleTextStyle?.fontStyle === 'italic' ? 'font-style: italic;' : ''}${point.titleTextStyle?.textDecoration === 'underline' ? 'text-decoration: underline;' : ''}">${point.title}</div>
+            <div class="text-sky-700 font-mono font-bold mt-0.5">📍 KM: ${cleanKm || 'Belirtilmemiş'}</div>
+            <div class="text-slate-500 text-[11px]">${point.lineName}${point.locationDesc ? ` • ${point.locationDesc}` : ''}</div>
+          </div>
+        `,
+          { direction: 'top', offset: [0, isCompact ? -12 : -32] }
+        );
+
+        layer.addLayer(marker);
+        currentMap.set(point.id, marker);
+        cacheMap.set(point.id, signature);
+      }
     });
 
-    if (selectedId && markerInstancesMapRef.current.has(selectedId)) {
-      const curMarker = markerInstancesMapRef.current.get(selectedId)!;
+    // B) Prune deleted markers cleanly
+    for (const [id, marker] of currentMap.entries()) {
+      if (!currentPointIds.has(id)) {
+        try {
+          layer.removeLayer(marker);
+        } catch {}
+        currentMap.delete(id);
+        cacheMap.delete(id);
+      }
+    }
+
+    if (selectedId && currentMap.has(selectedId)) {
+      const curMarker = currentMap.get(selectedId)!;
       curMarker.openTooltip();
     }
   }, [points, categoryColors, isCompact]);
@@ -710,6 +905,10 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
     const map = mapInstanceRef.current;
     const takyidatGroup = takyidatLayerRef.current;
     if (!map || !takyidatGroup) return;
+
+    const takyidatSig = `${showTakyidatOverlay}:${takyidatRestrictions.length}:${points.length}:${JSON.stringify(takyidatRestrictions)}`;
+    if (prevTakyidatSigRef.current === takyidatSig) return;
+    prevTakyidatSigRef.current = takyidatSig;
 
     takyidatGroup.clearLayers();
     if (!showTakyidatOverlay || takyidatRestrictions.length === 0) return;
@@ -855,6 +1054,11 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
   useEffect(() => {
     const parcelsGroup = parcelsLayerRef.current;
     if (!parcelsGroup) return;
+
+    const parcelsSig = `${showParcelsOverlay}:${railwayParcels.length}:${JSON.stringify(railwayParcels)}`;
+    if (prevParcelsSigRef.current === parcelsSig) return;
+    prevParcelsSigRef.current = parcelsSig;
+
     parcelsGroup.clearLayers();
 
     if (!showParcelsOverlay || !railwayParcels || railwayParcels.length === 0) return;
@@ -1159,50 +1363,28 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
   }, [liveGpsCoords, nearestRailwayKm]);
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full overflow-hidden select-none bg-slate-900 touch-none">
       {/* Map Container */}
       <div
         id="railway-map-container"
         ref={mapContainerRef}
-        className="w-full h-full z-0"
+        className="w-full h-full z-0 touch-none"
+        style={{ touchAction: 'none' }}
       />
 
-      {/* Floating Live GPS / Canlı Konum Pill on Map */}
-      {onToggleLiveGps && (
-        <div className="absolute top-3 right-14 z-20 flex items-center gap-1.5 animate-in fade-in duration-150">
-          <button
-            id="map-floating-live-gps-btn"
-            onClick={onToggleLiveGps}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold shadow-md transition-all cursor-pointer border ${
-              isLiveGpsActive
-                ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500 ring-2 ring-emerald-300/60'
-                : 'bg-white hover:bg-slate-50 text-slate-800 border-slate-300'
-            }`}
-            title={
-              isLiveGpsActive
-                ? 'Canlı Konum Takibi Aktif • Tıklayarak Kapat'
-                : 'Canlı GPS Konumunu ve KM Takibini Başlat'
-            }
-          >
-            <Navigation2
-              className={`w-3.5 h-3.5 ${
-                isLiveGpsActive ? 'text-white animate-spin-slow' : 'text-sky-600'
-              }`}
-            />
-            <span>
-              {isLiveGpsActive
-                ? nearestRailwayKm
-                  ? `Canlı KM ${nearestRailwayKm.chainageKm}`
-                  : 'Canlı Konum Açık'
-                : '📍 Canlı Konum'}
-            </span>
-            {isLiveGpsActive && (
-              <span className="relative flex h-2 w-2 ml-0.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-200"></span>
-              </span>
-            )}
-          </button>
+      {/* Offline Mode Active Banner */}
+      {isOfflineActive && (
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 bg-amber-500 text-slate-950 px-3.5 py-1.5 rounded-xl font-bold text-xs shadow-lg flex items-center gap-2 border border-amber-600/30 ring-2 ring-amber-400/30 animate-in fade-in select-none">
+          <div className="w-2 h-2 rounded-full bg-slate-950 animate-pulse" />
+          <span>Çevrimdışı Harita Modu (Temel Hat Haritası)</span>
+          {onOpenOfflineModal && (
+            <button
+              onClick={onOpenOfflineModal}
+              className="ml-1 bg-slate-950 hover:bg-slate-900 text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-md transition-colors cursor-pointer"
+            >
+              Önbellek ➔
+            </button>
+          )}
         </div>
       )}
 
@@ -1413,6 +1595,56 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
           >
             <Maximize2 className="w-4 h-4" />
           </button>
+
+          {/* Çevrimdışı Harita & Önbellek Yönetimi */}
+          {onOpenOfflineModal && (
+            <button
+              id="map-offline-manager-btn"
+              onClick={onOpenOfflineModal}
+              title={
+                isOfflineActive
+                  ? 'Çevrimdışı Mod Aktif • Yerel Harita & Önbellek Yönetimi'
+                  : 'Çevrimdışı Harita İndir & Önbellek Yönetimi'
+              }
+              className={`p-2 rounded-lg transition-colors cursor-pointer ${
+                isOfflineActive
+                  ? 'bg-amber-500 text-slate-950 shadow-xs'
+                  : 'text-slate-700 hover:text-amber-600 hover:bg-slate-100'
+              }`}
+            >
+              <HardDriveDownload className="w-4 h-4" />
+            </button>
+          )}
+
+          {/* Canlı Konum (Live GPS KM Takibi) Aç/Kapat Butonu */}
+          {onToggleLiveGps && (
+            <button
+              id="map-toggle-live-gps-btn"
+              onClick={onToggleLiveGps}
+              title={
+                isLiveGpsActive
+                  ? nearestRailwayKm
+                    ? `Canlı Demiryolu KM: ${nearestRailwayKm.chainageKm} (Aktif) • Tıklayarak Kapat`
+                    : 'Canlı Konum Açık • Tıklayarak Kapat'
+                  : 'Canlı GPS Konumu ve Demiryolu KM Takibini Başlat'
+              }
+              className={`p-2 rounded-lg transition-colors flex items-center justify-center cursor-pointer relative ${
+                isLiveGpsActive
+                  ? 'bg-emerald-600 text-white shadow-xs ring-2 ring-emerald-300/80'
+                  : 'text-slate-700 hover:text-emerald-700 hover:bg-slate-100'
+              }`}
+            >
+              <Navigation2
+                className={`w-4 h-4 ${isLiveGpsActive ? 'text-white animate-pulse' : 'text-slate-700'}`}
+              />
+              {isLiveGpsActive && (
+                <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                </span>
+              )}
+            </button>
+          )}
 
           {/* Mevcut GPS Konumuma Git / Canlı Konumu Aç */}
           <button

@@ -100,3 +100,59 @@
   align-items: center !important;
   justify-content: center !important;
 }
+
+/* Mobil Cihazlarda Ekran ve Çerçevelerin (Header, Menü) Sabit Kalması, Sayfa Zoomunun Engellenmesi */
+html, body {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-overscroll-behavior: none;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#root {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+
+/* Harita alanının dokunma ve pinch-to-zoom hareketlerini sadece Leaflet'e yönlendirmesi */
+#railway-map-container,
+#railway-map-container .leaflet-container {
+  touch-action: none !important;
+  overscroll-behavior: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important;
+}
+
+/* Form alanlarında yazma ve imleç seçimi serbest olsun */
+input, textarea, select {
+  -webkit-user-select: auto !important;
+  user-select: auto !important;
+  touch-action: manipulation !important;
+}
+
+/* Mobilde Leaflet zoom kontrolünün (+ / -) alt menünün üzerinde temiz ve erişilebilir durması */
+@media (max-width: 640px) {
+  .leaflet-bottom.leaflet-right {
+    margin-bottom: 68px !important;
+    margin-right: 12px !important;
+  }
+}

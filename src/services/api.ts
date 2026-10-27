@@ -503,17 +503,60 @@ export async function fetchRailwayPoints(): Promise<RailwayPoint[]> {
         return [];
       }
 
-      // Fast Path: If server returned full points and there are no offline pending actions,
-      // return authoritative points immediately without blocking the main thread on IndexedDB!
-      if (pendingUpsertMap.size === 0 && validServerPoints.length > 0) {
-        const finalPoints = sortPointsByKm(validServerPoints);
-        // Persist to local caches in background
+      // Fast Path with Intelligent Photo and Note Safety:
+      const localPoints = getLocalCachedPoints();
+      const localWithDataMap = new Map<string, RailwayPoint>();
+      localPoints.forEach((p) => {
+        if (p && p.id && ((p.photos && p.photos.length > 0) || (p.notes && p.notes.length > 0))) {
+          localWithDataMap.set(p.id, p);
+        }
+      });
+
+      let anyLocalDataMerged = false;
+      const mergedPoints = validServerPoints.map((sp) => {
+        const lp = localWithDataMap.get(sp.id);
+        if (!lp) return sp;
+
+        let modified = false;
+        const photoMap = new Map<string, PointPhoto>();
+        (sp.photos || []).forEach((ph) => photoMap.set(ph.id, ph));
+        (lp.photos || []).forEach((ph) => {
+          if (!photoMap.has(ph.id) && !ph.dataUrl?.includes('[idb]')) {
+            photoMap.set(ph.id, ph);
+            modified = true;
+          }
+        });
+
+        const noteMap = new Map<string, PointNote>();
+        (sp.notes || []).forEach((n) => noteMap.set(n.id, n));
+        (lp.notes || []).forEach((n) => {
+          if (!noteMap.has(n.id)) {
+            noteMap.set(n.id, n);
+            modified = true;
+          }
+        });
+
+        if (modified) {
+          anyLocalDataMerged = true;
+          return {
+            ...sp,
+            photos: Array.from(photoMap.values()),
+            notes: Array.from(noteMap.values()),
+          };
+        }
+        return sp;
+      });
+
+      if (pendingUpsertMap.size === 0 && mergedPoints.length > 0) {
+        const finalPoints = sortPointsByKm(mergedPoints);
         saveLocalCachedPoints(finalPoints);
+        if (anyLocalDataMerged) {
+          setTimeout(() => syncAllPhotosToServer().catch(() => {}), 1000);
+        }
         return finalPoints;
       }
 
       // Fallback path when there are offline pending items
-      const localPoints = getLocalCachedPoints();
       const idbPoints = await getPointsFromIDB().catch(() => [] as RailwayPoint[]);
 
       const localMap = new Map<string, RailwayPoint>();

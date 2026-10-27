@@ -13,6 +13,7 @@ import {
   CheckCircle,
   RefreshCw,
   CloudUpload,
+  HardDriveDownload,
   FileText,
   Gauge,
   Compass,
@@ -27,6 +28,8 @@ interface MobileActionsDrawerProps {
   totalPoints: number;
   isLiveGpsActive?: boolean;
   onToggleLiveGps?: () => void;
+  onOpenOfflineModal?: () => void;
+  isOfflineMode?: boolean;
   onOpenImportExport: () => void;
   onOpenMobileInstall: () => void;
   onOpenPalette: () => void;
@@ -51,6 +54,8 @@ export const MobileActionsDrawer: React.FC<MobileActionsDrawerProps> = ({
   totalPoints,
   isLiveGpsActive = false,
   onToggleLiveGps,
+  onOpenOfflineModal,
+  isOfflineMode = false,
   onOpenImportExport,
   onOpenMobileInstall,
   onOpenPalette,
@@ -177,6 +182,38 @@ export const MobileActionsDrawer: React.FC<MobileActionsDrawerProps> = ({
               <span className="text-[10px] text-slate-400">İçe / Dışa Aktar</span>
             </div>
           </button>
+
+          {/* Çevrimdışı Harita & Önbellek */}
+          {onOpenOfflineModal && (
+            <button
+              onClick={() => {
+                onOpenOfflineModal();
+                onClose();
+              }}
+              className={`flex items-center gap-2 p-3 rounded-xl border transition-all font-semibold ${
+                isOfflineMode
+                  ? 'bg-amber-950/80 hover:bg-amber-900 border-amber-500/80 text-amber-200'
+                  : 'bg-emerald-950/40 hover:bg-emerald-900/60 active:bg-emerald-900 border-emerald-500/40 text-emerald-200'
+              }`}
+            >
+              <HardDriveDownload
+                className={`w-4 h-4 ${
+                  isOfflineMode ? 'text-amber-400 animate-pulse' : 'text-emerald-400'
+                }`}
+              />
+              <div className="text-left leading-tight">
+                <span className="block font-bold flex items-center gap-1.5">
+                  <span>Çevrimdışı Harita</span>
+                  {isOfflineMode && (
+                    <span className="bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded-full text-[9px] font-black">
+                      AKTİF
+                    </span>
+                  )}
+                </span>
+                <span className="text-[10px] text-slate-400">Önbellek &amp; Hat İndir</span>
+              </div>
+            </button>
+          )}
 
           {/* TCDD Resmi Raporlar */}
           {onOpenReports && (

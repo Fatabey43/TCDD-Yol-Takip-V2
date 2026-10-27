@@ -48,9 +48,11 @@ import { WorkLogModal } from './components/WorkLogModal.tsx';
 import { TakyidatModal, TakyidatFormDraft } from './components/TakyidatModal.tsx';
 import { RailwayParcelModal } from './components/RailwayParcelModal.tsx';
 import { FieldWorkListModal } from './components/FieldWorkListModal.tsx';
+import { OfflineMapModal } from './components/OfflineMapModal.tsx';
 import { SelectPointModal } from './components/SelectPointModal.tsx';
 import { LiveKmIndicator } from './components/LiveKmIndicator.tsx';
 import { calculateLiveRailwayKm, NearestKmResult } from './utils/liveRailwayKm.ts';
+import { isForceOfflineMode } from './utils/offlineMapStorage.ts';
 import { Header } from './components/Header.tsx';
 import { PointListSidebar } from './components/PointListSidebar.tsx';
 import { ColorPaletteTabBar } from './components/ColorPaletteTabBar.tsx';
@@ -206,6 +208,9 @@ export default function App() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [isOnline, setIsOnline] = useState<boolean>(() => typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [isOfflineModalOpen, setIsOfflineModalOpen] = useState<boolean>(false);
+  const [mapBounds, setMapBounds] = useState<{ minLat: number; maxLat: number; minLng: number; maxLng: number } | null>(null);
+  const [isForceOffline, setIsForceOffline] = useState<boolean>(() => isForceOfflineMode());
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -261,9 +266,31 @@ export default function App() {
         }
         return sortPointsByKm(data);
       });
-      setTakyidatList(takData);
-      setParcelsList(parcelsData);
-      setFieldWorksList(worksData);
+
+      setTakyidatList((prev) => {
+        if (prev.length === takData.length) {
+          const unchanged = prev.every((t, i) => t.id === takData[i]?.id && t.updatedAt === takData[i]?.updatedAt);
+          if (unchanged) return prev;
+        }
+        return takData;
+      });
+
+      setParcelsList((prev) => {
+        if (prev.length === parcelsData.length) {
+          const unchanged = prev.every((p, i) => p.id === parcelsData[i]?.id && p.updatedAt === parcelsData[i]?.updatedAt);
+          if (unchanged) return prev;
+        }
+        return parcelsData;
+      });
+
+      setFieldWorksList((prev) => {
+        if (prev.length === worksData.length) {
+          const unchanged = prev.every((w, i) => w.id === worksData[i]?.id && w.updatedAt === worksData[i]?.updatedAt);
+          if (unchanged) return prev;
+        }
+        return worksData;
+      });
+
       currentPointCountRef.current = data.length;
       // If a point was selected, refresh its data reference
       setSelectedPoint((curr) => (curr ? data.find((p) => p.id === curr.id) || null : null));
@@ -425,11 +452,16 @@ export default function App() {
       setIsOnline(false);
       showToast('Çevrimdışı (Offline) moda geçildi. Sahadaki tüm noktalarınız cihazınızda güvende.');
     };
+    const handleOfflineModeChange = (e: Event) => {
+      const customEvent = e as CustomEvent<{ enabled: boolean }>;
+      setIsForceOffline(customEvent.detail?.enabled ?? isForceOfflineMode());
+    };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('focus', handleFocus);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    window.addEventListener('tcdd_offline_mode_changed', handleOfflineModeChange);
 
     // 5. Quiet fallback polling interval (every 12 seconds instead of aggressive 3s storm)
     const versionPollInterval = setInterval(checkVersionAndLoadIfNeeded, 12000);
@@ -467,6 +499,7 @@ export default function App() {
       window.removeEventListener('focus', handleFocus);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('tcdd_offline_mode_changed', handleOfflineModeChange);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
   }, [user, loadPoints]);
@@ -754,6 +787,7 @@ export default function App() {
         }
         return prev;
       });
+      broadcastLocalChange();
       showToast('Saha notu kaydedildi.');
     }
   };
@@ -782,6 +816,7 @@ export default function App() {
         }
         return prev;
       });
+      broadcastLocalChange();
       showToast('Not silindi.');
     }
   };
@@ -807,6 +842,7 @@ export default function App() {
         }
         return prev;
       });
+      broadcastLocalChange();
       showToast('Fotoğraf başarıyla kaydedildi.');
     }
   };
@@ -837,6 +873,7 @@ export default function App() {
         }
         return prev;
       });
+      broadcastLocalChange();
       showToast('Fotoğraf silindi.');
     }
   };
@@ -1143,6 +1180,7 @@ export default function App() {
   const handleSaveFieldWork = async (workData: Omit<FieldWorkItem, 'id' | 'createdAt' | 'updatedAt'>) => {
     const saved = await saveNewFieldWork(workData);
     setFieldWorksList((prev) => [saved, ...prev.filter((w) => w.id !== saved.id)]);
+    broadcastLocalChange();
     showToast(`✅ "${saved.title}" iş listesine başarıyla eklendi.`);
     return saved;
   };
@@ -1150,6 +1188,7 @@ export default function App() {
   const handleUpdateFieldWork = async (updatedWork: FieldWorkItem) => {
     const res = await updateExistingFieldWork(updatedWork);
     setFieldWorksList((prev) => prev.map((w) => (w.id === res.id ? res : w)));
+    broadcastLocalChange();
     showToast(`✅ "${res.title}" güncellendi.`);
     return res;
   };
@@ -1157,6 +1196,7 @@ export default function App() {
   const handleDeleteFieldWork = async (id: string) => {
     const success = await deleteFieldWorkById(id);
     setFieldWorksList((prev) => prev.filter((w) => w.id !== id));
+    broadcastLocalChange();
     showToast('İş kaydı silindi.');
     return success;
   };
@@ -1496,7 +1536,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-100 font-sans select-none">
+    <div className="fixed inset-0 w-full h-full h-[100dvh] flex flex-col overflow-hidden bg-slate-100 font-sans select-none">
       {/* Cinematic Diagonal Speed Train Transition Overlay */}
       <TrainTransitionOverlay
         isActive={isTransitioning}
@@ -1511,6 +1551,8 @@ export default function App() {
         totalPoints={points.length}
         filteredCount={filteredPoints.length}
         isOnline={isOnline}
+        isOfflineMode={isForceOffline || !isOnline}
+        onOpenOfflineModal={() => setIsOfflineModalOpen(true)}
         activeTakyidatCount={takyidatList.filter((r) => r.status === 'active').length}
         totalParcelsCount={parcelsList.length}
         fieldWorksCount={fieldWorksList.length}
@@ -1625,6 +1667,8 @@ export default function App() {
                 onPanToMyLocation={handlePanToMyGps}
                 targetWorkLocation={targetWorkLocation}
                 onClearTargetWorkLocation={() => setTargetWorkLocation(null)}
+                onOpenOfflineModal={() => setIsOfflineModalOpen(true)}
+                onBoundsChange={setMapBounds}
               />
 
               {/* Toggle Sidebar Button for Desktop - Clean White Institutional Pill */}
@@ -1812,6 +1856,8 @@ export default function App() {
         totalPoints={points.length}
         isLiveGpsActive={isLiveGpsActive}
         onToggleLiveGps={handleToggleLiveGps}
+        onOpenOfflineModal={() => setIsOfflineModalOpen(true)}
+        isOfflineMode={isForceOffline || !isOnline}
         onOpenImportExport={() => setIsImportExportOpen(true)}
         onOpenMobileInstall={() => setIsMobileInstallOpen(true)}
         onOpenPalette={() => setActiveTab('palette')}
@@ -1831,6 +1877,16 @@ export default function App() {
         onSyncPhotos={handleSyncPhotos}
         onOpenUserManagement={isAdmin ? () => setIsUserMgmtOpen(true) : undefined}
         isRefreshing={isRefreshing}
+      />
+
+      {/* Çevrimdışı Harita Parçaları (Tiles) & Hat Önbelleği Modalı */}
+      <OfflineMapModal
+        isOpen={isOfflineModalOpen}
+        onClose={() => setIsOfflineModalOpen(false)}
+        points={points}
+        isOnline={isOnline}
+        currentMapBounds={mapBounds}
+        onToast={showToast}
       />
 
       {/* TCDD Saha İş Listesi & Takip Modalı (Haritada kalabalık yapmayan, tıklandığında KM'ye giden sistem) */}

@@ -12,8 +12,58 @@ import {
   Gauge,
   Radio,
   Wrench,
+  Signal,
 } from 'lucide-react';
 import { NearestKmResult } from '../utils/liveRailwayKm.ts';
+
+export interface GpsQualityInfo {
+  level: 'good' | 'medium' | 'poor';
+  text: string;
+  badgeBg: string;
+  badgeText: string;
+  badgeBorder: string;
+  dotColor: string;
+  pingColor: string;
+  accuracyMeters: number;
+}
+
+export const getGpsSignalQuality = (accuracy?: number): GpsQualityInfo => {
+  const acc = Math.round(accuracy ?? 15);
+  if (acc <= 8) {
+    return {
+      level: 'good',
+      text: 'Güçlü',
+      badgeBg: 'bg-emerald-50',
+      badgeText: 'text-emerald-700',
+      badgeBorder: 'border-emerald-200',
+      dotColor: 'bg-emerald-500',
+      pingColor: 'bg-emerald-400',
+      accuracyMeters: acc,
+    };
+  }
+  if (acc <= 20) {
+    return {
+      level: 'medium',
+      text: 'Orta',
+      badgeBg: 'bg-amber-50',
+      badgeText: 'text-amber-700',
+      badgeBorder: 'border-amber-200',
+      dotColor: 'bg-amber-500',
+      pingColor: 'bg-amber-400',
+      accuracyMeters: acc,
+    };
+  }
+  return {
+    level: 'poor',
+    text: 'Zayıf',
+    badgeBg: 'bg-rose-50',
+    badgeText: 'text-rose-700',
+    badgeBorder: 'border-rose-200',
+    dotColor: 'bg-rose-500',
+    pingColor: 'bg-rose-400',
+    accuracyMeters: acc,
+  };
+};
 
 interface LiveKmIndicatorProps {
   gpsLocation: {
@@ -54,6 +104,7 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
   workListCount,
 }) => {
   const [isMinimized, setIsMinimized] = useState<boolean>(false);
+  const gpsQuality = getGpsSignalQuality(gpsLocation?.accuracy);
 
   // If live mode is not active, do not render
   if (!isLiveActive) {
@@ -67,9 +118,12 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
         id="live-km-indicator-minimized"
         className="absolute bottom-4 left-4 z-20 bg-slate-900/90 text-white backdrop-blur-md border border-slate-700/80 rounded-2xl shadow-2xl px-3.5 py-2 flex items-center gap-2.5 animate-in fade-in select-none"
       >
-        <span className="relative flex h-2.5 w-2.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+        <span
+          className="relative flex h-2.5 w-2.5"
+          title={`GPS Sinyali: ${gpsQuality.text} (±${gpsQuality.accuracyMeters}m)`}
+        >
+          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${gpsQuality.pingColor} opacity-75`}></span>
+          <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${gpsQuality.dotColor}`}></span>
         </span>
         <button
           onClick={() => setIsMinimized(false)}
@@ -79,6 +133,17 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
           <span>{nearestKm ? `KM ${nearestKm.chainageKm}` : 'Konum Aranıyor...'}</span>
           <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
         </button>
+
+        {gpsLocation && (
+          <span
+            title={`GPS Hassasiyeti: ±${gpsQuality.accuracyMeters}m (${gpsQuality.text})`}
+            className={`text-[9px] font-bold font-mono px-1.5 py-0.5 rounded border flex items-center gap-1 ${gpsQuality.badgeBg} ${gpsQuality.badgeText} ${gpsQuality.badgeBorder}`}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${gpsQuality.dotColor}`}></span>
+            <span>±{gpsQuality.accuracyMeters}m</span>
+          </span>
+        )}
+
         <button
           onClick={onPanToMyLocation}
           className="p-1 hover:bg-slate-800 rounded-lg text-slate-300 hover:text-white transition-colors cursor-pointer"
@@ -108,14 +173,25 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
       <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
         <div className="flex items-center gap-2">
           <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${gpsQuality.pingColor} opacity-75`}></span>
+            <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${gpsQuality.dotColor}`}></span>
           </span>
           <div className="flex flex-col">
-            <span className="text-[10px] font-black uppercase tracking-wider text-sky-800 flex items-center gap-1">
-              <Radio className="w-3 h-3 text-emerald-600 animate-pulse" />
-              <span>{isManualPointMode ? 'Referans Noktası' : 'Canlı GPS Konumu'}</span>
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-black uppercase tracking-wider text-sky-800 flex items-center gap-1">
+                <Radio className={`w-3 h-3 ${gpsQuality.badgeText} animate-pulse`} />
+                <span>{isManualPointMode ? 'Referans Noktası' : 'Canlı GPS Konumu'}</span>
+              </span>
+              {!isManualPointMode && gpsLocation && (
+                <span
+                  title={`GPS Sinyal Kalitesi: ${gpsQuality.text} (±${gpsQuality.accuracyMeters}m)`}
+                  className={`text-[9px] font-bold px-1.5 py-0.2 rounded-md border flex items-center gap-1 ${gpsQuality.badgeBg} ${gpsQuality.badgeText} ${gpsQuality.badgeBorder}`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${gpsQuality.dotColor}`} />
+                  <span>{gpsQuality.text}</span>
+                </span>
+              )}
+            </div>
             {nearestKm?.lineName && (
               <span className="text-[10px] text-slate-500 font-semibold truncate max-w-[140px]">
                 {nearestKm.lineName}
@@ -212,14 +288,26 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
                 </span>
               </div>
 
-              {/* Speed & Accuracy if GPS available */}
+              {/* Speed & Colored Signal Quality / Accuracy (Hassasiyet Metre Bazlı) */}
               {gpsLocation && (
-                <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-100">
-                  <span className="flex items-center gap-1">
+                <div className="flex items-center justify-between text-[10px] pt-1.5 border-t border-slate-100">
+                  <span className="flex items-center gap-1 text-slate-500">
                     <Gauge className="w-3 h-3 text-slate-400" />
                     <span>Hız: {gpsLocation.speed !== null && gpsLocation.speed !== undefined ? `${gpsLocation.speed} km/s` : 'Sabit'}</span>
                   </span>
-                  <span>Hassasiyet: ±{gpsLocation.accuracy || 10}m</span>
+
+                  {/* Renkli Metre Bazlı Sinyal Göstergesi */}
+                  <div
+                    title={`GPS Hassasiyeti: ±${gpsQuality.accuracyMeters} metre (${gpsQuality.text} Sinyal)`}
+                    className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg border font-semibold ${gpsQuality.badgeBg} ${gpsQuality.badgeText} ${gpsQuality.badgeBorder}`}
+                  >
+                    <span className="flex items-center gap-0.5">
+                      <Signal className="w-3 h-3" />
+                      <span className={`w-1.5 h-1.5 rounded-full ${gpsQuality.dotColor} ${gpsQuality.level === 'good' ? 'animate-pulse' : ''}`} />
+                    </span>
+                    <span className="font-mono font-bold">±{gpsQuality.accuracyMeters}m</span>
+                    <span className="text-[9px] font-bold">({gpsQuality.text})</span>
+                  </div>
                 </div>
               )}
 

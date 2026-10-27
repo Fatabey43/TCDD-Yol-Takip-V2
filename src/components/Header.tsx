@@ -30,6 +30,7 @@ import {
   Navigation2,
   MapPin,
   Wrench,
+  HardDriveDownload,
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -43,6 +44,8 @@ interface HeaderProps {
   totalParcelsCount?: number;
   fieldWorksCount?: number;
   onOpenFieldWorks?: () => void;
+  onOpenOfflineModal?: () => void;
+  isOfflineMode?: boolean;
   isLiveGpsActive?: boolean;
   onToggleLiveGps?: () => void;
   currentLiveKm?: string | null;
@@ -93,6 +96,8 @@ export const Header: React.FC<HeaderProps> = ({
   totalParcelsCount = 0,
   fieldWorksCount = 0,
   onOpenFieldWorks,
+  onOpenOfflineModal,
+  isOfflineMode = false,
   isLiveGpsActive = false,
   onToggleLiveGps,
   currentLiveKm,
@@ -187,25 +192,8 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Mobile Quick Action Buttons (Live Location + Search + Actions Menu) */}
+        {/* Mobile Quick Action Buttons (Search + Actions Menu) */}
         <div className="flex sm:hidden items-center gap-1.5 flex-shrink-0">
-          {onToggleLiveGps && (
-            <button
-              id="mobile-live-gps-btn"
-              onClick={onToggleLiveGps}
-              className={`p-2 rounded-xl border transition-all cursor-pointer ${
-                isLiveGpsActive
-                  ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm'
-                  : 'bg-sky-50 text-sky-800 border-sky-200 hover:bg-sky-100'
-              }`}
-              title={isLiveGpsActive ? 'Canlı Konum Açık' : 'Canlı Konumu Aç (GPS)'}
-            >
-              <Navigation2
-                className={`w-4 h-4 ${isLiveGpsActive ? 'text-white animate-pulse' : 'text-sky-600'}`}
-              />
-            </button>
-          )}
-
           <button
             onClick={() => setShowMobileSearch(!showMobileSearch)}
             className={`p-2 rounded-xl border transition-colors ${
@@ -355,6 +343,29 @@ export const Header: React.FC<HeaderProps> = ({
               {fieldWorksCount > 0 && (
                 <span className="bg-amber-500 text-slate-950 px-1.5 py-0.2 rounded-full text-[10px] font-black">
                   {fieldWorksCount}
+                </span>
+              )}
+            </button>
+          )}
+
+          {/* Çevrimdışı Harita & Önbellek Yönetimi Butonu */}
+          {onOpenOfflineModal && (
+            <button
+              id="header-open-offline-modal-btn"
+              onClick={onOpenOfflineModal}
+              className={`flex items-center gap-1.5 text-xs font-bold px-2.5 py-1.5 rounded-lg transition-all cursor-pointer shadow-xs border ${
+                isOfflineMode
+                  ? 'bg-amber-500 hover:bg-amber-600 text-slate-950 border-amber-600 ring-1 ring-amber-400/40'
+                  : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+              }`}
+              title="Çevrimdışı Harita & Yerel Depolama (İnternetsiz Saha Önbelleği)"
+            >
+              <HardDriveDownload className={`w-3.5 h-3.5 ${isOfflineMode ? 'text-slate-950' : 'text-amber-600'}`} />
+              <span className="hidden lg:inline">Çevrimdışı Harita</span>
+              <span className="lg:hidden">Önbellek</span>
+              {isOfflineMode && (
+                <span className="bg-slate-950 text-amber-300 px-1.5 py-0.2 rounded text-[9px] font-black">
+                  AKTİF
                 </span>
               )}
             </button>
