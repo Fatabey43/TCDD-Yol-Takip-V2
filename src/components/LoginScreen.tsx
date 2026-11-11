@@ -84,30 +84,33 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onSuccessToast }) => {
     setRegisterSuccessMessage(null);
     setIsSubmitting(true);
 
+    const emailToUse = regEmail.trim();
+    const passToUse = regPassword;
+
     try {
-      const res: any = await registerApi({
+      await registerApi({
         name: regName.trim(),
-        email: regEmail.trim(),
-        password: regPassword,
+        email: emailToUse,
+        password: passToUse,
         department: regDepartment.trim(),
-        // No role selected here; server sets it to 'editor' with status: 'pending'
       });
 
-      // Clear input fields
-      setLoginEmail(regEmail.trim());
-      setRegName('');
-      setRegEmail('');
-      setRegPassword('');
-
-      // Show confirmation message
-      setRegisterSuccessMessage(
-        res?.message || 'Hesap başvurunuz başarıyla alındı! Güvenlik nedeniyle sisteme giriş yapabilmeniz için sistem yöneticilerinden birinin onay vermesi gerekmektedir.'
-      );
-      setActiveTab('login');
-      onSuccessToast?.('Hesap başvurunuz yönetici onayına iletildi.');
+      // Alpha update: Auto-login immediately upon registration for zero friction
+      try {
+        await login(emailToUse, passToUse);
+        onSuccessToast?.('Hesabınız başarıyla oluşturuldu ve oturumunuz açıldı!');
+        return;
+      } catch {
+        // If auto-login fails, fall back to login tab with prefilled credentials
+        setLoginEmail(emailToUse);
+        setLoginPassword(passToUse);
+        setActiveTab('login');
+        setRegisterSuccessMessage('Hesabınız başarıyla oluşturuldu! Lütfen giriş yapınız.');
+        onSuccessToast?.('Hesabınız oluşturuldu.');
+      }
     } catch (err: any) {
       setError({
-        message: err.message || 'Kayıt başvurusu oluşturulamadı.',
+        message: err.message || 'Kayıt oluşturulamadı.',
       });
     } finally {
       setIsSubmitting(false);
@@ -293,11 +296,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onSuccessToast }) => {
               </div>
             </form>
           ) : (
-            /* TAB 2: REGISTER FORM (Strictly No Role Choice, Requires Admin Confirmation) */
+            /* TAB 2: REGISTER FORM */
             <form onSubmit={handleRegisterSubmit} className="space-y-3.5">
-              <div className="bg-purple-950/30 border border-purple-800/40 p-2.5 rounded-xl text-[11px] text-purple-200 flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-purple-400 shrink-0" />
-                <span>Hesabınız oluşturulduktan sonra herhangi bir <strong>Sistem Yöneticisi</strong> tarafından onaylanacaktır.</span>
+              <div className="bg-emerald-950/30 border border-emerald-800/40 p-2.5 rounded-xl text-[11px] text-emerald-200 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>Hesabınız oluşturulduğu an otomatik olarak aktif edilir, beklemeden başlayabilirsiniz.</span>
               </div>
 
               <div>
@@ -419,7 +422,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onSuccessToast }) => {
             </div>
             <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-800/50">
               <span className="font-semibold text-slate-400">Geliştirici: <strong className="text-sky-400">712 Şefliği</strong></span>
-              <span className="text-slate-500">v2.5 Özel Kurumsal Sürüm</span>
+              <span className="text-emerald-400 font-bold">Alpha v1.0 Kurumsal Sürüm</span>
             </div>
           </div>
         </div>

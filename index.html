@@ -4,15 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no" />
     <meta name="google" content="notranslate" />
-    <title>TCDD KM TAKİP</title>
-    <meta name="description" content="TCDD 712 Şefliği Demiryolu hatları kilometre noktası takibi, harita konumu, yol tarifi navigasyonu, saha notları ve fotoğraf kayıt sistemi." />
-    <meta property="og:title" content="TCDD KM TAKİP" />
-    <meta property="og:description" content="TCDD 712 Şefliği Demiryolu hatları kilometre noktası takibi, harita konumu, yol tarifi navigasyonu, saha notları ve fotoğraf kayıt sistemi." />
+    <title>TCDD - Demiryolu Hattı İzleme Modülü</title>
+    <meta name="description" content="TCDD Demiryolu hatları kilometre noktası takibi, harita konumu, yol tarifi navigasyonu, saha notları ve fotoğraf kayıt sistemi." />
+    <meta property="og:title" content="TCDD - Demiryolu Hattı İzleme Modülü" />
+    <meta property="og:description" content="TCDD Demiryolu hatları kilometre noktası takibi, harita konumu, yol tarifi navigasyonu, saha notları ve fotoğraf kayıt sistemi." />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="/pwa-512x512-v2.png" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content="/pwa-512x512-v2.png" />
-    <meta name="theme-color" content="#0a192f" />
+    <meta name="theme-color" content="#D32F2F" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -26,49 +26,16 @@
     <link rel="apple-touch-icon-precomposed" href="/apple-touch-icon-v2.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <script>
-      // Mobilde yalnızca haritanın yakınlaşmasını sağlamak; üst başlık, menü ve çerçevelerin ekrandan kaybolmasını önlemek için sayfa zoomunu kilitle
+      // Harita dışı alanlarda çift dokunma yakınlaştırmasını önle, ancak kaydırmaya (scroll) asla engel olma
       (function() {
-        // iOS Safari gesturestart/gesturechange/gestureend engelleme (tüm sayfa yakınlaşmasını kilitler)
         document.addEventListener('gesturestart', function (e) {
-          e.preventDefault();
-        }, { passive: false });
-        document.addEventListener('gesturechange', function (e) {
-          e.preventDefault();
-        }, { passive: false });
-        document.addEventListener('gestureend', function (e) {
-          e.preventDefault();
-        }, { passive: false });
-
-        // Harita dışındaki UI çerçevelerinde (Header, TabBar, Menü) çoklu parmakla sayfa esnetme zoomunu engelle
-        document.addEventListener('touchstart', function (e) {
-          if (e.touches.length > 1) {
-            var target = e.target;
-            if (!target || !target.closest || !target.closest('#railway-map-container')) {
-              e.preventDefault();
-            }
+          var target = e.target;
+          if (!target || !target.closest || !target.closest('#railway-map-container')) {
+            e.preventDefault();
           }
-        }, { passive: false });
-
-        // Çerçevelere hızlı çift dokunulduğunda Safari akıllı zoomunun arayüzü büyütmesini engelle
-        var lastTouchEnd = 0;
-        document.addEventListener('touchend', function (e) {
-          var now = Date.now();
-          if (now - lastTouchEnd <= 300) {
-            var target = e.target;
-            if (target && target.closest && !target.closest('#railway-map-container')) {
-              var tag = target.tagName ? target.tagName.toLowerCase() : '';
-              if (tag !== 'input' && tag !== 'textarea' && tag !== 'select') {
-                e.preventDefault();
-                if (typeof target.click === 'function') {
-                  target.click();
-                }
-              }
-            }
-          }
-          lastTouchEnd = now;
         }, { passive: false });
       })();
     </script>

@@ -117,19 +117,21 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
   return (
     <aside
       id="point-list-sidebar"
-      className={`bg-[#16161a] border-r border-[#2d2d33] flex flex-col h-full z-10 transition-all duration-300 relative font-mono-tech ${
+      className={`bg-white border-r border-[#DEE2E6] flex flex-col h-full max-h-full min-h-0 overflow-hidden z-10 transition-all duration-300 relative font-poppins shadow-sm ${
         isOpen ? 'w-full sm:w-80 md:w-96' : 'w-0 hidden'
       }`}
     >
-      {/* Aside Header - Variation 6: Sistem 712 with QUERY:// KM_LOC field */}
-      <div className="p-4 sm:p-5 border-b border-[#2d2d33] bg-[#16161a] flex-shrink-0">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-syne text-xl sm:text-2xl font-black uppercase tracking-tight text-white flex items-center gap-2">
-            <span>Sistem 712</span>
-            <span className="text-[10px] font-mono-tech text-[#00ff88] bg-[#00ff88]/10 px-2 py-0.5 rounded border border-[#00ff88]/30 font-bold">
+      {/* Aside Header - Variation 6: Bölgesel Kayıtlar */}
+      <div className="p-3 sm:p-5 border-b border-[#DEE2E6] bg-white flex-shrink-0">
+        <div className="flex items-center justify-between mb-2 sm:mb-3">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm sm:text-lg font-bold text-[#212529] tracking-tight">
+              Bölgesel Kayıtlar
+            </h2>
+            <span className="text-[10px] sm:text-[11px] font-roboto-mono text-[#D32F2F] bg-[#D32F2F]/10 px-2 py-0.5 rounded-full font-bold">
               {sortedPoints.length}
             </span>
-          </h2>
+          </div>
 
           <div className="flex items-center gap-1.5">
             {canDelete && sortedPoints.length > 0 && (
@@ -139,14 +141,14 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
                   setIsSelectMode((prev) => !prev);
                   if (isSelectMode) setSelectedIds(new Set());
                 }}
-                className={`px-2 py-1 rounded text-[10px] font-bold border transition-colors flex items-center gap-1 cursor-pointer ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all flex items-center gap-1.5 cursor-pointer ${
                   isSelectMode
-                    ? 'bg-[#00ff88] text-black border-[#00ff88] shadow-xs'
-                    : 'bg-black text-[#e0e0e4]/80 border-[#2d2d33] hover:text-white hover:border-[#00ff88]/40'
+                    ? 'bg-[#D32F2F] text-white border-[#D32F2F] shadow-xs'
+                    : 'bg-[#F8F9FA] text-[#495057] border-[#DEE2E6] hover:text-[#212529] hover:bg-slate-100'
                 }`}
                 title="Toplu silme ve seçim modunu aç/kapat"
               >
-                {isSelectMode ? <CheckSquare className="w-3 h-3" /> : <Square className="w-3 h-3" />}
+                {isSelectMode ? <CheckSquare className="w-3.5 h-3.5" /> : <Square className="w-3.5 h-3.5" />}
                 <span>{isSelectMode ? 'BİTİR' : 'SEÇ'}</span>
               </button>
             )}
@@ -155,7 +157,7 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
               id="close-sidebar-btn"
               type="button"
               onClick={onToggle}
-              className="p-1.5 text-[#e0e0e4]/50 hover:text-white hover:bg-white/5 rounded transition-colors cursor-pointer"
+              className="p-1.5 text-[#6C757D] hover:text-[#212529] hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
               title="Listeyi Kapat"
             >
               <X className="w-4 h-4" />
@@ -163,21 +165,21 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
           </div>
         </div>
 
-        {/* Monospace Query Field (QUERY:// KM_LOC) */}
+        {/* Search Field */}
         {onSearchChange && (
-          <div className="search-field bg-black border border-[#2d2d33] px-3 py-2 flex items-center gap-2 focus-within:border-[#00ff88]/70 transition-colors">
-            <Search className="w-3.5 h-3.5 text-[#e0e0e4]/40 flex-shrink-0" />
+          <div className="search-field bg-[#F8F9FA] border border-[#DEE2E6] px-3 py-1.5 flex items-center gap-2 rounded-xl focus-within:border-[#D32F2F] focus-within:bg-white transition-all">
+            <Search className="w-3.5 h-3.5 text-[#6C757D] flex-shrink-0" />
             <input
               type="text"
-              placeholder="QUERY:// KM_LOC"
+              placeholder="KM, makas veya lokasyon ara..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="bg-transparent border-none text-[#e0e0e4] font-mono-tech w-full outline-none text-xs placeholder-[#e0e0e4]/30"
+              className="bg-transparent border-none text-[#212529] font-poppins w-full outline-none text-xs placeholder-[#ADB5BD]"
             />
             {searchQuery && (
               <button
                 onClick={() => onSearchChange('')}
-                className="text-[#e0e0e4]/40 hover:text-white text-xs px-1 cursor-pointer"
+                className="text-[#6C757D] hover:text-[#212529] text-xs px-1 cursor-pointer"
               >
                 ✕
               </button>
@@ -188,22 +190,22 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
 
       {/* Bulk Action Bar (when in select mode) */}
       {isSelectMode && canDelete && sortedPoints.length > 0 && (
-        <div className="bg-black border-b border-[#2d2d33] px-4 py-2 flex items-center justify-between gap-2 flex-wrap text-xs shrink-0">
+        <div className="bg-[#F8F9FA] border-b border-[#DEE2E6] px-4 py-2 flex items-center justify-between gap-2 flex-wrap text-xs shrink-0">
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={handleSelectAll}
-              className="flex items-center gap-1.5 text-white font-bold hover:text-[#00ff88] cursor-pointer"
+              className="flex items-center gap-1.5 text-[#212529] font-bold hover:text-[#D32F2F] cursor-pointer"
             >
               {selectedIds.size === sortedPoints.length ? (
-                <CheckSquare className="w-4 h-4 text-[#00ff88]" />
+                <CheckSquare className="w-4 h-4 text-[#D32F2F]" />
               ) : (
-                <Square className="w-4 h-4 text-[#e0e0e4]/60" />
+                <Square className="w-4 h-4 text-[#6C757D]" />
               )}
               <span>TÜMÜNÜ SEÇ ({sortedPoints.length})</span>
             </button>
             {selectedIds.size > 0 && (
-              <span className="bg-[#00ff88]/20 text-[#00ff88] font-bold px-2 py-0.5 rounded text-[10px]">
+              <span className="bg-[#D32F2F]/10 text-[#D32F2F] font-bold px-2 py-0.5 rounded-full text-[10px] font-roboto-mono">
                 {selectedIds.size} SEÇİLDİ
               </span>
             )}
@@ -213,7 +215,7 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
             <button
               type="button"
               onClick={() => setIsBulkDeleteModalOpen(true)}
-              className="flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white font-bold px-2.5 py-1 rounded text-xs shadow-xs transition-colors cursor-pointer"
+              className="flex items-center gap-1 bg-[#D32F2F] hover:bg-[#B71C1C] text-white font-bold px-2.5 py-1 rounded-lg text-xs shadow-xs transition-colors cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" />
               <span>SİL ({selectedIds.size})</span>
@@ -222,14 +224,14 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
         </div>
       )}
 
-      {/* Points Scroll Area - Variation 6 entry list */}
+      {/* Points Scroll Area - Variation 6 State Entry Cards */}
       <div
         ref={scrollContainerRef}
-        className="entry-list flex-1 overflow-y-auto prominent-scrollbar relative min-h-0 divide-y divide-[#2d2d33]"
+        className="entry-list flex-1 overflow-y-auto prominent-scrollbar relative min-h-0 max-h-full divide-y divide-[#DEE2E6] pb-24 sm:pb-6 bg-[#F8F9FA]/40 touch-pan-y overscroll-contain"
       >
         {sortedPoints.length === 0 ? (
-          <div className="p-8 text-center text-xs text-[#e0e0e4]/40 font-mono-tech">
-            QUERY:// NO_RECORDS_FOUND
+          <div className="p-8 text-center text-xs text-[#6C757D] font-poppins">
+            Arama kriterine uygun kayıt bulunamadı.
           </div>
         ) : (
           sortedPoints.map((point) => {
@@ -237,6 +239,22 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
             const isChecked = selectedIds.has(point.id);
             const cleanKm = formatKmDisplay(point.kmValue, point.title);
             const tagInfo = getCategoryTagInfo(point.category);
+
+            // Variation 6: KM Box Background based on category
+            const getKmBoxBg = (cat: string) => {
+              switch (cat) {
+                case 'switch':
+                  return '#D32F2F'; // TCDD Red
+                case 'culvert':
+                  return '#2B6CB0'; // Railway Blue
+                case 'crossing':
+                  return '#D69E2E'; // Level Crossing Amber
+                case 'station':
+                  return '#2E7D32'; // Station Green
+                default:
+                  return '#D32F2F';
+              }
+            };
 
             return (
               <div
@@ -249,126 +267,133 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
                     onSelectPoint(point);
                   }
                 }}
-                className={`entry p-4 cursor-pointer transition-colors ${
+                className={`state-entry p-2.5 sm:p-3.5 cursor-pointer transition-all flex items-center gap-2.5 sm:gap-3 ${
                   isChecked
-                    ? 'bg-[#00ff88]/15 border-l-4 border-l-[#00ff88]'
+                    ? 'bg-[#D32F2F]/10 border-l-4 border-l-[#D32F2F]'
                     : isSelected
-                    ? 'bg-[#e0e0e4]/10 border-l-4 border-l-[#00ff88]'
-                    : 'hover:bg-white/[0.03]'
+                    ? 'bg-rose-50/80 border-l-4 border-l-[#D32F2F]'
+                    : 'hover:bg-white bg-white/70'
                 }`}
               >
                 {/* Checkbox if select mode is active */}
                 {isSelectMode && canDelete && (
                   <div
                     onClick={(e) => toggleSelectPoint(point.id, e)}
-                    className="pr-2 pb-1 cursor-pointer"
+                    className="pr-1 cursor-pointer shrink-0"
                   >
                     <input
                       type="checkbox"
                       checked={isChecked}
                       onChange={() => {}}
-                      className="w-4 h-4 rounded text-[#00ff88] border-[#2d2d33] focus:ring-0 cursor-pointer pointer-events-none"
+                      className="w-4 h-4 rounded text-[#D32F2F] border-[#DEE2E6] focus:ring-0 cursor-pointer pointer-events-none"
                     />
                   </div>
                 )}
 
-                {/* Entry Header: km-label in accent & tag-sys badge */}
-                <div className="entry-header flex items-center justify-between gap-2 mb-1">
-                  <span className="km-label text-[#00ff88] font-bold text-sm tracking-tight font-mono-tech notranslate" translate="no">
-                    {cleanKm ? `KM ${cleanKm}` : 'HAT NOKTASI'}
-                  </span>
-                  <span
-                    className="tag-sys bg-[#2d2d33] text-[9px] font-bold px-2 py-0.5 rounded tracking-wider uppercase font-mono-tech flex items-center gap-1 shadow-2xs notranslate"
-                    translate="no"
-                    style={{ color: tagInfo.color }}
-                  >
-                    <span>{tagInfo.label}</span>
-                  </span>
-                </div>
-
-                {/* Entry Title */}
+                {/* Variation 6: km-box (KM label top, number bottom) */}
                 <div
-                  className="entry-title font-bold text-sm text-[#e0e0e4] truncate notranslate mb-0.5"
-                  translate="no"
-                  style={point.titleTextStyle ? getTextStyleInline(point.titleTextStyle) : undefined}
+                  className="km-box w-[64px] sm:w-[76px] h-[46px] sm:h-[54px] rounded-lg sm:rounded-xl flex flex-col items-center justify-center text-white font-roboto-mono shrink-0 shadow-xs"
+                  style={{ backgroundColor: getKmBoxBg(point.category) }}
                 >
-                  {point.title}
+                  <span className="text-[8px] sm:text-[9px] uppercase tracking-wider font-semibold opacity-85 leading-tight">
+                    KM
+                  </span>
+                  <span className="text-[11px] sm:text-[12px] font-bold leading-tight notranslate tracking-tight" translate="no">
+                    {cleanKm || '0+000'}
+                  </span>
                 </div>
 
-                {/* Entry Sub: line name & location */}
-                <div className="entry-sub text-[10px] text-[#e0e0e4]/50 uppercase tracking-wider truncate font-mono-tech flex items-center justify-between gap-2">
-                  <span className="truncate">{point.lineName} Line {point.locationDesc ? `• ${point.locationDesc}` : ''}</span>
-                  
-                  {/* Photo & Note Counters */}
-                  <div className="flex items-center gap-2 text-[#e0e0e4]/40 flex-shrink-0">
-                    {point.photos && point.photos.length > 0 && (
-                      <span className="flex items-center gap-1 text-emerald-400">
-                        <Image className="w-3 h-3" />
-                        <span>{point.photos.length}</span>
-                      </span>
-                    )}
-                    {point.notes && point.notes.length > 0 && (
-                      <span className="flex items-center gap-1 text-sky-400">
-                        <MessageSquare className="w-3 h-3" />
-                        <span>{point.notes.length}</span>
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Actions row: Quick Nav & Delete */}
-                <div className="flex items-center justify-end gap-1.5 mt-2 pt-2 border-t border-[#2d2d33]/50">
-                  <button
-                    id={`quick-nav-${point.id}-btn`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const lat = Number(point.lat);
-                      const lng = Number(point.lng);
-                      if (!isNaN(lat) && !isNaN(lng)) {
-                        window.open(
-                          `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
-                          '_blank',
-                          'noopener,noreferrer'
-                        );
-                      }
-                    }}
-                    title="Google Haritalar Navigasyonu"
-                    className="p-1 text-[#e0e0e4]/50 hover:text-[#00ff88] hover:bg-white/5 rounded transition-colors cursor-pointer"
-                  >
-                    <Navigation className="w-3 h-3" />
-                  </button>
-
-                  <a
-                    id={`quick-earth-${point.id}-btn`}
-                    href={
-                      !isNaN(Number(point.lat)) && !isNaN(Number(point.lng))
-                        ? `https://earth.google.com/web/search/${Number(point.lat).toFixed(7)},${Number(point.lng).toFixed(7)}`
-                        : '#'
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    title="Google Earth"
-                    className="p-1 text-[#e0e0e4]/50 hover:text-emerald-400 hover:bg-white/5 rounded transition-colors cursor-pointer"
-                  >
-                    <Globe className="w-3 h-3" />
-                  </a>
-
-                  {onDeletePoint && canDelete && !isSelectMode && (
-                    <button
-                      id={`quick-delete-${point.id}-btn`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSinglePointToDelete(point);
-                      }}
-                      title="Noktayı Sil"
-                      className="p-1 text-[#e0e0e4]/40 hover:text-red-400 hover:bg-red-950/40 rounded transition-colors cursor-pointer"
+                {/* Entry Info: Title & Sub */}
+                <div className="entry-info flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-1 mb-0.5">
+                    <h4
+                      className="text-xs sm:text-sm font-bold text-[#212529] truncate notranslate"
+                      translate="no"
+                      style={point.titleTextStyle ? getTextStyleInline(point.titleTextStyle) : undefined}
                     >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  )}
+                      {point.title}
+                    </h4>
+                    <span
+                      className="text-[8px] sm:text-[9px] font-bold px-1.5 py-0.5 rounded uppercase font-roboto-mono shrink-0"
+                      style={{ color: tagInfo.color, backgroundColor: `${tagInfo.color}15` }}
+                    >
+                      {tagInfo.label}
+                    </span>
+                  </div>
 
-                  {!isSelectMode && <ChevronRight className="w-3.5 h-3.5 text-[#e0e0e4]/30" />}
+                  <p className="text-[10px] sm:text-[11px] text-[#6C757D] truncate mb-0.5 sm:mb-1">
+                    {point.lineName} {point.locationDesc ? `• ${point.locationDesc}` : ''}
+                  </p>
+
+                  {/* Actions & Meta row */}
+                  <div className="flex items-center justify-between text-[10px] text-[#ADB5BD]">
+                    <div className="flex items-center gap-2">
+                      {point.photos && point.photos.length > 0 && (
+                        <span className="flex items-center gap-0.5 text-emerald-600 font-semibold">
+                          <Image className="w-3 h-3" />
+                          <span>{point.photos.length}</span>
+                        </span>
+                      )}
+                      {point.notes && point.notes.length > 0 && (
+                        <span className="flex items-center gap-0.5 text-sky-600 font-semibold">
+                          <MessageSquare className="w-3 h-3" />
+                          <span>{point.notes.length}</span>
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        id={`quick-nav-${point.id}-btn`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const lat = Number(point.lat);
+                          const lng = Number(point.lng);
+                          if (!isNaN(lat) && !isNaN(lng)) {
+                            window.open(
+                              `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
+                              '_blank',
+                              'noopener,noreferrer'
+                            );
+                          }
+                        }}
+                        title="Google Haritalar Navigasyonu"
+                        className="p-1 text-[#6C757D] hover:text-[#D32F2F] hover:bg-slate-100 rounded transition-colors cursor-pointer"
+                      >
+                        <Navigation className="w-3.5 h-3.5" />
+                      </button>
+
+                      <a
+                        id={`quick-earth-${point.id}-btn`}
+                        href={
+                          !isNaN(Number(point.lat)) && !isNaN(Number(point.lng))
+                            ? `https://earth.google.com/web/search/${Number(point.lat).toFixed(7)},${Number(point.lng).toFixed(7)}`
+                            : '#'
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        title="Google Earth"
+                        className="p-1 text-[#6C757D] hover:text-emerald-600 hover:bg-slate-100 rounded transition-colors cursor-pointer"
+                      >
+                        <Globe className="w-3.5 h-3.5" />
+                      </a>
+
+                      {onDeletePoint && canDelete && !isSelectMode && (
+                        <button
+                          id={`quick-delete-${point.id}-btn`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSinglePointToDelete(point);
+                          }}
+                          title="Noktayı Sil"
+                          className="p-1 text-[#6C757D] hover:text-[#D32F2F] hover:bg-rose-50 rounded transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             );

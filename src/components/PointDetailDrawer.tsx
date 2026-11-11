@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { RailwayPoint, RailwayPointCategory, PointNote, PointPhoto, TextStyleConfig, TakyidatSpeedRestriction, RailwayParcel } from '../types.ts';
+import { RailwayPoint, RailwayPointCategory, PointNote, PointPhoto, TextStyleConfig, TakyidatSpeedRestriction } from '../types.ts';
 import { CategoryColorConfig, DEFAULT_CATEGORY_COLORS, formatKmDisplay } from '../utils/categoryColors.ts';
 import { getTextStyleInline, DEFAULT_TEXT_STYLE } from '../utils/textStyleHelper.ts';
 import { compressImage } from '../utils/imageCompressor.ts';
@@ -41,7 +41,6 @@ import {
   Gauge,
   AlertTriangle,
   Compass,
-  Landmark,
 } from 'lucide-react';
 
 interface PointDetailDrawerProps {
@@ -59,8 +58,6 @@ interface PointDetailDrawerProps {
   onOpenWorkLogs?: (point: RailwayPoint) => void;
   takyidatRestrictions?: TakyidatSpeedRestriction[];
   onOpenTakyidat?: () => void;
-  railwayParcels?: RailwayParcel[];
-  onOpenParcels?: () => void;
   onSelectLiveLocation?: (point: RailwayPoint) => void;
 }
 
@@ -132,28 +129,10 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
   onOpenWorkLogs,
   takyidatRestrictions = [],
   onOpenTakyidat,
-  railwayParcels = [],
-  onOpenParcels,
   onSelectLiveLocation,
 }) => {
   const { user, isAdmin, canAddNote, canAddPhoto, canDelete } = useAuth();
 
-  const matchingParcel = useMemo(() => {
-    if (!point || !railwayParcels || railwayParcels.length === 0) return null;
-    const ptKm = parseKmToNumber(point.kmValue, point.title);
-    if (ptKm === null) return null;
-
-    return railwayParcels.find((p) => {
-      const matchLine = !p.lineName || p.lineName === 'all' || p.lineName === point.lineName;
-      if (!matchLine) return false;
-      const sKm = p.startKmNum !== undefined ? p.startKmNum : parseKmToNumber(p.startKm);
-      const eKm = p.endKmNum !== undefined ? p.endKmNum : parseKmToNumber(p.endKm);
-      if (sKm !== null && eKm !== null && sKm !== undefined && eKm !== undefined) {
-        return ptKm >= Math.min(sKm, eKm) - 0.05 && ptKm <= Math.max(sKm, eKm) + 0.05;
-      }
-      return false;
-    });
-  }, [point, railwayParcels]);
   // On mobile screens, start in compact mode so map remains visible and screen isn't crowded!
   const [isExpanded, setIsExpanded] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
@@ -355,27 +334,27 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
     <>
       <div
         id="point-detail-drawer"
-        className={`fixed z-30 bg-white/95 backdrop-blur-md shadow-2xl transition-all duration-300 flex flex-col
-          /* Mobil: Alt sayfa çekmecesi */
-          bottom-0 left-0 right-0 border-t border-slate-200/90 max-h-[85vh]
+        className={`fixed z-30 bg-white/95 backdrop-blur-md shadow-2xl transition-all duration-300 flex flex-col font-poppins
+          /* Mobil: Alt sayfa çekmecesi - kadraja sığacak şekilde optimize edildi */
+          bottom-0 left-0 right-0 border-t border-slate-200/90 ${isExpanded ? 'max-h-[85dvh]' : 'max-h-[38dvh]'} pb-safe
           /* Tablet ve PC: Haritayı engellemeyen sağ alt yüzen kutucuk paneli */
           md:bottom-4 md:right-4 md:left-auto md:w-[480px] lg:w-[530px] md:max-h-[calc(100vh-100px)] md:rounded-2xl md:border md:border-slate-200/90
         `}
       >
         {/* Drawer Drag/Header Handle - Official TCDD Institutional Header Bar */}
-        <div className="flex items-center justify-between px-4 sm:px-5 py-2.5 bg-slate-50 text-slate-800 border-b border-slate-200 md:rounded-t-2xl">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 ring-2 ring-emerald-200 shrink-0" />
+        <div className="flex items-center justify-between px-3 sm:px-5 py-1.5 sm:py-2.5 bg-slate-50 text-slate-800 border-b border-slate-200 md:rounded-t-2xl">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-600 ring-2 ring-emerald-200 shrink-0" />
             <div className="flex flex-col min-w-0">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-red-700 leading-none">
-                TCDD 712 ŞEFLİĞİ • SAHA BİLGİ SİSTEMİ
+              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-red-700 leading-none truncate">
+                TCDD 712 ŞEFLİĞİ
               </span>
-              <span className="text-xs font-bold text-slate-900 truncate">
+              <span className="text-[11px] sm:text-xs font-bold text-slate-900 truncate">
                 Demiryolu Nokta Detayı
               </span>
             </div>
             <span
-              className="text-xs font-mono px-2.5 py-0.5 rounded-md font-bold notranslate shadow-xs shrink-0"
+              className="text-[10px] sm:text-xs font-mono px-2 py-0.5 rounded-md font-bold notranslate shadow-xs shrink-0"
               translate="no"
               style={{ backgroundColor: conf.bg, color: conf.text || '#ffffff' }}
             >
@@ -383,119 +362,86 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             <button
               id="drawer-toggle-expand-btn"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="p-1.5 text-slate-500 hover:text-slate-900 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
+              className="p-1 sm:p-1.5 text-slate-500 hover:text-slate-900 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
               title={isExpanded ? 'Detayları Küçült' : 'Detayları Genişlet'}
             >
-              {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+              {isExpanded ? <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <ChevronUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
             </button>
             <button
               id="drawer-close-btn"
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+              className="p-1 sm:p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
               title="Kapat"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </div>
         </div>
 
         {/* Top Summary & Actions - Nested Boxes Architecture */}
-        <div className="px-3 sm:px-4 py-2.5 border-b border-slate-200/90 space-y-2 bg-gradient-to-b from-slate-50 to-white">
+        <div className="px-2.5 sm:px-4 py-2 sm:py-2.5 border-b border-slate-200/90 space-y-1.5 sm:space-y-2 bg-gradient-to-b from-slate-50 to-white">
           {/* İç Kutu 1: Nokta Başlığı ve Kimlik Bilgileri */}
-          <div className="bg-white p-3 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col gap-1.5">
-            <div className="flex items-center justify-between gap-2 flex-wrap">
-              <div className="flex items-center gap-2 flex-wrap min-w-0">
+          <div className="bg-white p-2 sm:p-3 rounded-xl sm:rounded-2xl border border-slate-200/90 shadow-xs flex flex-col gap-1 sm:gap-1.5">
+            <div className="flex items-center justify-between gap-1.5 flex-wrap">
+              <div className="flex items-center gap-1.5 flex-wrap min-w-0">
                 <h2
-                  className="text-base sm:text-lg font-black text-slate-900 leading-snug truncate notranslate"
+                  className="text-sm sm:text-base lg:text-lg font-black text-slate-900 leading-snug truncate notranslate"
                   translate="no"
                   style={point.titleTextStyle ? getTextStyleInline(point.titleTextStyle) : undefined}
                 >
                   {point.title}
                 </h2>
                 <span
-                  className="text-[11px] font-black px-2.5 py-0.5 rounded-full flex items-center gap-1.5 shadow-xs flex-shrink-0 notranslate tracking-wide"
+                  className="text-[10px] sm:text-[11px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs flex-shrink-0 notranslate tracking-wide"
                   translate="no"
                   style={{ backgroundColor: conf.bg, color: conf.text || '#ffffff' }}
                 >
                   {conf.svgIcon && (
                     <span
-                      className="w-3.5 h-3.5 flex items-center justify-center"
+                      className="w-3 h-3 flex items-center justify-center"
                       dangerouslySetInnerHTML={{ __html: conf.svgIcon }}
                     />
                   )}
                   <span>{conf.label}</span>
                 </span>
                 {cleanKm && (
-                  <span className="text-[11px] font-mono font-black bg-blue-50 text-blue-900 px-2.5 py-0.5 rounded-lg border border-blue-200/80 flex-shrink-0 shadow-2xs">
+                  <span className="text-[10px] sm:text-[11px] font-mono font-black bg-blue-50 text-blue-900 px-2 py-0.5 rounded-lg border border-blue-200/80 flex-shrink-0 shadow-2xs">
                     KM {cleanKm}
                   </span>
                 )}
               </div>
             </div>
 
-            <div className="text-[11px] text-slate-500 flex items-center gap-2 flex-wrap pt-0.5 border-t border-slate-100">
+            <div className="text-[10px] sm:text-[11px] text-slate-500 flex items-center gap-1.5 flex-wrap pt-0.5 border-t border-slate-100">
               <span className="font-bold text-slate-800 flex items-center gap-1">
                 <Train className="w-3 h-3 text-sky-600" />
                 {point.lineName}
               </span>
-              {point.locationDesc && <span className="text-slate-600">• {point.locationDesc}</span>}
+              {point.locationDesc && <span className="text-slate-600 truncate max-w-[140px] sm:max-w-none">• {point.locationDesc}</span>}
               {hasValidCoords && (
-                <span className="font-mono text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                <span className="font-mono text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-md text-[9.5px] sm:text-[10px] font-bold">
                   📍 {latNum.toFixed(5)}, {lngNum.toFixed(5)}
                 </span>
               )}
             </div>
-
-            {/* Demiryolu Arazisi & Tapu Kadastro Bilgisi Kartı */}
-            {matchingParcel && (
-              <div className="mt-1 pt-1.5 border-t border-slate-100 flex items-center justify-between gap-1 text-[11px] bg-indigo-50/80 p-1.5 rounded-lg border border-indigo-200/70">
-                <div className="flex items-center gap-1.5 text-indigo-950 font-bold truncate">
-                  <Landmark className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-                  <span className="truncate">
-                    TCDD Arazisi: Ada {matchingParcel.adaNo} / Parsel {matchingParcel.parselNo} ({matchingParcel.mahalleKoy})
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  {matchingParcel.tkgmUrl && (
-                    <a
-                      href={matchingParcel.tkgmUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-bold px-2 py-0.5 rounded transition-colors"
-                      title="Resmi TKGM Parsel Sorgu'da Aç"
-                    >
-                      TKGM
-                    </a>
-                  )}
-                  {onOpenParcels && (
-                    <button
-                      onClick={onOpenParcels}
-                      className="text-indigo-700 hover:text-indigo-950 font-bold text-[10px] underline"
-                    >
-                      Detay
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* İç Kutu 2: Hızlı Eylemler Çubuğu (Kutucuk içinde kutucuk) */}
-          <div className="bg-slate-100/90 p-1.5 rounded-xl border border-slate-200/80 flex items-center justify-between gap-1.5 flex-wrap">
+          {/* İç Kutu 2: Hızlı Eylemler Çubuğu */}
+          <div className="bg-slate-100/90 p-1 sm:p-1.5 rounded-xl border border-slate-200/80 flex items-center justify-between gap-1 sm:gap-1.5 flex-wrap">
             {/* Navigasyon & Konum Eylemleri */}
-            <div className="flex items-center gap-1.5 flex-wrap">
+            <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
               {/* Haritada Konuma Git Butonu */}
               <button
                 id="drawer-pan-to-map-btn"
                 onClick={handlePanToMap}
-                className="flex items-center justify-center gap-1 bg-sky-600 hover:bg-sky-500 text-white px-2.5 py-1.5 rounded-lg font-semibold text-xs shadow-sm transition-all active:scale-[0.98] cursor-pointer"
+                className="flex items-center justify-center gap-1 bg-sky-600 hover:bg-sky-500 text-white px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg font-semibold text-[11px] sm:text-xs shadow-sm transition-all active:scale-[0.98] cursor-pointer"
                 title="Haritada bu noktaya odaklan"
               >
-                <MapPin className="w-3.5 h-3.5" />
+                <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 <span>Haritada Git</span>
               </button>
 
@@ -505,10 +451,10 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
                   id="drawer-start-measure-btn"
                   onClick={() => onStartMeasure(point)}
                   title="Bu KM noktasından itibaren ray boyunca mesafe ölç ve canlı KM hesapla"
-                  className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 px-3 py-1.5 rounded-lg font-black text-xs shadow-sm transition-all active:scale-[0.98] cursor-pointer ring-1 ring-amber-400/50"
+                  className="flex items-center justify-center gap-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg font-black text-[11px] sm:text-xs shadow-sm transition-all active:scale-[0.98] cursor-pointer ring-1 ring-amber-400/50"
                 >
-                  <Ruler className="w-4 h-4 stroke-[2.5]" />
-                  <span>Buradan Mesafe Ölç (KM Cetveli)</span>
+                  <Ruler className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
+                  <span>Mesafe Ölç<span className="hidden sm:inline"> (KM Cetveli)</span></span>
                 </button>
               )}
 
@@ -518,27 +464,27 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
                 href={navigationUrl || '#'}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-2.5 py-1.5 rounded-lg font-semibold text-xs shadow-sm transition-all active:scale-[0.98] cursor-pointer"
+                className="flex items-center justify-center gap-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg font-semibold text-[11px] sm:text-xs shadow-sm transition-all active:scale-[0.98] cursor-pointer"
                 title="Google Haritalar Canlı Yol Tarifi"
               >
-                <Navigation className="w-3.5 h-3.5" />
+                <Navigation className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 <span>Yol Tarifi</span>
-                <ExternalLink className="w-3 h-3 opacity-70" />
+                <ExternalLink className="w-2.5 h-2.5 sm:w-3 sm:h-3 opacity-70" />
               </a>
 
-              {/* Google Earth 3D Görünüm (Doğrudan 3D uçuş URL'si ile tam koordinata gider) */}
+              {/* Google Earth 3D Görünüm */}
               <a
                 id="open-google-earth-drawer-btn"
                 href={primaryEarthUrl || '#'}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={handleOpenEarthClick}
-                className="flex items-center justify-center gap-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-2.5 py-1.5 rounded-lg font-bold text-xs shadow-sm transition-all active:scale-[0.98] cursor-pointer"
-                title="Google Earth 3D'de doğrudan bu koordinata uç (Koordinat panoya da kopyalanır)"
+                className="flex items-center justify-center gap-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg font-bold text-[11px] sm:text-xs shadow-sm transition-all active:scale-[0.98] cursor-pointer"
+                title="Google Earth 3D'de doğrudan bu koordinata uç"
               >
-                <Globe className="w-3.5 h-3.5 text-white" />
+                <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
                 <span>Earth 3D</span>
-                <ExternalLink className="w-3 h-3 opacity-70" />
+                <ExternalLink className="w-2.5 h-2.5 sm:w-3 sm:h-3 opacity-70" />
               </a>
 
               {/* Google Maps Pimli Uydu Görünümü */}
@@ -547,10 +493,10 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
                 href={mapsSatellitePinUrl || '#'}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-100 px-2 py-1.5 rounded-lg font-medium text-xs border border-slate-700 transition-all cursor-pointer"
+                className="flex items-center justify-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-100 px-1.5 py-1 sm:px-2 sm:py-1.5 rounded-lg font-medium text-[11px] sm:text-xs border border-slate-700 transition-all cursor-pointer"
                 title="Kırmızı işaretçi pinli Google Uydu haritasını aç"
               >
-                <MapPin className="w-3.5 h-3.5 text-sky-400" />
+                <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sky-400" />
                 <span className="hidden sm:inline">Pimli Uydu</span>
               </a>
             </div>
@@ -562,9 +508,9 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
                 id="copy-coords-btn"
                 onClick={handleCopyCoords}
                 title="Koordinatları Kopyala"
-                className="p-1.5 bg-white hover:bg-slate-200 text-slate-700 rounded-lg border border-slate-200 transition-colors flex items-center justify-center text-xs cursor-pointer"
+                className="p-1 sm:p-1.5 bg-white hover:bg-slate-200 text-slate-700 rounded-lg border border-slate-200 transition-colors flex items-center justify-center text-xs cursor-pointer"
               >
-                {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-600" /> : <Copy className="w-3 h-3 sm:w-3.5 sm:h-3.5" />}
               </button>
 
               {/* Bu Noktayı Canlı Konum / Referans Olarak Seç Butonu */}
@@ -573,9 +519,9 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
                   id="drawer-set-live-location-btn"
                   onClick={() => onSelectLiveLocation(point)}
                   title="Bu Noktayı Canlı Konum Olarak Seç ve Canlı KM Cetvelinde Göster"
-                  className="flex items-center gap-1 px-2 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-900 border border-sky-300 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-xs"
+                  className="flex items-center gap-1 px-1.5 py-1 sm:px-2 sm:py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-900 border border-sky-300 rounded-lg text-[11px] sm:text-xs font-bold transition-all cursor-pointer shadow-xs"
                 >
-                  <Compass className="w-3.5 h-3.5 text-sky-600" />
+                  <Compass className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sky-600" />
                   <span className="hidden sm:inline">Canlı Konum Yap</span>
                 </button>
               )}
@@ -586,12 +532,12 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
                   id="drawer-open-worklogs-btn"
                   onClick={() => onOpenWorkLogs(point)}
                   title="Saha İşleri & Bakım Defterini Aç"
-                  className="flex items-center gap-1 px-2 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-xs"
+                  className="flex items-center gap-1 px-1.5 py-1 sm:px-2 sm:py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-lg text-[11px] sm:text-xs font-bold transition-all cursor-pointer shadow-xs"
                 >
-                  <Wrench className="w-3.5 h-3.5 text-amber-700" />
+                  <Wrench className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-700" />
                   <span className="hidden sm:inline">İşler</span>
                   {point.workLogs && point.workLogs.length > 0 && (
-                    <span className="bg-amber-500 text-slate-950 px-1 py-0.2 rounded-full text-[10px] font-black">
+                    <span className="bg-amber-500 text-slate-950 px-1 py-0.2 rounded-full text-[9px] sm:text-[10px] font-black">
                       {point.workLogs.length}
                     </span>
                   )}
@@ -604,9 +550,9 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
                   id="edit-point-btn"
                   onClick={() => onEdit(point)}
                   title="Noktayı Düzenle (Yönetici)"
-                  className="p-1.5 bg-white hover:bg-amber-100 text-slate-700 hover:text-amber-800 rounded-lg border border-slate-200 transition-colors cursor-pointer"
+                  className="p-1 sm:p-1.5 bg-white hover:bg-amber-100 text-slate-700 hover:text-amber-800 rounded-lg border border-slate-200 transition-colors cursor-pointer"
                 >
-                  <Edit className="w-3.5 h-3.5" />
+                  <Edit className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 </button>
               )}
 
@@ -616,9 +562,9 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
                   id="delete-point-btn"
                   onClick={() => setShowPointDeleteConfirm(true)}
                   title="Noktayı Sil (Yalnızca Yönetici)"
-                  className="p-1.5 bg-white hover:bg-red-100 text-slate-700 hover:text-red-700 rounded-lg border border-slate-200 transition-colors cursor-pointer"
+                  className="p-1 sm:p-1.5 bg-white hover:bg-red-100 text-slate-700 hover:text-red-700 rounded-lg border border-slate-200 transition-colors cursor-pointer"
                 >
-                  <Trash2 className="w-3.5 h-3.5 text-red-600" />
+                  <Trash2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-red-600" />
                 </button>
               )}
 
@@ -626,7 +572,7 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
               <button
                 id="drawer-toggle-details-btn"
                 onClick={() => setIsExpanded(!isExpanded)}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer border ${
+                className={`px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer border ${
                   isExpanded
                     ? 'bg-slate-200 text-slate-800 border-slate-300'
                     : 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300 shadow-xs'
@@ -651,7 +597,7 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
 
         {/* Expandable Content Area */}
         {isExpanded && (
-          <div className="overflow-y-auto prominent-scrollbar px-3 sm:px-4 py-3 flex-1 space-y-3">
+          <div className="overflow-y-auto prominent-scrollbar px-3 sm:px-4 py-3 flex-1 min-h-0 space-y-3 touch-pan-y overscroll-contain pb-10 md:pb-4">
             {/* Tabs for Organization - Modern Segmented Control */}
             <div className="bg-slate-100/90 p-1.5 rounded-2xl flex items-center gap-1 border border-slate-200 shadow-inner">
               <button

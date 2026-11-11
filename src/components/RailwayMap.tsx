@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import L from '../utils/leafletCluster.ts';
-import { RailwayPoint, RailwayPointCategory, TakyidatSpeedRestriction, RailwayParcel } from '../types.ts';
+import { RailwayPoint, RailwayPointCategory, TakyidatSpeedRestriction } from '../types.ts';
 import { CategoryColorConfig, DEFAULT_CATEGORY_COLORS, formatKmDisplay } from '../utils/categoryColors.ts';
 import {
   getDistanceMeters,
@@ -10,9 +10,8 @@ import {
   LatLngPoint,
 } from '../utils/measurement.ts';
 import { parseKmToNumber } from '../utils/kmUtils.ts';
-import { calculateParcelCenter, normalizePolygonCoordinates } from '../utils/parcelUtils.ts';
 import { NearestKmResult } from '../utils/liveRailwayKm.ts';
-import { Layers, Locate, Maximize2, Plus, Train, Ruler, RotateCcw, Undo2, Check, RotateCw, Globe, ExternalLink, MapPin, Crosshair, Gauge, AlertTriangle, X, Landmark, Sparkles, Navigation2, HardDriveDownload, WifiOff } from 'lucide-react';
+import { Layers, Locate, Maximize2, Plus, Train, Ruler, RotateCcw, Undo2, Check, RotateCw, Globe, ExternalLink, MapPin, Crosshair, Gauge, AlertTriangle, X, Sparkles, Navigation2, HardDriveDownload, WifiOff } from 'lucide-react';
 import { isForceOfflineMode, generateOfflinePlaceholderTileUrl } from '../utils/offlineMapStorage.ts';
 
 interface RailwayMapProps {
@@ -30,8 +29,6 @@ interface RailwayMapProps {
   isRefreshing?: boolean;
   takyidatRestrictions?: TakyidatSpeedRestriction[];
   onOpenTakyidat?: () => void;
-  railwayParcels?: RailwayParcel[];
-  onOpenParcels?: () => void;
   isLivePointPickMode?: boolean;
   onPickLivePoint?: (lat: number, lng: number) => void;
   onCancelLivePointPick?: () => void;
@@ -131,8 +128,6 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
   isRefreshing,
   takyidatRestrictions = [],
   onOpenTakyidat,
-  railwayParcels = [],
-  onOpenParcels,
   isLivePointPickMode = false,
   onPickLivePoint,
   onCancelLivePointPick,
@@ -155,11 +150,9 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
   const markerInstancesMapRef = useRef<Map<string, L.Marker>>(new Map());
   const markerDataCacheRef = useRef<Map<string, string>>(new Map());
   const prevTakyidatSigRef = useRef<string>('');
-  const prevParcelsSigRef = useRef<string>('');
   const railwayLayerRef = useRef<L.TileLayer | null>(null);
   const measureLayerRef = useRef<L.LayerGroup | null>(null);
   const takyidatLayerRef = useRef<L.LayerGroup | null>(null);
-  const parcelsLayerRef = useRef<L.LayerGroup | null>(null);
 
   const [isOfflineActive, setIsOfflineActive] = useState<boolean>(() => {
     return isForceOfflineMode() || (typeof navigator !== 'undefined' && !navigator.onLine);
@@ -203,7 +196,6 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
   const [mapType, setMapType] = useState<'streets' | 'google-earth' | 'google-satellite' | 'esri-satellite'>('google-earth');
   const [showRailwayOverlay, setShowRailwayOverlay] = useState<boolean>(true);
   const [showTakyidatOverlay, setShowTakyidatOverlay] = useState<boolean>(true);
-  const [showParcelsOverlay, setShowParcelsOverlay] = useState<boolean>(true);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [isLocating, setIsLocating] = useState<boolean>(false);
   const userMarkerRef = useRef<L.Marker | null>(null);
@@ -309,12 +301,10 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
     }).addTo(map);
 
     const takyidatGroup = L.layerGroup().addTo(map);
-    const parcelsGroup = L.layerGroup().addTo(map);
     const measureGroup = L.layerGroup().addTo(map);
 
     mapInstanceRef.current = map;
     takyidatLayerRef.current = takyidatGroup;
-    parcelsLayerRef.current = parcelsGroup;
     railwayLayerRef.current = railwayOverlay;
     measureLayerRef.current = measureGroup;
 
@@ -384,7 +374,6 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
       mapInstanceRef.current = null;
       markersLayerRef.current = null;
       takyidatLayerRef.current = null;
-      parcelsLayerRef.current = null;
       measureLayerRef.current = null;
       railwayLayerRef.current = null;
       markerInstancesMapRef.current.clear();
@@ -972,113 +961,7 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
     });
   }, [points, takyidatRestrictions, showTakyidatOverlay]);
 
-  // Render Railway Parcels / Demiryolu Arazileri Polygons & Badges
-  useEffect(() => {
-    const parcelsGroup = parcelsLayerRef.current;
-    if (!parcelsGroup) return;
 
-    const parcelsSig = `${showParcelsOverlay}:${railwayParcels.length}:${JSON.stringify(railwayParcels)}`;
-    if (prevParcelsSigRef.current === parcelsSig) return;
-    prevParcelsSigRef.current = parcelsSig;
-
-    parcelsGroup.clearLayers();
-
-    if (!showParcelsOverlay || !railwayParcels || railwayParcels.length === 0) return;
-
-    railwayParcels.forEach((parcel) => {
-      if (!parcel.coordinates || parcel.coordinates.length < 3) return;
-      const normalizedCoords = normalizePolygonCoordinates(parcel.coordinates);
-      if (normalizedCoords.length < 3) return;
-
-      const isEncroached = parcel.encroachmentStatus === 'suspected' || parcel.encroachmentStatus === 'verified';
-      const isTcdd = parcel.ownershipStatus === 'tcdd' || !parcel.ownershipStatus;
-      const isTreasury = parcel.ownershipStatus === 'treasury';
-      const isExpropriating = parcel.ownershipStatus === 'expropriating';
-
-      const color = isEncroached
-        ? '#ef4444'
-        : isTcdd
-        ? '#7c3aed'
-        : isTreasury
-        ? '#0284c7'
-        : isExpropriating
-        ? '#d97706'
-        : '#8b5cf6';
-
-      const polygon = L.polygon(normalizedCoords, {
-        color: color,
-        fillColor: color,
-        fillOpacity: isEncroached ? 0.32 : 0.22,
-        weight: isEncroached ? 3 : 2.5,
-        dashArray: isEncroached ? '6, 6' : undefined,
-      }).addTo(parcelsGroup);
-
-      // Tooltip
-      polygon.bindTooltip(
-        `
-        <div class="text-xs font-sans notranslate p-1" translate="no">
-          <div class="flex items-center gap-1.5 font-bold ${isEncroached ? 'text-red-700' : 'text-indigo-800'}">
-            <span>🏛️ ADA ${parcel.adaNo} / PARSEL ${parcel.parselNo}</span>
-          </div>
-          <div class="font-semibold text-slate-800 text-[11px] mt-0.5">${parcel.mahalleKoy}, ${parcel.ilce}</div>
-          <div class="text-slate-600 text-[10px]">${parcel.nitelik || 'Demiryolu Arazisi'} • ${parcel.alanM2?.toLocaleString('tr-TR')} m²</div>
-          ${parcel.startKm ? `<div class="font-mono text-[10px] text-amber-600 font-bold mt-0.5">KM ${parcel.startKm} ${parcel.endKm ? '➔ ' + parcel.endKm : ''}</div>` : ''}
-          ${isEncroached ? `<div class="text-[9px] text-red-600 font-bold mt-0.5">⚠️ İşgal / Tecavüz: ${parcel.encroachmentNote || 'Tespit Edildi'}</div>` : ''}
-        </div>
-      `,
-        { sticky: true }
-      );
-
-      // Popup
-      const tkgmLinkHtml = parcel.tkgmUrl
-        ? `<a href="${parcel.tkgmUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:4px;background-color:#0284c7;color:#ffffff;font-size:11px;font-weight:bold;padding:4px 8px;border-radius:6px;text-decoration:none;margin-top:6px;">
-            <span>TKGM Parsel Sorgu'da Aç ➔</span>
-          </a>`
-        : '';
-
-      polygon.bindPopup(
-        `
-        <div class="p-1 font-sans notranslate max-w-[260px]" translate="no">
-          <div class="flex items-center justify-between gap-1 border-b border-slate-200 pb-1.5 mb-1.5">
-            <span class="font-extrabold text-indigo-700 text-xs">TCDD DEMİRYOLU ARAZİSİ</span>
-            <span class="text-[10px] bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded font-black font-mono">Ada ${parcel.adaNo} / Parsel ${parcel.parselNo}</span>
-          </div>
-          <div class="text-xs font-bold text-slate-900">${parcel.mahalleKoy}, ${parcel.ilce} / ${parcel.il}</div>
-          <div class="text-[11px] text-slate-600 mt-0.5"><span class="text-slate-400 font-medium">Nitelik:</span> ${parcel.nitelik || 'Demiryolu Güzergahı'}</div>
-          <div class="text-[11px] text-slate-600"><span class="text-slate-400 font-medium">Malik:</span> ${parcel.malik || 'TCDD Genel Müdürlüğü'}</div>
-          <div class="flex items-center justify-between text-[11px] font-mono mt-1.5 pt-1.5 border-t border-slate-100">
-            <span class="text-amber-600 font-bold">${parcel.startKm ? 'KM ' + parcel.startKm : ''} ${parcel.endKm ? '➔ ' + parcel.endKm : ''}</span>
-            <span class="text-emerald-700 font-bold">${parcel.alanM2?.toLocaleString('tr-TR')} m²</span>
-          </div>
-          ${isEncroached ? `<div class="bg-red-50 border border-red-200 text-red-800 text-[10px] p-2 rounded-lg mt-2 font-bold">⚠️ ${parcel.encroachmentNote || 'İşgal / Tecavüz Bildirimi'}</div>` : ''}
-          <div class="mt-2 flex items-center justify-between gap-2">
-            ${tkgmLinkHtml}
-          </div>
-        </div>
-      `
-      );
-
-      // Midpoint badge
-      const center = calculateParcelCenter(normalizedCoords);
-      const badgeHtml = `
-        <div class="cursor-pointer flex items-center justify-center notranslate" translate="no" title="Ada ${parcel.adaNo} / Parsel ${parcel.parselNo}">
-          <div class="px-1.5 py-0.5 rounded-md ${isEncroached ? 'bg-red-950/90 text-red-200 border-red-500' : 'bg-slate-950/90 text-indigo-200 border-indigo-400'} font-mono font-bold text-[9px] border shadow-md whitespace-nowrap">
-            ${parcel.adaNo}/${parcel.parselNo}
-          </div>
-        </div>
-      `;
-      const badgeIcon = L.divIcon({
-        html: badgeHtml,
-        className: 'custom-parcel-badge-marker',
-        iconSize: [46, 18],
-        iconAnchor: [23, 9],
-      });
-      const badgeMarker = L.marker(center, { icon: badgeIcon }).addTo(parcelsGroup);
-      badgeMarker.on('click', () => {
-        polygon.openPopup();
-      });
-    });
-  }, [railwayParcels, showParcelsOverlay, onOpenParcels]);
 
   // Pan to selected point
   useEffect(() => {
@@ -1737,20 +1620,6 @@ export const RailwayMap: React.FC<RailwayMapProps> = ({
                   </span>
                 </label>
 
-                {/* Demiryolu Arazileri / Kadastro Overlay Toggle */}
-                <label className="flex items-center gap-2 cursor-pointer select-none text-indigo-700 py-1 font-bold">
-                  <input
-                    id="map-toggle-parcels-overlay"
-                    type="checkbox"
-                    checked={showParcelsOverlay}
-                    onChange={(e) => setShowParcelsOverlay(e.target.checked)}
-                    className="rounded text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5 cursor-pointer"
-                  />
-                  <span className="flex items-center gap-1.5">
-                    <Landmark className="w-3.5 h-3.5 text-indigo-600" />
-                    <span>Demiryolu Arazileri &amp; Parseller ({railwayParcels.length})</span>
-                  </span>
-                </label>
               </div>
 
               {/* Open in 3D Google Earth Web */}

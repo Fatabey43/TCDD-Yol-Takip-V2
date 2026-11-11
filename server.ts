@@ -782,8 +782,7 @@ app.post('/api/auth/login', (req, res) => {
 });
 
 // POST /api/auth/register
-// 1) Any user can submit registration from portal (created with status: 'pending', role: 'editor')
-// 2) If an authenticated Admin creates the user, it is directly 'active' with the specified role
+// Alpha update: Registrations are automatically active so users can start without blocker
 app.post('/api/auth/register', (req, res) => {
   const { name, email, password, department, role } = req.body;
   const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'Bilinmiyor';
@@ -816,10 +815,9 @@ app.post('/api/auth/register', (req, res) => {
   const { salt, hash } = hashPassword(password);
   const isMasterAdminEmail = cleanEmail === 'bahadirefet@gmail.com' || cleanEmail === 'turkmenhassan34@gmail.com';
 
-  // If created by an Admin, it's active immediately with selected role.
-  // If registered from public portal, status is 'pending' (requires admin approval), role defaults to 'editor' (no role choice on public portal)
+  // Alpha Version: Accounts are automatically active so users are never locked out
   let assignedRole: 'admin' | 'editor' | 'viewer' = 'editor';
-  let assignedStatus: 'active' | 'pending' | 'rejected' = 'pending';
+  let assignedStatus: 'active' | 'pending' | 'rejected' = 'active';
 
   if (isMasterAdminEmail || isFirstUser) {
     assignedRole = 'admin';
@@ -828,9 +826,8 @@ app.post('/api/auth/register', (req, res) => {
     assignedRole = (role === 'admin' || role === 'viewer' || role === 'editor') ? role : 'editor';
     assignedStatus = 'active';
   } else {
-    // Public portal registration: No role picker, awaits admin confirmation
-    assignedRole = 'editor';
-    assignedStatus = 'pending';
+    assignedRole = (role === 'viewer') ? 'viewer' : 'editor';
+    assignedStatus = 'active';
   }
 
   const newUser: StoredUser = {
@@ -850,25 +847,14 @@ app.post('/api/auth/register', (req, res) => {
   saveUsers(users);
 
   recordAuditLog({
-    action: assignedStatus === 'pending' ? 'YENİ_HESAP_BAŞVURUSU' : 'YENİ_KULLANICI_KAYDI',
+    action: 'YENİ_KULLANICI_KAYDI',
     email: cleanEmail,
     userName: newUser.name,
     role: newUser.role,
-    status: assignedStatus === 'pending' ? 'info' : 'success',
-    details: assignedStatus === 'pending'
-      ? `Yeni kullanıcı başvurdu (Yönetici Onayı Bekliyor): ${newUser.name} (${cleanEmail})`
-      : `Yeni kullanıcı hesabı oluşturuldu ve aktifleştirildi: ${newUser.name} (${assignedRole})`,
+    status: 'success',
+    details: `Yeni kullanıcı hesabı oluşturuldu ve aktifleştirildi: ${newUser.name} (${assignedRole})`,
     ip
   });
-
-  if (assignedStatus === 'pending') {
-    return res.status(201).json({
-      success: true,
-      pending: true,
-      message: 'Kayıt başvurunuz başarıyla oluşturuldu! Güvenlik nedeniyle sisteme giriş yapabilmeniz için herhangi bir yöneticinin onay vermesi gerekmektedir.',
-      user: sanitizeUser(newUser)
-    });
-  }
 
   const token = generateToken(newUser);
   res.status(201).json({
@@ -1845,7 +1831,6 @@ app.post('/api/parcels', (req, res) => {
     });
     const combined = Array.from(map.values());
     saveParcels(combined);
-    notifyPointsChanged('parcels_changed');
     return res.json({ success: true, count: combined.length });
   }
 
@@ -1889,7 +1874,6 @@ app.post('/api/parcels', (req, res) => {
   }
 
   saveParcels(list);
-  notifyPointsChanged('parcels_changed');
   res.status(201).json(newParcel);
 });
 
@@ -1912,7 +1896,6 @@ app.put('/api/parcels/:id', (req, res) => {
 
   list[index] = updated;
   saveParcels(list);
-  notifyPointsChanged('parcels_changed');
   res.json(updated);
 });
 
@@ -1923,7 +1906,6 @@ app.delete('/api/parcels/:id', (req, res) => {
   const list = getParcels();
   const filtered = list.filter((p: any) => p.id !== id);
   saveParcels(filtered);
-  notifyPointsChanged('parcels_changed');
   res.json({ success: true, message: 'Kadastro parseli silindi ve kara listeye eklendi' });
 });
 
@@ -1933,7 +1915,6 @@ app.delete('/api/parcels', (req, res) => {
   const ids = list.map((p: any) => p.id).filter(Boolean);
   recordDeletedParcelIds(ids);
   saveParcels([]);
-  notifyPointsChanged('parcels_changed');
   res.json({ success: true, message: 'Tüm kadastro parselleri kalıcı olarak silindi', count: 0 });
 });
 
@@ -1948,7 +1929,6 @@ app.post('/api/parcels/bulk-delete', (req, res) => {
   const list = getParcels();
   const remaining = list.filter((p: any) => !idsSet.has(p.id));
   saveParcels(remaining);
-  notifyPointsChanged('parcels_changed');
   res.json({ success: true, count: remaining.length, deletedCount: ids.length });
 });
 

@@ -116,7 +116,7 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
     return (
       <div
         id="live-km-indicator-minimized"
-        className="absolute bottom-4 left-4 z-20 bg-slate-900/90 text-white backdrop-blur-md border border-slate-700/80 rounded-2xl shadow-2xl px-3.5 py-2 flex items-center gap-2.5 animate-in fade-in select-none"
+        className="absolute bottom-16 sm:bottom-4 left-2 sm:left-4 z-20 bg-slate-900/90 text-white backdrop-blur-md border border-slate-700/80 rounded-2xl shadow-xl px-2.5 py-1.5 sm:px-3.5 sm:py-2 flex items-center gap-2 sm:gap-2.5 animate-in fade-in select-none text-xs"
       >
         <span
           className="relative flex h-2.5 w-2.5"
@@ -167,7 +167,7 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
   return (
     <div
       id="live-km-indicator"
-      className="absolute bottom-4 left-4 z-20 bg-white/95 backdrop-blur-sm border border-slate-200 rounded-2xl shadow-2xl p-3.5 text-slate-800 w-[310px] max-w-[calc(100vw-2rem)] animate-in fade-in slide-in-from-bottom-2 duration-150"
+      className="absolute bottom-16 sm:bottom-4 left-2 sm:left-4 z-20 bg-white/95 backdrop-blur-sm border border-slate-200 rounded-2xl shadow-xl p-2.5 sm:p-3.5 text-slate-800 w-[290px] sm:w-[310px] max-w-[calc(100vw-1rem)] animate-in fade-in slide-in-from-bottom-2 duration-150"
     >
       {/* Top Header Row */}
       <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-100">

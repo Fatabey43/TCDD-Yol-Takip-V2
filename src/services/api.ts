@@ -1,4 +1,4 @@
-import { RailwayPoint, PointNote, PointPhoto, TakyidatSpeedRestriction, RailwayParcel, FieldWorkItem } from '../types.ts';
+import { RailwayPoint, PointNote, PointPhoto, TakyidatSpeedRestriction, FieldWorkItem } from '../types.ts';
 import { DEFAULT_SAMPLE_IDS } from '../data/samplePoints.ts';
 import { extractKmFromText } from '../utils/categoryColors.ts';
 import { compressImage } from '../utils/imageCompressor.ts';
@@ -6,9 +6,6 @@ import {
   savePointsToIDB,
   getPointsFromIDB,
   clearPointsFromIDB,
-  saveParcelsToIDB,
-  getParcelsFromIDB,
-  clearParcelsFromIDB,
 } from '../utils/dbStorage.ts';
 import { sortPointsByKm, parseKmToNumber } from '../utils/kmUtils.ts';
 

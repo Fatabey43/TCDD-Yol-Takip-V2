@@ -108,8 +108,26 @@
     "updatedAt": "2026-10-27T07:34:35.373Z"
   },
   {
+    "id": "sw-alayunt-m30",
+    "title": "0+885 M30 MAKAS",
+    "kmValue": "0+885",
+    "lineName": "Alayunt-Balıkesir",
+    "locationDesc": "Alayunt Müselles İltisakı",
+    "category": "switch",
+    "lat": 39.39134,
+    "lng": 30.09778,
+    "description": "Hat: Alayunt-Balıkesir\nKM: 0+885\nM30 Makası",
+    "textStyle": null,
+    "titleTextStyle": null,
+    "levelCrossing": null,
+    "notes": [],
+    "photos": [],
+    "createdAt": "2026-10-27T07:34:35.373Z",
+    "updatedAt": "2026-10-27T07:34:35.373Z"
+  },
+  {
     "id": "geojson-1790511212718-32",
-    "title": "0+903 Alayunt M30 Makas",
+    "title": "0+903 M30",
     "kmValue": "0+903",
     "lineName": "Alayunt-Balıkesir",
     "locationDesc": "",
@@ -1219,6 +1237,24 @@
     "updatedAt": "2026-09-28T17:04:22.651Z"
   },
   {
+    "id": "sw-alayunt-m5",
+    "title": "66+280 M5 MAKAS",
+    "kmValue": "66+280",
+    "lineName": "Eskişehir-Konya",
+    "locationDesc": "Alayunt Gar Sahası",
+    "category": "switch",
+    "lat": 39.39985,
+    "lng": 30.10912,
+    "description": "Hat: Eskişehir-Konya\nKM: 66+280\nAlayunt Gar M5 Makası",
+    "textStyle": null,
+    "titleTextStyle": null,
+    "levelCrossing": null,
+    "notes": [],
+    "photos": [],
+    "createdAt": "2026-10-27T07:34:35.371Z",
+    "updatedAt": "2026-10-27T07:34:35.373Z"
+  },
+  {
     "id": "pt-1793084586890-nm77",
     "title": "66+477 Alayunt M5 Makas",
     "kmValue": "66+477",
@@ -1323,6 +1359,24 @@
     "photos": [],
     "createdAt": "2026-09-27T12:13:32.717Z",
     "updatedAt": "2026-09-28T17:04:22.651Z"
+  },
+  {
+    "id": "sw-alayunt-m11",
+    "title": "66+700 M11 MAKAS",
+    "kmValue": "66+700",
+    "lineName": "Eskişehir-Konya",
+    "locationDesc": "Alayunt Gar Sahası",
+    "category": "switch",
+    "lat": 39.39671,
+    "lng": 30.10646,
+    "description": "Hat: Eskişehir-Konya\nKM: 66+700\nAlayunt Gar M11 Makası",
+    "textStyle": null,
+    "titleTextStyle": null,
+    "levelCrossing": null,
+    "notes": [],
+    "photos": [],
+    "createdAt": "2026-10-27T07:34:35.373Z",
+    "updatedAt": "2026-10-27T07:34:35.373Z"
   },
   {
     "id": "geojson-1790511212717-25",
@@ -1471,6 +1525,24 @@
     "photos": [],
     "createdAt": "2026-09-27T12:13:32.717Z",
     "updatedAt": "2026-09-28T17:04:22.651Z"
+  },
+  {
+    "id": "sw-alayunt-m14",
+    "title": "67+078 M14 MAKAS",
+    "kmValue": "67+078",
+    "lineName": "Eskişehir-Konya",
+    "locationDesc": "Alayunt Gar Sahası",
+    "category": "switch",
+    "lat": 39.39385,
+    "lng": 30.10413,
+    "description": "Hat: Eskişehir-Konya\nKM: 67+078\nAlayunt Gar M14 Makası",
+    "textStyle": null,
+    "titleTextStyle": null,
+    "levelCrossing": null,
+    "notes": [],
+    "photos": [],
+    "createdAt": "2026-10-27T07:34:35.373Z",
+    "updatedAt": "2026-10-27T07:34:35.373Z"
   },
   {
     "id": "geojson-1790511212717-26",

@@ -27,3 +27,8 @@ Kullanıcının belirlediği ve gelecekteki tüm geliştirmelerde kesinlikle kor
 - Nokta güncelleme veya içe aktarma senkronizasyonlarında mevcut fotoğraflar asla üzerine yazılıp silinmez (akıllı birleştirme yapılır).
 - Fotoğraf silme işlemi yalnızca kullanıcı açıkça silme butonuna tıklayıp onayladığında gerçekleştirilir.
 
+## 6. Hızlı Giriş / Şifresiz / Misafir Girişi Yasağı
+- Giriş ekranında "Şifresiz Hızlı Giriş", "Misafir Girişi", "Hızlı Hesap Seçenekleri" veya demo hesap butonları KESİNLİKLE yer almamalıdır.
+- Kullanıcılar sisteme yalnızca kendi kullanıcı adı/e-posta ve şifreleri ile standart form üzerinden giriş yapmalıdır.
+
+

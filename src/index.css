@@ -1,30 +1,35 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #0c0c0e;
-  --ink: #e0e0e4;
-  --accent: #00ff88;
-  --accent-faint: rgba(0, 255, 136, 0.12);
-  --surface: #16161a;
-  --surface-elevated: #1e1e24;
-  --border: #2d2d33;
-  --border-glow: rgba(0, 255, 136, 0.25);
-  --ink-faint: rgba(224, 224, 228, 0.1);
-  --ink-muted: #8e8e99;
+  --primary: #D32F2F;
+  --primary-dark: #B71C1C;
+  --surface: #F8F9FA;
+  --text-main: #212529;
+  --text-muted: #6C757D;
+  --border: #DEE2E6;
+  --bg: #F1F3F5;
+  --ink: #212529;
+  --accent: #D32F2F;
+  --accent-faint: rgba(211, 47, 47, 0.08);
 }
 
 body {
   background-color: var(--bg);
-  color: var(--ink);
-  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-main);
+  font-family: 'Poppins', sans-serif;
 }
 
-.font-syne {
-  font-family: 'Syne', sans-serif;
+.font-poppins {
+  font-family: 'Poppins', sans-serif;
 }
 
-.font-mono-tech {
-  font-family: 'JetBrains Mono', monospace;
+.font-roboto-mono {
+  font-family: 'Roboto Mono', monospace;
+}
+
+.gov-bar {
+  height: 5px;
+  background: linear-gradient(90deg, #D32F2F 0%, #D32F2F 50%, #1a1a1a 50%, #1a1a1a 100%);
 }
 
 .technical-grid-bg {
@@ -104,100 +109,74 @@ body {
   background: #94a3b8;
 }
 
-/* Prominent Draggable Scrollbar / Belirgin Tutulabilir Kaydırma Çubuğu */
-.prominent-scrollbar {
-  scrollbar-width: auto;
-  scrollbar-color: #475569 #e2e8f0;
-  scrollbar-gutter: stable;
-}
-.prominent-scrollbar::-webkit-scrollbar {
-  width: 14px;
-  height: 14px;
-  display: block;
-}
-.prominent-scrollbar::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 9999px;
-  border: 1.5px solid #cbd5e1;
-}
-.prominent-scrollbar::-webkit-scrollbar-thumb {
-  background: #475569;
-  border-radius: 9999px;
-  border: 2.5px solid #f1f5f9;
-  min-height: 48px;
-}
-.prominent-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #1e293b;
-}
-.prominent-scrollbar::-webkit-scrollbar-thumb:active {
-  background: #2563eb;
+/* Universal High-Performance Scrollbar & Smooth Touch-Action for All Menus */
+.prominent-scrollbar,
+.custom-scrollbar,
+.entry-list,
+[class*="overflow-y-auto"],
+[class*="overflow-auto"] {
+  scrollbar-width: thin !important;
+  scrollbar-color: #64748b #f1f5f9 !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y !important;
+  overscroll-behavior-y: contain;
 }
 
-/* Specific High-Visibility Scrollbar for Tapu Kadastro Portalı (#railway-parcel-modal) */
-#railway-parcel-modal .prominent-scrollbar {
-  scrollbar-width: auto !important;
-  scrollbar-color: #334155 #e2e8f0 !important;
-  overflow-y: scroll !important;
+.prominent-scrollbar *,
+.custom-scrollbar *,
+.entry-list *,
+[class*="overflow-y-auto"] *,
+[class*="overflow-auto"] * {
+  touch-action: pan-y;
 }
-#railway-parcel-modal .prominent-scrollbar::-webkit-scrollbar {
-  width: 14px !important;
-  height: 14px !important;
+
+.prominent-scrollbar::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar,
+.entry-list::-webkit-scrollbar,
+[class*="overflow-y-auto"]::-webkit-scrollbar,
+[class*="overflow-auto"]::-webkit-scrollbar {
+  width: 10px !important;
+  height: 10px !important;
   display: block !important;
 }
-#railway-parcel-modal .prominent-scrollbar::-webkit-scrollbar-track {
-  background: #e2e8f0 !important;
-  border-radius: 8px !important;
-  border: 1.5px solid #cbd5e1 !important;
-}
-#railway-parcel-modal .prominent-scrollbar::-webkit-scrollbar-thumb {
-  background: #334155 !important;
-  border-radius: 8px !important;
-  border: 2px solid #e2e8f0 !important;
-  min-height: 50px !important;
-}
-#railway-parcel-modal .prominent-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #0f172a !important;
-}
-#railway-parcel-modal .prominent-scrollbar::-webkit-scrollbar-thumb:active {
-  background: #4f46e5 !important;
+
+.prominent-scrollbar::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track,
+.entry-list::-webkit-scrollbar-track,
+[class*="overflow-y-auto"]::-webkit-scrollbar-track,
+[class*="overflow-auto"]::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+  border-radius: 9999px !important;
+  border: 1px solid #e2e8f0 !important;
 }
 
-/* Dark mode prominent scrollbar for Technical Shell / dark containers */
-.entry-list.prominent-scrollbar,
-.bg-\[\#16161a\] .prominent-scrollbar,
-.bg-\[\#0c0c0e\] .prominent-scrollbar,
-.prominent-scrollbar-dark {
-  scrollbar-width: thin;
-  scrollbar-color: #52525e #1c1c22;
+.prominent-scrollbar::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb,
+.entry-list::-webkit-scrollbar-thumb,
+[class*="overflow-y-auto"]::-webkit-scrollbar-thumb,
+[class*="overflow-auto"]::-webkit-scrollbar-thumb {
+  background: #64748b !important;
+  border-radius: 9999px !important;
+  border: 2px solid #f1f5f9 !important;
+  min-height: 44px !important;
+  cursor: grab !important;
 }
-.entry-list.prominent-scrollbar::-webkit-scrollbar,
-.bg-\[\#16161a\] .prominent-scrollbar::-webkit-scrollbar,
-.bg-\[\#0c0c0e\] .prominent-scrollbar::-webkit-scrollbar,
-.prominent-scrollbar-dark::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+
+.prominent-scrollbar::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover,
+.entry-list::-webkit-scrollbar-thumb:hover,
+[class*="overflow-y-auto"]::-webkit-scrollbar-thumb:hover,
+[class*="overflow-auto"]::-webkit-scrollbar-thumb:hover {
+  background: #334155 !important;
 }
-.entry-list.prominent-scrollbar::-webkit-scrollbar-track,
-.bg-\[\#16161a\] .prominent-scrollbar::-webkit-scrollbar-track,
-.bg-\[\#0c0c0e\] .prominent-scrollbar::-webkit-scrollbar-track,
-.prominent-scrollbar-dark::-webkit-scrollbar-track {
-  background: #16161a;
-  border: 1px solid #2d2d33;
-  border-radius: 9999px;
-}
-.entry-list.prominent-scrollbar::-webkit-scrollbar-thumb,
-.bg-\[\#16161a\] .prominent-scrollbar::-webkit-scrollbar-thumb,
-.bg-\[\#0c0c0e\] .prominent-scrollbar::-webkit-scrollbar-thumb,
-.prominent-scrollbar-dark::-webkit-scrollbar-thumb {
-  background: #52525e;
-  border-radius: 9999px;
-  border: 2px solid #16161a;
-}
-.entry-list.prominent-scrollbar::-webkit-scrollbar-thumb:hover,
-.bg-\[\#16161a\] .prominent-scrollbar::-webkit-scrollbar-thumb:hover,
-.bg-\[\#0c0c0e\] .prominent-scrollbar::-webkit-scrollbar-thumb:hover,
-.prominent-scrollbar-dark::-webkit-scrollbar-thumb:hover {
-  background: #00ff88;
+
+.prominent-scrollbar::-webkit-scrollbar-thumb:active,
+.custom-scrollbar::-webkit-scrollbar-thumb:active,
+.entry-list::-webkit-scrollbar-thumb:active,
+[class*="overflow-y-auto"]::-webkit-scrollbar-thumb:active,
+[class*="overflow-auto"]::-webkit-scrollbar-thumb:active {
+  background: #D32F2F !important;
+  cursor: grabbing !important;
 }
 
 /* TCDD Railway Marker Custom Styling */
@@ -214,35 +193,24 @@ body {
   justify-content: center !important;
 }
 
-/* Mobil Cihazlarda Ekran ve Çerçevelerin (Header, Menü) Sabit Kalması, Sayfa Zoomunun Engellenmesi */
+/* Sayfa ve Çerçeve Yerleşimi - Menülerde kaydırmaya izin veren esnek yapı */
 html, body {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
   width: 100%;
   height: 100%;
   height: 100dvh;
   margin: 0;
   padding: 0;
   overflow: hidden;
-  overscroll-behavior: none;
-  -webkit-overscroll-behavior: none;
-  touch-action: manipulation;
+  touch-action: pan-x pan-y;
   -webkit-text-size-adjust: 100%;
-  -webkit-user-select: none;
-  user-select: none;
 }
 
 #root {
-  position: fixed;
-  inset: 0;
   width: 100%;
   height: 100%;
   height: 100dvh;
   overflow: hidden;
-  touch-action: manipulation;
+  touch-action: pan-x pan-y;
 }
 
 /* Harita alanının dokunma ve pinch-to-zoom hareketlerini sadece Leaflet'e yönlendirmesi */

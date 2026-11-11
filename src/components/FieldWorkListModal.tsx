@@ -300,7 +300,7 @@ export const FieldWorkListModal: React.FC<FieldWorkListModalProps> = ({
       className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200 select-none"
     >
       <div
-        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden text-slate-800 dark:text-slate-100"
+        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col h-[100dvh] sm:h-[88vh] max-h-[100dvh] sm:max-h-[88vh] min-h-0 overflow-hidden text-slate-800 dark:text-slate-100"
       >
         {/* Modal Header */}
         <div className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 text-white border-b border-slate-800 shrink-0">
@@ -358,7 +358,7 @@ export const FieldWorkListModal: React.FC<FieldWorkListModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="flex-1 overflow-y-auto prominent-scrollbar p-4 sm:p-5 flex flex-col gap-4">
+        <div className="flex-1 overflow-y-auto prominent-scrollbar p-4 sm:p-5 flex flex-col gap-4 min-h-0 touch-pan-y overscroll-contain">
           {formMode !== null ? (
             /* CREATE / EDIT FORM */
             <form onSubmit={handleSubmitForm} className="space-y-4 max-w-2xl mx-auto w-full">

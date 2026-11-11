@@ -9,15 +9,11 @@ import {
   Palette,
   Users,
   LogOut,
-  Train,
-  CheckCircle,
-  RefreshCw,
   CloudUpload,
   HardDriveDownload,
   FileText,
   Gauge,
   Compass,
-  Landmark,
   Navigation2,
   Wrench,
 } from 'lucide-react';
@@ -35,12 +31,10 @@ interface MobileActionsDrawerProps {
   onOpenPalette: () => void;
   onOpenReports?: () => void;
   onOpenTakyidat?: () => void;
-  onOpenParcels?: () => void;
   onOpenFieldWorks?: () => void;
   fieldWorksCount?: number;
   onOpenSelectPoint?: () => void;
   activeTakyidatCount?: number;
-  totalParcelsCount?: number;
   onRefresh: () => void;
   onExportJSON: () => void;
   onSyncPhotos: () => void;
@@ -61,12 +55,10 @@ export const MobileActionsDrawer: React.FC<MobileActionsDrawerProps> = ({
   onOpenPalette,
   onOpenReports,
   onOpenTakyidat,
-  onOpenParcels,
   onOpenFieldWorks,
   fieldWorksCount = 0,
   onOpenSelectPoint,
   activeTakyidatCount = 0,
-  totalParcelsCount = 0,
   onRefresh,
   onExportJSON,
   onSyncPhotos,
@@ -78,57 +70,66 @@ export const MobileActionsDrawer: React.FC<MobileActionsDrawerProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end bg-slate-950/70 backdrop-blur-xs sm:hidden animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex flex-col justify-end bg-slate-900/60 backdrop-blur-xs sm:hidden animate-in fade-in duration-200">
       {/* Backdrop tap to close */}
       <div className="flex-1" onClick={onClose} />
 
-      {/* Drawer content */}
-      <div className="bg-slate-900 border-t border-slate-800 rounded-t-3xl shadow-2xl p-4 max-h-[85vh] overflow-y-auto prominent-scrollbar flex flex-col gap-3 text-white animate-in slide-in-from-bottom duration-250 pb-safe">
-        {/* Drag handle & close */}
-        <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+      {/* Drawer content: Variation 6 White & Red Clean Government Theme */}
+      <div className="bg-white border-t border-[#DEE2E6] rounded-t-3xl shadow-2xl p-4 max-h-[85dvh] overflow-y-auto prominent-scrollbar flex flex-col gap-3 text-[#212529] animate-in slide-in-from-bottom duration-250 pb-safe touch-pan-y overscroll-contain font-poppins">
+        {/* Top Government Accent Strip */}
+        <div className="gov-bar w-full h-1 -mt-1 rounded-full shrink-0" />
+
+        {/* Drag handle & close header */}
+        <div className="flex items-center justify-between pb-2.5 border-b border-[#DEE2E6]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-300 flex items-center justify-center shadow-xs shrink-0 bg-white">
+            <div className="w-8 h-8 rounded-lg overflow-hidden border border-[#DEE2E6] flex items-center justify-center shadow-xs shrink-0 bg-white p-0.5">
               <img
                 src="/tcdd_logo_badge.svg"
-                alt="TCDD Takip 712 Kısım Şefliği Logo"
+                alt="TCDD"
                 className="w-full h-full object-contain"
               />
             </div>
             <div>
-              <h3 className="text-sm font-extrabold text-white tracking-tight">TCDD KM TAKİP</h3>
-              <p className="text-[11px] text-red-300 font-semibold">712 Şefliği • {totalPoints} KM Kayıtlı</p>
+              <div className="flex items-center gap-1.5">
+                <h3 className="text-sm font-extrabold text-[#212529] tracking-tight">TCDD HAT İZLEME</h3>
+                <span className="bg-[#D32F2F]/10 text-[#D32F2F] text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-[#D32F2F]/20 font-mono">
+                  ALPHA
+                </span>
+              </div>
+              <p className="text-[11px] text-[#6C757D] font-medium">712 Şefliği • {totalPoints} KM Kayıtlı</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full bg-slate-800 text-slate-400 hover:text-white"
+            className="p-1.5 rounded-full bg-[#F8F9FA] text-[#6C757D] hover:text-[#212529] hover:bg-[#DEE2E6] transition-colors cursor-pointer"
+            title="Kapat"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* User Status Card */}
-        <div className="p-3 bg-slate-800/80 rounded-2xl flex items-center justify-between border border-slate-700/60">
-          <div className="flex items-center gap-2.5">
+        <div className="p-3 bg-[#F8F9FA] rounded-xl flex items-center justify-between border border-[#DEE2E6]">
+          <div className="flex items-center gap-2.5 min-w-0">
             <div
-              className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold text-white shadow-sm ${
-                isAdmin ? 'bg-purple-600' : role === 'editor' ? 'bg-sky-600' : 'bg-slate-600'
+              className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-black text-white shadow-xs shrink-0 ${
+                isAdmin ? 'bg-[#D32F2F]' : role === 'editor' ? 'bg-sky-600' : 'bg-slate-600'
               }`}
             >
               {user ? user.name.slice(0, 2).toUpperCase() : '??'}
             </div>
-            <div>
-              <p className="text-xs font-bold text-white leading-tight">{user?.name || 'Giriş Yapılmadı'}</p>
-              <p className="text-[10px] text-slate-400">{user?.email || '-'}</p>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-[#212529] leading-tight truncate">{user?.name || 'Kullanıcı'}</p>
+              <p className="text-[10px] text-[#6C757D] truncate font-roboto-mono">{user?.email || '-'}</p>
             </div>
           </div>
           <span
-            className={`text-[10px] font-bold px-2.5 py-1 rounded-lg ${
+            className={`text-[10px] font-bold px-2 py-0.5 rounded-lg shrink-0 ${
               isAdmin
-                ? 'bg-purple-950 text-purple-300 border border-purple-800'
+                ? 'bg-[#D32F2F]/10 text-[#D32F2F] border border-[#D32F2F]/20'
                 : role === 'editor'
-                ? 'bg-sky-950 text-sky-300 border border-sky-800'
-                : 'bg-slate-800 text-slate-300 border border-slate-700'
+                ? 'bg-sky-50 text-sky-800 border border-sky-200'
+                : 'bg-slate-100 text-slate-700 border border-slate-200'
             }`}
           >
             {isAdmin ? '👑 Yönetici' : role === 'editor' ? '🛠️ Saha' : '👁️ Gözlemci'}
@@ -144,12 +145,12 @@ export const MobileActionsDrawer: React.FC<MobileActionsDrawerProps> = ({
               onClose();
             }}
             disabled={isRefreshing}
-            className="flex items-center gap-2 p-3 bg-slate-800 hover:bg-slate-700/80 active:bg-slate-700 rounded-xl border border-slate-700/70 transition-all font-semibold text-slate-200"
+            className="flex items-center gap-2 p-3 bg-white hover:bg-[#F8F9FA] active:bg-slate-100 rounded-xl border border-[#DEE2E6] transition-all font-semibold text-[#212529] shadow-2xs cursor-pointer"
           >
-            <RotateCw className={`w-4 h-4 text-sky-400 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <div className="text-left leading-tight">
-              <span className="block font-bold">Haritayı Yenile</span>
-              <span className="text-[10px] text-slate-400">Verileri Güncelle</span>
+            <RotateCw className={`w-4 h-4 text-[#D32F2F] shrink-0 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <div className="text-left leading-tight min-w-0">
+              <span className="block font-bold text-xs truncate">Haritayı Yenile</span>
+              <span className="text-[10px] text-[#6C757D] truncate block">Verileri Güncelle</span>
             </div>
           </button>
 
@@ -159,12 +160,12 @@ export const MobileActionsDrawer: React.FC<MobileActionsDrawerProps> = ({
               onSyncPhotos();
               onClose();
             }}
-            className="flex items-center gap-2 p-3 bg-slate-800 hover:bg-slate-700/80 active:bg-slate-700 rounded-xl border border-slate-700/70 transition-all font-semibold text-slate-200"
+            className="flex items-center gap-2 p-3 bg-white hover:bg-[#F8F9FA] active:bg-slate-100 rounded-xl border border-[#DEE2E6] transition-all font-semibold text-[#212529] shadow-2xs cursor-pointer"
           >
-            <CloudUpload className="w-4 h-4 text-cyan-400" />
-            <div className="text-left leading-tight">
-              <span className="block font-bold">Fotoğraf Eşitle</span>
-              <span className="text-[10px] text-slate-400">Buluta Gönder</span>
+            <CloudUpload className="w-4 h-4 text-sky-600 shrink-0" />
+            <div className="text-left leading-tight min-w-0">
+              <span className="block font-bold text-xs truncate">Fotoğraf Eşitle</span>
+              <span className="text-[10px] text-[#6C757D] truncate block">Buluta Gönder</span>
             </div>
           </button>
 
@@ -174,12 +175,12 @@ export const MobileActionsDrawer: React.FC<MobileActionsDrawerProps> = ({
               onOpenImportExport();
               onClose();
             }}
-            className="flex items-center gap-2 p-3 bg-slate-800 hover:bg-slate-700/80 active:bg-slate-700 rounded-xl border border-slate-700/70 transition-all font-semibold text-slate-200"
+            className="flex items-center gap-2 p-3 bg-white hover:bg-[#F8F9FA] active:bg-slate-100 rounded-xl border border-[#DEE2E6] transition-all font-semibold text-[#212529] shadow-2xs cursor-pointer"
           >
-            <Upload className="w-4 h-4 text-emerald-400" />
-            <div className="text-left leading-tight">
-              <span className="block font-bold">KML &amp; Harita</span>
-              <span className="text-[10px] text-slate-400">İçe / Dışa Aktar</span>
+            <Upload className="w-4 h-4 text-emerald-600 shrink-0" />
+            <div className="text-left leading-tight min-w-0">
+              <span className="block font-bold text-xs truncate">KML &amp; Harita</span>
+              <span className="text-[10px] text-[#6C757D] truncate block">İçe / Dışa Aktar</span>
             </div>
           </button>
 
@@ -190,27 +191,27 @@ export const MobileActionsDrawer: React.FC<MobileActionsDrawerProps> = ({
                 onOpenOfflineModal();
                 onClose();
               }}
-              className={`flex items-center gap-2 p-3 rounded-xl border transition-all font-semibold ${
+              className={`flex items-center gap-2 p-3 rounded-xl border transition-all font-semibold shadow-2xs cursor-pointer ${
                 isOfflineMode
-                  ? 'bg-amber-950/80 hover:bg-amber-900 border-amber-500/80 text-amber-200'
-                  : 'bg-emerald-950/40 hover:bg-emerald-900/60 active:bg-emerald-900 border-emerald-500/40 text-emerald-200'
+                  ? 'bg-amber-50 border-amber-300 text-amber-900'
+                  : 'bg-white hover:bg-[#F8F9FA] active:bg-slate-100 border-[#DEE2E6] text-[#212529]'
               }`}
             >
               <HardDriveDownload
-                className={`w-4 h-4 ${
-                  isOfflineMode ? 'text-amber-400 animate-pulse' : 'text-emerald-400'
+                className={`w-4 h-4 shrink-0 ${
+                  isOfflineMode ? 'text-amber-600 animate-pulse' : 'text-emerald-600'
                 }`}
               />
-              <div className="text-left leading-tight">
-                <span className="block font-bold flex items-center gap-1.5">
+              <div className="text-left leading-tight min-w-0">
+                <span className="block font-bold text-xs truncate flex items-center gap-1">
                   <span>Çevrimdışı Harita</span>
                   {isOfflineMode && (
-                    <span className="bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded-full text-[9px] font-black">
+                    <span className="bg-amber-500 text-white px-1 py-0.2 rounded text-[8px] font-bold">
                       AKTİF
                     </span>
                   )}
                 </span>
-                <span className="text-[10px] text-slate-400">Önbellek &amp; Hat İndir</span>
+                <span className="text-[10px] text-[#6C757D] truncate block">Önbellek &amp; Hat İndir</span>
               </div>
             </button>
           )}
@@ -222,12 +223,12 @@ export const MobileActionsDrawer: React.FC<MobileActionsDrawerProps> = ({
                 onOpenReports();
                 onClose();
               }}
-              className="flex items-center gap-2 p-3 bg-sky-950/80 hover:bg-sky-900 active:bg-sky-850 rounded-xl border border-sky-500/50 transition-all font-semibold text-sky-200"
+              className="flex items-center gap-2 p-3 bg-white hover:bg-[#F8F9FA] active:bg-slate-100 rounded-xl border border-[#DEE2E6] transition-all font-semibold text-[#212529] shadow-2xs cursor-pointer"
             >
-              <FileText className="w-4 h-4 text-sky-400" />
-              <div className="text-left leading-tight">
-                <span className="block font-bold">Resmi Raporlar</span>
-                <span className="text-[10px] text-sky-300/80">PDF &amp; Excel Çıktısı</span>
+              <FileText className="w-4 h-4 text-[#D32F2F] shrink-0" />
+              <div className="text-left leading-tight min-w-0">
+                <span className="block font-bold text-xs truncate">Resmi Raporlar</span>
+                <span className="text-[10px] text-[#6C757D] truncate block">PDF &amp; Excel Çıktısı</span>
               </div>
             </button>
           )}
@@ -239,43 +240,19 @@ export const MobileActionsDrawer: React.FC<MobileActionsDrawerProps> = ({
                 onOpenTakyidat();
                 onClose();
               }}
-              className="flex items-center gap-2 p-3 bg-red-950/80 hover:bg-red-900 active:bg-red-850 rounded-xl border border-red-500/50 transition-all font-semibold text-red-200"
+              className="flex items-center gap-2 p-3 bg-white hover:bg-[#F8F9FA] active:bg-slate-100 rounded-xl border border-[#DEE2E6] transition-all font-semibold text-[#212529] shadow-2xs cursor-pointer"
             >
-              <Gauge className="w-4 h-4 text-red-400" />
-              <div className="text-left leading-tight">
-                <span className="block font-bold flex items-center gap-1.5">
-                  <span>Takyidat &amp; Hız Sınırları</span>
+              <Gauge className="w-4 h-4 text-[#D32F2F] shrink-0" />
+              <div className="text-left leading-tight min-w-0">
+                <span className="block font-bold text-xs truncate flex items-center gap-1">
+                  <span>Takyidatlar</span>
                   {activeTakyidatCount > 0 && (
-                    <span className="bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded-full text-[9px] font-black">
+                    <span className="bg-[#D32F2F] text-white px-1.5 py-0.2 rounded-full text-[9px] font-black">
                       {activeTakyidatCount}
                     </span>
                   )}
                 </span>
-                <span className="text-[10px] text-red-300/80">KM Hız Tahditleri</span>
-              </div>
-            </button>
-          )}
-
-          {/* Demiryolu Arazisi & Tapu Kadastro */}
-          {onOpenParcels && (
-            <button
-              onClick={() => {
-                onOpenParcels();
-                onClose();
-              }}
-              className="flex items-center gap-2 p-3 bg-indigo-950/80 hover:bg-indigo-900 active:bg-indigo-850 rounded-xl border border-indigo-500/50 transition-all font-semibold text-indigo-200"
-            >
-              <Landmark className="w-4 h-4 text-indigo-400" />
-              <div className="text-left leading-tight">
-                <span className="block font-bold flex items-center gap-1.5">
-                  <span>Demiryolu Arazisi &amp; Tapu</span>
-                  {totalParcelsCount > 0 && (
-                    <span className="bg-indigo-500 text-white px-1.5 py-0.2 rounded-full text-[9px] font-black">
-                      {totalParcelsCount}
-                    </span>
-                  )}
-                </span>
-                <span className="text-[10px] text-indigo-300/80">Kamulaştırma &amp; Mülkiyet</span>
+                <span className="text-[10px] text-[#6C757D] truncate block">KM Hız Sınırları</span>
               </div>
             </button>
           )}
@@ -287,19 +264,19 @@ export const MobileActionsDrawer: React.FC<MobileActionsDrawerProps> = ({
                 onOpenFieldWorks();
                 onClose();
               }}
-              className="flex items-center gap-2 p-3 bg-amber-950/80 hover:bg-amber-900 active:bg-amber-850 rounded-xl border border-amber-500/50 transition-all font-semibold text-amber-200"
+              className="flex items-center gap-2 p-3 bg-white hover:bg-[#F8F9FA] active:bg-slate-100 rounded-xl border border-[#DEE2E6] transition-all font-semibold text-[#212529] shadow-2xs cursor-pointer"
             >
-              <Wrench className="w-4 h-4 text-amber-400" />
-              <div className="text-left leading-tight">
-                <span className="block font-bold flex items-center gap-1.5">
-                  <span>Saha İş Listesi</span>
+              <Wrench className="w-4 h-4 text-amber-600 shrink-0" />
+              <div className="text-left leading-tight min-w-0">
+                <span className="block font-bold text-xs truncate flex items-center gap-1">
+                  <span>Saha İşleri</span>
                   {fieldWorksCount > 0 && (
-                    <span className="bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded-full text-[9px] font-black">
+                    <span className="bg-amber-600 text-white px-1.5 py-0.2 rounded-full text-[9px] font-black">
                       {fieldWorksCount}
                     </span>
                   )}
                 </span>
-                <span className="text-[10px] text-amber-300/80">KM İş &amp; Görev Defteri</span>
+                <span className="text-[10px] text-[#6C757D] truncate block">İş &amp; Görev Defteri</span>
               </div>
             </button>
           )}
@@ -311,23 +288,23 @@ export const MobileActionsDrawer: React.FC<MobileActionsDrawerProps> = ({
                 onToggleLiveGps();
                 onClose();
               }}
-              className={`flex items-center gap-2 p-3 rounded-xl border transition-all font-semibold ${
+              className={`flex items-center gap-2 p-3 rounded-xl border transition-all font-semibold shadow-2xs cursor-pointer ${
                 isLiveGpsActive
-                  ? 'bg-emerald-950/80 hover:bg-emerald-900 border-emerald-500/80 text-emerald-200'
-                  : 'bg-sky-950/80 hover:bg-sky-900 border-sky-500/50 text-sky-200'
+                  ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                  : 'bg-white hover:bg-[#F8F9FA] active:bg-slate-100 border-[#DEE2E6] text-[#212529]'
               }`}
             >
               <Navigation2
-                className={`w-4 h-4 ${
-                  isLiveGpsActive ? 'text-emerald-400 animate-pulse' : 'text-sky-400'
+                className={`w-4 h-4 shrink-0 ${
+                  isLiveGpsActive ? 'text-emerald-600 animate-spin-slow' : 'text-[#D32F2F]'
                 }`}
               />
-              <div className="text-left leading-tight">
-                <span className="block font-bold">
-                  {isLiveGpsActive ? 'Canlı Konumu Kapat' : 'Canlı Konumu Aç (GPS)'}
+              <div className="text-left leading-tight min-w-0">
+                <span className="block font-bold text-xs truncate">
+                  {isLiveGpsActive ? 'Canlı GPS Kapat' : 'Canlı GPS Aç'}
                 </span>
-                <span className="text-[10px] text-sky-300/80">
-                  {isLiveGpsActive ? 'Anlık Demiryolu KM Takibi Açık' : 'Anlık KM ve Hat Takibi'}
+                <span className="text-[10px] text-[#6C757D] truncate block">
+                  {isLiveGpsActive ? 'Anlık KM Takibi Açık' : 'Hat Üzeri Canlı KM'}
                 </span>
               </div>
             </button>
@@ -340,12 +317,12 @@ export const MobileActionsDrawer: React.FC<MobileActionsDrawerProps> = ({
                 onOpenSelectPoint();
                 onClose();
               }}
-              className="flex items-center gap-2 p-3 bg-slate-800 hover:bg-slate-700/80 active:bg-slate-700 rounded-xl border border-slate-700/70 transition-all font-semibold text-slate-200"
+              className="flex items-center gap-2 p-3 bg-white hover:bg-[#F8F9FA] active:bg-slate-100 rounded-xl border border-[#DEE2E6] transition-all font-semibold text-[#212529] shadow-2xs cursor-pointer"
             >
-              <Compass className="w-4 h-4 text-sky-400" />
-              <div className="text-left leading-tight">
-                <span className="block font-bold">Noktadan Canlı KM Seç</span>
-                <span className="text-[10px] text-slate-400">Haritadan veya Listeden</span>
+              <Compass className="w-4 h-4 text-sky-600 shrink-0" />
+              <div className="text-left leading-tight min-w-0">
+                <span className="block font-bold text-xs truncate">Noktadan KM Seç</span>
+                <span className="text-[10px] text-[#6C757D] truncate block">Haritadan veya Listeden</span>
               </div>
             </button>
           )}
@@ -356,12 +333,12 @@ export const MobileActionsDrawer: React.FC<MobileActionsDrawerProps> = ({
               onExportJSON();
               onClose();
             }}
-            className="flex items-center gap-2 p-3 bg-slate-800 hover:bg-slate-700/80 active:bg-slate-700 rounded-xl border border-slate-700/70 transition-all font-semibold text-slate-200"
+            className="flex items-center gap-2 p-3 bg-white hover:bg-[#F8F9FA] active:bg-slate-100 rounded-xl border border-[#DEE2E6] transition-all font-semibold text-[#212529] shadow-2xs cursor-pointer"
           >
-            <FileJson className="w-4 h-4 text-indigo-400" />
-            <div className="text-left leading-tight">
-              <span className="block font-bold">JSON İndir</span>
-              <span className="text-[10px] text-slate-400">Tüm Verileri Kaydet</span>
+            <FileJson className="w-4 h-4 text-indigo-600 shrink-0" />
+            <div className="text-left leading-tight min-w-0">
+              <span className="block font-bold text-xs truncate">JSON İndir</span>
+              <span className="text-[10px] text-[#6C757D] truncate block">Tüm Verileri Kaydet</span>
             </div>
           </button>
 
@@ -371,12 +348,12 @@ export const MobileActionsDrawer: React.FC<MobileActionsDrawerProps> = ({
               onOpenMobileInstall();
               onClose();
             }}
-            className="flex items-center gap-2 p-3 bg-slate-800 hover:bg-slate-700/80 active:bg-slate-700 rounded-xl border border-slate-700/70 transition-all font-semibold text-slate-200"
+            className="flex items-center gap-2 p-3 bg-white hover:bg-[#F8F9FA] active:bg-slate-100 rounded-xl border border-[#DEE2E6] transition-all font-semibold text-[#212529] shadow-2xs cursor-pointer"
           >
-            <Smartphone className="w-4 h-4 text-teal-400" />
-            <div className="text-left leading-tight">
-              <span className="block font-bold">Telefona Yükle</span>
-              <span className="text-[10px] text-slate-400">PWA Uygulama</span>
+            <Smartphone className="w-4 h-4 text-teal-600 shrink-0" />
+            <div className="text-left leading-tight min-w-0">
+              <span className="block font-bold text-xs truncate">Telefona Yükle</span>
+              <span className="text-[10px] text-[#6C757D] truncate block">PWA Uygulaması</span>
             </div>
           </button>
 
@@ -386,12 +363,12 @@ export const MobileActionsDrawer: React.FC<MobileActionsDrawerProps> = ({
               onOpenPalette();
               onClose();
             }}
-            className="flex items-center gap-2 p-3 bg-slate-800 hover:bg-slate-700/80 active:bg-slate-700 rounded-xl border border-slate-700/70 transition-all font-semibold text-slate-200"
+            className="flex items-center gap-2 p-3 bg-white hover:bg-[#F8F9FA] active:bg-slate-100 rounded-xl border border-[#DEE2E6] transition-all font-semibold text-[#212529] shadow-2xs cursor-pointer"
           >
-            <Palette className="w-4 h-4 text-amber-400" />
-            <div className="text-left leading-tight">
-              <span className="block font-bold">Renk Paleti</span>
-              <span className="text-[10px] text-slate-400">Kategori &amp; Pinler</span>
+            <Palette className="w-4 h-4 text-amber-600 shrink-0" />
+            <div className="text-left leading-tight min-w-0">
+              <span className="block font-bold text-xs truncate">Renk Paleti</span>
+              <span className="text-[10px] text-[#6C757D] truncate block">Kategori Renkleri</span>
             </div>
           </button>
         </div>
@@ -403,13 +380,13 @@ export const MobileActionsDrawer: React.FC<MobileActionsDrawerProps> = ({
               onOpenUserManagement();
               onClose();
             }}
-            className="w-full flex items-center justify-between p-3 bg-purple-950/40 hover:bg-purple-950/60 active:bg-purple-950 border border-purple-800/50 rounded-2xl text-purple-200 font-semibold text-xs transition-colors"
+            className="w-full flex items-center justify-between p-3 bg-[#F8F9FA] hover:bg-slate-100 border border-[#DEE2E6] rounded-xl text-[#212529] font-semibold text-xs transition-colors cursor-pointer"
           >
             <div className="flex items-center gap-2.5">
-              <Users className="w-4 h-4 text-purple-400" />
+              <Users className="w-4 h-4 text-[#D32F2F]" />
               <span>Kullanıcı &amp; Yetki Yönetim Paneli</span>
             </div>
-            <span className="text-[10px] bg-purple-900/80 text-purple-300 px-2 py-0.5 rounded-md font-bold">
+            <span className="text-[10px] bg-[#D32F2F]/10 text-[#D32F2F] px-2 py-0.5 rounded font-bold border border-[#D32F2F]/20">
               Yönetici
             </span>
           </button>
@@ -421,9 +398,9 @@ export const MobileActionsDrawer: React.FC<MobileActionsDrawerProps> = ({
             logout();
             onClose();
           }}
-          className="w-full flex items-center justify-center gap-2 p-3 bg-red-950/40 hover:bg-red-950/60 active:bg-red-950 border border-red-800/50 rounded-2xl text-red-300 font-semibold text-xs transition-colors mt-1 cursor-pointer"
+          className="w-full flex items-center justify-center gap-2 p-2.5 bg-rose-50 hover:bg-rose-100 text-[#D32F2F] border border-rose-200 rounded-xl font-bold text-xs transition-colors cursor-pointer"
         >
-          <LogOut className="w-4 h-4 text-red-400" />
+          <LogOut className="w-4 h-4 text-[#D32F2F]" />
           <span>Oturumu Kapat</span>
         </button>
       </div>

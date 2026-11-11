@@ -3,26 +3,22 @@ import React, { useEffect, useState } from 'react';
 interface TechnicalFooterProps {
   totalPoints: number;
   totalSwitches: number;
-  totalParcels: number;
   totalTakyidat: number;
   isOnline: boolean;
   isLiveGpsActive: boolean;
   gpsAccuracy?: number;
   onFilterSwitches?: () => void;
-  onOpenParcels?: () => void;
   onOpenTakyidat?: () => void;
 }
 
 export const TechnicalFooter: React.FC<TechnicalFooterProps> = ({
   totalPoints,
   totalSwitches,
-  totalParcels,
   totalTakyidat,
   isOnline,
   isLiveGpsActive,
   gpsAccuracy,
   onFilterSwitches,
-  onOpenParcels,
   onOpenTakyidat,
 }) => {
   const [timeStr, setTimeStr] = useState<string>('');
@@ -36,7 +32,7 @@ export const TechnicalFooter: React.FC<TechnicalFooterProps> = ({
           minute: '2-digit',
           second: '2-digit',
           hour12: false,
-        })
+        }) + ' UTC+3'
       );
     };
     updateTime();
@@ -45,16 +41,16 @@ export const TechnicalFooter: React.FC<TechnicalFooterProps> = ({
   }, []);
 
   const getGpsLinkStatus = () => {
-    if (!isLiveGpsActive) return 'STANDBY';
-    if (!gpsAccuracy) return 'LOCKING';
-    if (gpsAccuracy < 10) return 'EXCELLENT';
-    if (gpsAccuracy < 25) return 'GOOD';
-    return 'FAIR';
+    if (!isLiveGpsActive) return 'BEKLEMEDE';
+    if (!gpsAccuracy) return 'KİLİTLENİYOR';
+    if (gpsAccuracy < 10) return 'MÜKEMMEL';
+    if (gpsAccuracy < 25) return 'İYİ';
+    return 'ORTA';
   };
 
   const getGpsColor = () => {
-    if (!isLiveGpsActive) return 'text-[#e0e0e4]/50';
-    if (!gpsAccuracy || gpsAccuracy < 10) return 'text-[#00ff88]';
+    if (!isLiveGpsActive) return 'text-[#ADB5BD]';
+    if (!gpsAccuracy || gpsAccuracy < 10) return 'text-[#48BB78]';
     if (gpsAccuracy < 25) return 'text-amber-400';
     return 'text-red-400';
   };
@@ -62,64 +58,54 @@ export const TechnicalFooter: React.FC<TechnicalFooterProps> = ({
   return (
     <footer
       id="technical-status-footer"
-      className="w-full bg-black border-t border-[#2d2d33] h-10 px-4 sm:px-6 flex items-center justify-between gap-4 text-[10px] sm:text-xs tracking-wider z-20 select-none overflow-x-auto no-scrollbar font-mono-tech text-[#e0e0e4]"
+      className="hidden sm:flex w-full bg-[#212529] text-[#ADB5BD] border-t border-[#343A40] h-9 px-4 sm:px-6 items-center justify-between gap-4 text-xs font-roboto-mono select-none overflow-x-auto no-scrollbar shrink-0 z-20"
     >
-      {/* Left Status Group */}
+      {/* Left Status Group (Variation 6) */}
       <div className="flex items-center gap-4 sm:gap-6 flex-shrink-0">
-        {/* System Status */}
-        <div className="status-pill flex items-center gap-2">
-          <div
-            className={`w-2 h-2 rounded-full ${
-              isOnline ? 'bg-[#00ff88] status-dot-glow' : 'bg-amber-400'
-            }`}
-          />
-          <span className="opacity-70">SYS_STATUS:</span>
-          <span className="font-bold text-[#00ff88]">
-            {isOnline ? 'OPERATIONAL' : 'LOCAL_CACHE'}
+        {/* Server Status */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-[#6C757D]">SUNUCU DURUMU:</span>
+          <span className={`font-bold ${isOnline ? 'text-[#48BB78]' : 'text-amber-400'}`}>
+            {isOnline ? 'AKTİF' : 'YEREL ÖNBELLEK'}
           </span>
         </div>
 
+        <span className="text-[#495057]">|</span>
+
         {/* Total Records */}
-        <div className="status-pill flex items-center gap-1.5">
-          <span className="opacity-70">RECORDS:</span>
-          <span className="font-bold text-[#00ff88]">{totalPoints}</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[#6C757D]">VERİ KAYDI:</span>
+          <span className="font-bold text-white">{totalPoints} ADET</span>
         </div>
+
+        <span className="text-[#495057]">|</span>
 
         {/* Switches Count (Clickable filter) */}
         <button
           onClick={onFilterSwitches}
-          className="status-pill flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer"
-          title="Makasları filtrele (Toplam 32 makas)"
+          className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer"
+          title="Makasları filtrele"
         >
-          <span className="opacity-70">MAKAS:</span>
-          <span className="font-bold text-[#ef4444]">{totalSwitches}</span>
+          <span className="text-[#6C757D]">MAKAS:</span>
+          <span className="font-bold text-[#E53E3E]">{totalSwitches}</span>
         </button>
 
-        {/* Parcels Count */}
-        <button
-          onClick={onOpenParcels}
-          className="status-pill flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer"
-          title="Kadastro parsellerini aç"
-        >
-          <span className="opacity-70">PARSEL:</span>
-          <span className="font-bold text-purple-400">{totalParcels}</span>
-        </button>
 
         {/* Takyidat Count */}
         {totalTakyidat > 0 && (
           <button
             onClick={onOpenTakyidat}
-            className="status-pill flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer"
             title="Aktif takyidat uyarılarını aç"
           >
-            <span className="opacity-70">TAKYİDAT:</span>
+            <span className="text-[#6C757D]">TAKYİDAT:</span>
             <span className="font-bold text-amber-400">{totalTakyidat}</span>
           </button>
         )}
 
         {/* GPS Link Quality */}
-        <div className="status-pill flex items-center gap-1.5">
-          <span className="opacity-70">GPS_LINK:</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[#6C757D]">GPS:</span>
           <span className={`font-bold ${getGpsColor()}`}>
             {getGpsLinkStatus()}
             {isLiveGpsActive && gpsAccuracy ? ` (±${Math.round(gpsAccuracy)}m)` : ''}
@@ -129,15 +115,16 @@ export const TechnicalFooter: React.FC<TechnicalFooterProps> = ({
 
       {/* Right Sync & UTC Clock */}
       <div className="flex items-center gap-4 flex-shrink-0 ml-auto">
-        <div className="status-pill flex items-center gap-1.5">
-          <span className="opacity-70">SYNC:</span>
-          <span className="font-bold text-[#00ff88]">
-            {isOnline ? 'CLOUD_LIVE' : 'OFFLINE'}
+        <div className="flex items-center gap-1.5">
+          <span className="text-[#6C757D]">SENKRON:</span>
+          <span className={`font-bold ${isOnline ? 'text-[#48BB78]' : 'text-amber-400'}`}>
+            {isOnline ? 'BULUT CANLI' : 'ÇEVRİMDIŞI'}
           </span>
         </div>
 
-        <div className="hidden sm:flex items-center gap-1.5 text-[#e0e0e4]/50 border-l border-[#2d2d33] pl-4">
-          <span className="font-mono">{timeStr}</span>
+        <div className="hidden sm:flex items-center gap-1.5 border-l border-[#343A40] pl-4">
+          <span className="text-[#6C757D]">SİSTEM ZAMANI:</span>
+          <span className="text-[#D32F2F] font-bold">{timeStr}</span>
         </div>
       </div>
     </footer>

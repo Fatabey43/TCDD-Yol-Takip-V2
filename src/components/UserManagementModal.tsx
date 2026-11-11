@@ -285,7 +285,7 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
     >
       <div
         id="user-mgmt-container"
-        className="bg-slate-900 border border-slate-800 w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-slate-100"
+        className="bg-slate-900 border border-slate-800 w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[100dvh] sm:h-[88vh] max-h-[100dvh] sm:max-h-[88vh] min-h-0 text-slate-100"
       >
         {/* Header */}
         <div className="bg-slate-950 px-5 py-3.5 flex items-center justify-between border-b border-slate-800 flex-shrink-0">
@@ -382,7 +382,7 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto prominent-scrollbar p-4 sm:p-5">
+        <div className="flex-1 overflow-y-auto prominent-scrollbar p-4 sm:p-5 min-h-0 touch-pan-y overscroll-contain">
           {/* TAB 1: USERS LIST & MANAGEMENT */}
           {activeTab === 'users' && (
             <div className="space-y-4">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { RailwayPoint, RailwayPointCategory, FilterOptions } from './types.ts';
-import { WorkLog, TakyidatSpeedRestriction, RailwayParcel, FieldWorkItem } from './types.ts';
+import { WorkLog, TakyidatSpeedRestriction, FieldWorkItem } from './types.ts';
 import {
   fetchRailwayPoints,
   getLocalCachedPoints,
@@ -21,14 +21,6 @@ import {
   updateExistingTakyidat,
   deleteTakyidatById,
   bulkDeleteTakyidat,
-  fetchParcelsList,
-  getLocalCachedParcels,
-  saveNewParcel,
-  updateExistingParcel,
-  deleteParcelById,
-  bulkDeleteParcels,
-  clearAllParcels,
-  saveParcelsBatch,
   fetchFieldWorksList,
   getLocalCachedFieldWorks,
   saveNewFieldWork,
@@ -46,14 +38,12 @@ import { MobileInstallModal } from './components/MobileInstallModal.tsx';
 import { ReportModal } from './components/ReportModal.tsx';
 import { WorkLogModal } from './components/WorkLogModal.tsx';
 import { TakyidatModal, TakyidatFormDraft } from './components/TakyidatModal.tsx';
-import { RailwayParcelModal } from './components/RailwayParcelModal.tsx';
 import { FieldWorkListModal } from './components/FieldWorkListModal.tsx';
 import { OfflineMapModal } from './components/OfflineMapModal.tsx';
 import { SelectPointModal } from './components/SelectPointModal.tsx';
 import { LiveKmIndicator } from './components/LiveKmIndicator.tsx';
 import { calculateLiveRailwayKm, NearestKmResult } from './utils/liveRailwayKm.ts';
 import { isForceOfflineMode } from './utils/offlineMapStorage.ts';
-import { Header } from './components/Header.tsx';
 import { TechnicalNavDock } from './components/TechnicalNavDock.tsx';
 import { TechnicalTopHud } from './components/TechnicalTopHud.tsx';
 import { TechnicalFooter } from './components/TechnicalFooter.tsx';
@@ -132,15 +122,6 @@ export default function App() {
   const [takyidatPickMode, setTakyidatPickMode] = useState<'start' | 'end' | 'both' | 'both-step2' | null>(null);
   const [takyidatFormDraft, setTakyidatFormDraft] = useState<TakyidatFormDraft | null>(null);
   const [pointFormDraft, setPointFormDraft] = useState<any>(null);
-  const [isParcelModalOpen, setIsParcelModalOpen] = useState<boolean>(false);
-  const [parcelsList, setParcelsList] = useState<RailwayParcel[]>(() => {
-    try {
-      const cached = getLocalCachedParcels();
-      return Array.isArray(cached) ? cached : [];
-    } catch {
-      return [];
-    }
-  });
 
   // Field Works (Saha İş Listesi - Haritada kalabalık yapmayan, tıklandığında KM'ye giden sistem)
   const [fieldWorksList, setFieldWorksList] = useState<FieldWorkItem[]>(() => {
@@ -242,13 +223,12 @@ export default function App() {
   const currentPointCountRef = useRef<number>(0);
   const broadcastChannelRef = useRef<BroadcastChannel | null>(null);
 
-  // Load points, takyidat, parcels & field works on mount
+  // Load points, takyidat & field works on mount
   const loadPoints = useCallback(async () => {
     try {
-      const [data, takData, parcelsData, worksData, verRes] = await Promise.all([
+      const [data, takData, worksData, verRes] = await Promise.all([
         fetchRailwayPoints(),
         fetchTakyidatList().catch(() => []),
-        fetchParcelsList().catch(() => []),
         fetchFieldWorksList().catch(() => []),
         fetch(`/api/points/version?_t=${Date.now()}`, { cache: 'no-store' }).catch(() => null),
       ]);
@@ -262,41 +242,14 @@ export default function App() {
         } catch {}
       }
 
-      setPoints((prev) => {
-        if (prev.length === data.length && prev.length > 0) {
-          const unchanged = prev.every((p, i) => p.id === data[i]?.id && p.updatedAt === data[i]?.updatedAt);
-          if (unchanged) return prev;
-        }
-        return sortPointsByKm(data);
-      });
+      const sorted = sortPointsByKm(data);
+      setPoints(sorted);
+      setTakyidatList(takData);
+      setFieldWorksList(worksData);
 
-      setTakyidatList((prev) => {
-        if (prev.length === takData.length) {
-          const unchanged = prev.every((t, i) => t.id === takData[i]?.id && t.updatedAt === takData[i]?.updatedAt);
-          if (unchanged) return prev;
-        }
-        return takData;
-      });
-
-      setParcelsList((prev) => {
-        if (prev.length === parcelsData.length) {
-          const unchanged = prev.every((p, i) => p.id === parcelsData[i]?.id && p.updatedAt === parcelsData[i]?.updatedAt);
-          if (unchanged) return prev;
-        }
-        return parcelsData;
-      });
-
-      setFieldWorksList((prev) => {
-        if (prev.length === worksData.length) {
-          const unchanged = prev.every((w, i) => w.id === worksData[i]?.id && w.updatedAt === worksData[i]?.updatedAt);
-          if (unchanged) return prev;
-        }
-        return worksData;
-      });
-
-      currentPointCountRef.current = data.length;
+      currentPointCountRef.current = sorted.length;
       // If a point was selected, refresh its data reference
-      setSelectedPoint((curr) => (curr ? data.find((p) => p.id === curr.id) || null : null));
+      setSelectedPoint((curr) => (curr ? sorted.find((p) => p.id === curr.id) || null : null));
     } catch (err) {
       console.error('Noktalar yüklenemedi:', err);
     } finally {
@@ -310,20 +263,18 @@ export default function App() {
     try {
       lastRevisionRef.current = 0;
       currentPointCountRef.current = -1;
-      const [data, takData, parcelsData, worksData] = await Promise.all([
+      const [data, takData, worksData] = await Promise.all([
         fetchRailwayPoints(),
         fetchTakyidatList().catch(() => []),
-        fetchParcelsList().catch(() => []),
         fetchFieldWorksList().catch(() => []),
       ]);
       const sorted = sortPointsByKm(data);
       setPoints(sorted);
       setTakyidatList(takData);
-      setParcelsList(parcelsData);
       setFieldWorksList(worksData);
       currentPointCountRef.current = sorted.length;
       setSelectedPoint((curr) => (curr ? sorted.find((p) => p.id === curr.id) || null : null));
-      showToast(`Harita, demiryolu noktaları, takyidat ve iş listesi güncellendi.`);
+      showToast(`Harita ve demiryolu kayıtları başarıyla güncellendi.`);
     } catch (err) {
       console.error('Yenileme hatası:', err);
       showToast('Güncelleme sırasında bir sorun oluştu, çevrimdışı veriler korunuyor.');
@@ -1438,75 +1389,7 @@ export default function App() {
     showToast('Haritadan Takyidat seçimi iptal edildi.');
   };
 
-  // ---------------- DEMİRYOLU ARAZİSİ & TAPU KADASTRO HANDLERS ----------------
-  const handleAddParcel = async (newParcelData: Omit<RailwayParcel, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const saved = await saveNewParcel(newParcelData);
-    setParcelsList((prev) => [saved, ...prev.filter((p) => p.id !== saved.id)]);
-    broadcastLocalChange();
-    showToast(`Ada ${saved.adaNo} / Parsel ${saved.parselNo} (${saved.mahalleKoy}) demiryolu arazisi kaydedildi.`);
-  };
 
-  const handleUpdateParcel = async (updatedParcel: RailwayParcel) => {
-    const updated = await updateExistingParcel(updatedParcel);
-    setParcelsList((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
-    broadcastLocalChange();
-    showToast(`Ada ${updated.adaNo} / Parsel ${updated.parselNo} güncellendi.`);
-  };
-
-  const handleDeleteParcel = async (id: string) => {
-    await deleteParcelById(id);
-    setParcelsList((prev) => prev.filter((p) => p.id !== id));
-    broadcastLocalChange();
-    showToast('Demiryolu kadastro parsel kaydı silindi.');
-  };
-
-  const handleBulkDeleteParcels = async (ids: string[]) => {
-    if (!ids || ids.length === 0) return;
-    await bulkDeleteParcels(ids);
-    const set = new Set(ids);
-    setParcelsList((prev) => prev.filter((p) => !set.has(p.id)));
-    broadcastLocalChange();
-    showToast(`${ids.length} adet kadastro parseli kalıcı olarak silindi.`);
-  };
-
-  const handleClearAllParcels = async () => {
-    await clearAllParcels();
-    setParcelsList([]);
-    broadcastLocalChange();
-    showToast('Tüm kadastro parselleri kalıcı olarak temizlendi.');
-  };
-
-  const handleBatchImportParcels = async (list: RailwayParcel[]) => {
-    await saveParcelsBatch(list);
-    setParcelsList((prev) => {
-      const map = new Map();
-      prev.forEach((p) => map.set(p.id, p));
-      list.forEach((p) => map.set(p.id, p));
-      return Array.from(map.values());
-    });
-    broadcastLocalChange();
-    showToast(`${list.length} adet demiryolu arazisi / kadastro parseli sisteme aktarıldı.`);
-  };
-
-  const handleFocusParcelOnMap = (parcel: RailwayParcel) => {
-    if (viewMode === 'list') {
-      setViewMode('map');
-      setActiveTab('map');
-    }
-    // If parcel has coordinates, center map on first coord or find nearest point
-    if (parcel.coordinates && parcel.coordinates.length > 0) {
-      const [firstLat, firstLng] = parcel.coordinates[0];
-      const nearestPt = points.find((p) => {
-        const dLat = p.lat - firstLat;
-        const dLng = p.lng - firstLng;
-        return (dLat * dLat + dLng * dLng) < 0.01;
-      });
-      if (nearestPt) {
-        setSelectedPoint(nearestPt);
-      }
-    }
-    showToast(`Ada ${parcel.adaNo} / Parsel ${parcel.parselNo} (${parcel.mahalleKoy}) arazisine odaklanıldı.`);
-  };
 
   // If verifying session
   if (authLoading) {
@@ -1539,7 +1422,7 @@ export default function App() {
   }
 
   return (
-    <div className="fixed inset-0 w-full h-full h-[100dvh] flex flex-col overflow-hidden bg-[#0c0c0e] text-[#e0e0e4] font-mono-tech select-none">
+    <div className="fixed inset-0 w-full h-full h-[100dvh] flex flex-col overflow-hidden bg-[#F8F9FA] text-[#212529] font-poppins">
       {/* Cinematic Diagonal Speed Train Transition Overlay */}
       <TrainTransitionOverlay
         isActive={isTransitioning}
@@ -1558,8 +1441,6 @@ export default function App() {
           onToggleLiveGps={handleToggleLiveGps}
           onOpenTakyidat={() => setIsTakyidatModalOpen(true)}
           activeTakyidatCount={takyidatList.filter((r) => r.status === 'active').length}
-          onOpenParcels={() => setIsParcelModalOpen(true)}
-          totalParcelsCount={parcelsList.length}
           onOpenFieldWorks={() => {
             setInitialWorkLocationDraft(null);
             setIsFieldWorksModalOpen(true);
@@ -1581,7 +1462,7 @@ export default function App() {
         <div
           className={`${
             viewMode === 'list' ? 'flex flex-1' : isSidebarOpen ? 'hidden sm:flex' : 'hidden'
-          } h-full z-10 flex-shrink-0`}
+          } h-full max-h-full min-h-0 overflow-hidden z-10 flex-shrink-0`}
         >
           <PointListSidebar
             points={filteredPoints}
@@ -1604,7 +1485,7 @@ export default function App() {
         </div>
 
         {/* 3. Main Viewport & Map Container */}
-        <div className="flex-1 flex flex-col relative h-full overflow-hidden bg-[#0c0c0e] technical-grid-bg">
+        <div className="flex-1 flex flex-col relative h-full overflow-hidden bg-[#F8F9FA]">
           {/* Top Technical Telemetry HUD Bar */}
           <TechnicalTopHud
             filters={filters}
@@ -1639,9 +1520,9 @@ export default function App() {
             }`}
           >
             {loading ? (
-              <div className="flex-1 h-full flex flex-col items-center justify-center gap-3 bg-[#0c0c0e] text-[#e0e0e4]">
-                <Loader2 className="w-8 h-8 animate-spin text-[#00ff88]" />
-                <p className="text-xs font-mono font-bold text-[#e0e0e4]/70">DEMİRYOLU KM TELEMETRİSİ YÜKLENİYOR...</p>
+              <div className="flex-1 h-full flex flex-col items-center justify-center gap-3 bg-[#F8F9FA] text-[#212529]">
+                <Loader2 className="w-8 h-8 animate-spin text-[#D32F2F]" />
+                <p className="text-xs font-roboto-mono font-bold text-[#6C757D]">DEMİRYOLU KM TELEMETRİSİ YÜKLENİYOR...</p>
               </div>
             ) : (
               <RailwayMap
@@ -1657,8 +1538,6 @@ export default function App() {
                 isRefreshing={isRefreshing}
                 takyidatRestrictions={takyidatList}
                 onOpenTakyidat={() => setIsTakyidatModalOpen(true)}
-                railwayParcels={parcelsList}
-                onOpenParcels={() => setIsParcelModalOpen(true)}
                 isLivePointPickMode={isLivePointPickMode}
                 onPickLivePoint={handleMapClickPickLivePoint}
                 onCancelLivePointPick={() => setIsLivePointPickMode(false)}
@@ -1682,11 +1561,24 @@ export default function App() {
               <button
                 id="toggle-sidebar-btn"
                 onClick={() => setIsSidebarOpen(true)}
-                title="Sistem 712 Nokta Listesini Aç"
-                className="hidden sm:flex absolute top-3 left-3 z-20 bg-black/90 hover:bg-black text-[#00ff88] border border-[#2d2d33] hover:border-[#00ff88]/50 px-3 py-1.5 rounded shadow-xl transition-all cursor-pointer items-center gap-2 text-xs font-bold font-mono-tech"
+                title="Bölgesel Kayıtlar Listesini Aç"
+                className="hidden sm:flex absolute top-3 left-3 z-20 bg-white/95 hover:bg-white text-[#212529] border border-[#DEE2E6] hover:border-[#D32F2F] px-3.5 py-2 rounded-xl shadow-md transition-all cursor-pointer items-center gap-2 text-xs font-bold font-poppins"
               >
-                <List className="w-3.5 h-3.5" />
-                <span>SİSTEM 712 ({filteredPoints.length})</span>
+                <List className="w-4 h-4 text-[#D32F2F]" />
+                <span>BÖLGESEL KAYITLAR ({filteredPoints.length})</span>
+              </button>
+            )}
+
+            {/* Variation 6 Floating Action Button */}
+            {canAddPoint && !selectedPoint && (
+              <button
+                id="variation6-floating-add-btn"
+                onClick={handleOpenAddModal}
+                title="Yeni Demiryolu Noktası Ekle"
+                className="hidden sm:flex absolute bottom-6 right-6 z-20 bg-[#D32F2F] hover:bg-[#B71C1C] text-white px-5 py-3 rounded-full font-bold shadow-[0_8px_20px_rgba(211,47,47,0.35)] items-center gap-2.5 text-xs tracking-wider transition-all hover:scale-105 active:scale-95 cursor-pointer font-poppins"
+              >
+                <Plus className="w-4 h-4 stroke-[3]" />
+                <span>YENİ NOKTA EKLE</span>
               </button>
             )}
           </div>
@@ -1697,13 +1589,11 @@ export default function App() {
       <TechnicalFooter
         totalPoints={points.length}
         totalSwitches={pointCountsByCategory['switch'] || 32}
-        totalParcels={parcelsList.length}
         totalTakyidat={takyidatList.filter((r) => r.status === 'active').length}
         isOnline={isOnline}
         isLiveGpsActive={isLiveGpsActive}
         gpsAccuracy={liveGpsCoords?.accuracy}
         onFilterSwitches={() => setFilters((prev) => ({ ...prev, category: 'switch' }))}
-        onOpenParcels={() => setIsParcelModalOpen(true)}
         onOpenTakyidat={() => setIsTakyidatModalOpen(true)}
       />
 
@@ -1726,8 +1616,6 @@ export default function App() {
             onOpenWorkLogs={(pt) => setWorkLogPoint(pt)}
             takyidatRestrictions={takyidatList}
             onOpenTakyidat={() => setIsTakyidatModalOpen(true)}
-            railwayParcels={parcelsList}
-            onOpenParcels={() => setIsParcelModalOpen(true)}
             onSelectLiveLocation={handleSelectPointAsLive}
             onPanToPoint={(pt) => {
               setSelectedPoint(pt);
@@ -1805,7 +1693,6 @@ export default function App() {
         onClose={() => setIsImportExportOpen(false)}
         points={points}
         onImportSuccess={handleImportSuccess}
-        onImportParcels={handleBatchImportParcels}
         onResetSample={handleResetSample}
       />
 
@@ -1882,13 +1769,11 @@ export default function App() {
         onOpenPalette={() => setActiveTab('palette')}
         onOpenReports={() => setIsReportModalOpen(true)}
         onOpenTakyidat={() => setIsTakyidatModalOpen(true)}
-        onOpenParcels={() => setIsParcelModalOpen(true)}
         onOpenFieldWorks={() => {
           setInitialWorkLocationDraft(null);
           setIsFieldWorksModalOpen(true);
         }}
         fieldWorksCount={fieldWorksList.length}
-        totalParcelsCount={parcelsList.length}
         onOpenSelectPoint={() => setIsSelectPointModalOpen(true)}
         activeTakyidatCount={takyidatList.filter((r) => r.status === 'active').length}
         onRefresh={handleRefresh}
@@ -1942,21 +1827,6 @@ export default function App() {
         onDraftConsumed={() => setTakyidatFormDraft(null)}
       />
 
-      {/* TCDD Demiryolu Arazisi & Tapu Kadastro (Kamulaştırma Sahası) Modalı */}
-      <RailwayParcelModal
-        isOpen={isParcelModalOpen}
-        onClose={() => setIsParcelModalOpen(false)}
-        parcels={parcelsList}
-        points={points}
-        availableLines={availableLines}
-        onAddParcel={handleAddParcel}
-        onUpdateParcel={handleUpdateParcel}
-        onDeleteParcel={handleDeleteParcel}
-        onBulkDeleteParcels={handleBulkDeleteParcels}
-        onClearAllParcels={handleClearAllParcels}
-        onBatchImportParcels={handleBatchImportParcels}
-        onFocusParcelOnMap={handleFocusParcelOnMap}
-      />
 
       {/* Canlı Konum İçin Nokta Seçme Modalı */}
       <SelectPointModal
@@ -1984,52 +1854,6 @@ export default function App() {
           onSaveWorkLog={handleSaveWorkLog}
           onDeleteWorkLog={handleDeleteWorkLog}
         />
-      )}
-
-      {/* Floating Install Prompt Banner (Telefona / Masaüstüne Yükle) */}
-      {!isInstallBannerDismissed && (
-        <div
-          id="floating-install-banner"
-          className="fixed bottom-16 sm:bottom-6 left-3 sm:left-6 z-30 bg-white text-slate-800 border border-slate-200 rounded-xl p-3 sm:p-3.5 shadow-xl max-w-sm flex items-center justify-between gap-3"
-        >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center flex-shrink-0 text-emerald-600">
-              <Smartphone className="w-4 h-4" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-bold text-slate-900 truncate">Uygulama Olarak Kullan</p>
-              <p className="text-[11px] text-slate-500 leading-tight">Telefona veya masaüstüne ekleyin</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            <button
-              id="banner-install-open-btn"
-              onClick={() => {
-                if (deferredPrompt) {
-                  handleTriggerInstall();
-                } else {
-                  setIsMobileInstallOpen(true);
-                }
-              }}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xs transition-colors cursor-pointer"
-            >
-              Yükle
-            </button>
-            <button
-              id="banner-dismiss-btn"
-              onClick={() => {
-                setIsInstallBannerDismissed(true);
-                try {
-                  localStorage.setItem('tcdd_install_banner_dismissed', 'true');
-                } catch {}
-              }}
-              className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
-              title="Kapat"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
       )}
 
       {/* Toast Notification Pill - Official Clean White Banner */}

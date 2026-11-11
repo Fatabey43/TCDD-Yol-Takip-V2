@@ -230,7 +230,7 @@ export const OfflineMapModal: React.FC<OfflineMapModalProps> = ({
       >
         <div
           id="offline-map-modal-content"
-          className="bg-white rounded-2xl w-full max-w-xl max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+          className="bg-white rounded-2xl w-full max-w-xl h-[100dvh] sm:h-[88vh] max-h-[100dvh] sm:max-h-[88vh] min-h-0 flex flex-col shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -258,7 +258,7 @@ export const OfflineMapModal: React.FC<OfflineMapModalProps> = ({
           </div>
 
           {/* Scrollable Body */}
-          <div className="flex-1 overflow-y-auto prominent-scrollbar p-5 space-y-4 text-slate-800 text-xs">
+          <div className="flex-1 overflow-y-auto prominent-scrollbar p-5 space-y-4 text-slate-800 text-xs min-h-0 touch-pan-y overscroll-contain">
             {/* Top Status Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {/* Card 1: Connection Status */}

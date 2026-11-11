@@ -1,4 +1,4 @@
-import { RailwayPoint, RailwayParcel } from '../types.ts';
+import { RailwayPoint } from '../types.ts';
 
 const DB_NAME = 'DemiryoluKM_DB';
 const DB_VERSION = 2;
@@ -118,87 +118,5 @@ export async function clearPointsFromIDB(): Promise<void> {
     });
   } catch (err) {
     console.warn('IDB temizleme uyarısı:', err);
-  }
-}
-
-/**
- * Save all parcels to IndexedDB for robust offline persistence & coordinate boundaries
- */
-export async function saveParcelsToIDB(parcels: RailwayParcel[]): Promise<void> {
-  try {
-    const db = await getDB();
-    if (!db) return;
-
-    return new Promise((resolve) => {
-      try {
-        const tx = db.transaction(PARCELS_STORE_NAME, 'readwrite');
-        const store = tx.objectStore(PARCELS_STORE_NAME);
-        store.clear();
-        for (const parcel of parcels) {
-          store.put(parcel);
-        }
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => resolve();
-      } catch {
-        resolve();
-      }
-    });
-  } catch (err) {
-    console.warn('IDB parsel kayıt uyarısı:', err);
-  }
-}
-
-/**
- * Read all parcels from IndexedDB
- */
-export async function getParcelsFromIDB(): Promise<RailwayParcel[]> {
-  try {
-    const db = await getDB();
-    if (!db) return [];
-
-    return new Promise((resolve) => {
-      try {
-        const tx = db.transaction(PARCELS_STORE_NAME, 'readonly');
-        const store = tx.objectStore(PARCELS_STORE_NAME);
-        const req = store.getAll();
-        req.onsuccess = () => {
-          const results = req.result;
-          if (Array.isArray(results)) {
-            resolve(results);
-          } else {
-            resolve([]);
-          }
-        };
-        req.onerror = () => resolve([]);
-      } catch {
-        resolve([]);
-      }
-    });
-  } catch {
-    return [];
-  }
-}
-
-/**
- * Clear all parcels from IndexedDB
- */
-export async function clearParcelsFromIDB(): Promise<void> {
-  try {
-    const db = await getDB();
-    if (!db) return;
-
-    return new Promise((resolve) => {
-      try {
-        const tx = db.transaction(PARCELS_STORE_NAME, 'readwrite');
-        const store = tx.objectStore(PARCELS_STORE_NAME);
-        store.clear();
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => resolve();
-      } catch {
-        resolve();
-      }
-    });
-  } catch (err) {
-    console.warn('IDB parsel temizleme uyarısı:', err);
   }
 }

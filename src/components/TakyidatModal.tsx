@@ -274,11 +274,11 @@ export const TakyidatModal: React.FC<TakyidatModalProps> = ({
   return (
     <div
       id="takyidat-modal-backdrop"
-      className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-0 sm:p-4 overflow-hidden"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl max-w-3xl w-full shadow-2xl border border-slate-200 overflow-hidden my-6 flex flex-col max-h-[90vh] relative"
+        className="bg-white rounded-none sm:rounded-2xl max-w-3xl w-full shadow-2xl border-0 sm:border border-slate-200 overflow-hidden flex flex-col h-[100dvh] sm:h-[88vh] max-h-[100dvh] sm:max-h-[88vh] min-h-0 relative"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -348,7 +348,7 @@ export const TakyidatModal: React.FC<TakyidatModalProps> = ({
         </div>
 
         {mainTab === 'analytics' ? (
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 prominent-scrollbar min-h-0 touch-pan-y overscroll-contain">
             <TakyidatAnalyticsView
               restrictions={restrictions}
               points={points}
@@ -451,7 +451,7 @@ export const TakyidatModal: React.FC<TakyidatModalProps> = ({
         {/* Main Body */}
         <div
           ref={scrollContainerRef}
-          className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 prominent-scrollbar relative min-h-0"
+          className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 prominent-scrollbar relative min-h-0 touch-pan-y overscroll-contain"
         >
           {/* Add / Edit Form Card */}
           {isFormOpen && (

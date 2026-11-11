@@ -37,7 +37,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onClose, point
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-slate-900 border border-slate-700/80 w-full max-w-lg rounded-2xl shadow-2xl text-white overflow-hidden flex flex-col">
+      <div className="bg-slate-900 border border-slate-700/80 w-full max-w-lg rounded-2xl shadow-2xl text-white overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-950/40">
           <div className="flex items-center gap-3">
@@ -58,7 +58,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onClose, point
         </div>
 
         {/* Content */}
-        <div className="p-5 space-y-4">
+        <div className="p-5 space-y-4 flex-1 overflow-y-auto prominent-scrollbar min-h-0 touch-pan-y overscroll-contain">
           <p className="text-xs text-slate-300">
             Aşağıdan almak istediğiniz resmi rapor tipini seçin. Raporu doğrudan <strong>Excel (XLSX)</strong> tablosu olarak indirebilir veya <strong>Resmi Yazdır / PDF</strong> formatında görüntüleyebilirsiniz:
           </p>
