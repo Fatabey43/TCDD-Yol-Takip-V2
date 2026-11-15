@@ -438,7 +438,7 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
               <button
                 id="drawer-pan-to-map-btn"
                 onClick={handlePanToMap}
-                className="flex items-center justify-center gap-1 bg-sky-600 hover:bg-sky-500 text-white px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg font-semibold text-[11px] sm:text-xs shadow-sm transition-all active:scale-[0.98] cursor-pointer"
+                className="flex items-center justify-center gap-1 bg-[#D32F2F] hover:bg-[#B71C1C] text-white px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg font-semibold text-[11px] sm:text-xs shadow-sm transition-all active:scale-[0.98] cursor-pointer"
                 title="Haritada bu noktaya odaklan"
               >
                 <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
@@ -464,12 +464,12 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
                 href={navigationUrl || '#'}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg font-semibold text-[11px] sm:text-xs shadow-sm transition-all active:scale-[0.98] cursor-pointer"
+                className="flex items-center justify-center gap-1 bg-white hover:bg-[#F8F9FA] text-[#212529] px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg font-semibold text-[11px] sm:text-xs border border-[#DEE2E6] shadow-2xs transition-all active:scale-[0.98] cursor-pointer"
                 title="Google Haritalar Canlı Yol Tarifi"
               >
-                <Navigation className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                <Navigation className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#D32F2F]" />
                 <span>Yol Tarifi</span>
-                <ExternalLink className="w-2.5 h-2.5 sm:w-3 sm:h-3 opacity-70" />
+                <ExternalLink className="w-2.5 h-2.5 sm:w-3 sm:h-3 opacity-60" />
               </a>
 
               {/* Google Earth 3D Görünüm */}
@@ -479,12 +479,12 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={handleOpenEarthClick}
-                className="flex items-center justify-center gap-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg font-bold text-[11px] sm:text-xs shadow-sm transition-all active:scale-[0.98] cursor-pointer"
+                className="flex items-center justify-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg font-bold text-[11px] sm:text-xs shadow-sm transition-all active:scale-[0.98] cursor-pointer"
                 title="Google Earth 3D'de doğrudan bu koordinata uç"
               >
                 <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
                 <span>Earth 3D</span>
-                <ExternalLink className="w-2.5 h-2.5 sm:w-3 sm:h-3 opacity-70" />
+                <ExternalLink className="w-2.5 h-2.5 sm:w-3 sm:h-3 opacity-80" />
               </a>
 
               {/* Google Maps Pimli Uydu Görünümü */}
@@ -493,10 +493,10 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
                 href={mapsSatellitePinUrl || '#'}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-100 px-1.5 py-1 sm:px-2 sm:py-1.5 rounded-lg font-medium text-[11px] sm:text-xs border border-slate-700 transition-all cursor-pointer"
+                className="flex items-center justify-center gap-1 bg-white hover:bg-[#F8F9FA] text-[#212529] px-1.5 py-1 sm:px-2 sm:py-1.5 rounded-lg font-medium text-[11px] sm:text-xs border border-[#DEE2E6] transition-all cursor-pointer"
                 title="Kırmızı işaretçi pinli Google Uydu haritasını aç"
               >
-                <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sky-400" />
+                <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#D32F2F]" />
                 <span className="hidden sm:inline">Pimli Uydu</span>
               </a>
             </div>
@@ -598,18 +598,18 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
         {/* Expandable Content Area */}
         {isExpanded && (
           <div className="overflow-y-auto prominent-scrollbar px-3 sm:px-4 py-3 flex-1 min-h-0 space-y-3 touch-pan-y overscroll-contain pb-10 md:pb-4">
-            {/* Tabs for Organization - Modern Segmented Control */}
-            <div className="bg-slate-100/90 p-1.5 rounded-2xl flex items-center gap-1 border border-slate-200 shadow-inner">
+            {/* Tabs for Organization - Variation 6 Segmented Control */}
+            <div className="bg-[#F8F9FA] p-1.5 rounded-2xl flex items-center gap-1 border border-[#DEE2E6]">
               <button
                 id="tab-info-btn"
                 onClick={() => setActiveTab('info')}
                 className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   activeTab === 'info'
-                    ? 'bg-slate-900 text-white shadow-sm ring-1 ring-slate-800'
-                    : 'text-slate-600 hover:bg-white hover:text-slate-900'
+                    ? 'bg-[#D32F2F] text-white shadow-sm'
+                    : 'text-[#6C757D] hover:bg-white hover:text-[#212529]'
                 }`}
               >
-                <Train className="w-3.5 h-3.5 text-sky-400" />
+                <Train className={`w-3.5 h-3.5 ${activeTab === 'info' ? 'text-white' : 'text-[#D32F2F]'}`} />
                 <span>Bilgiler</span>
               </button>
 
@@ -620,14 +620,14 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
                   onClick={() => setActiveTab('crossing')}
                   className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
                     activeTab === 'crossing'
-                      ? 'bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50'
-                      : 'text-amber-800 hover:bg-amber-100/80 hover:text-amber-950'
+                      ? 'bg-[#D32F2F] text-white shadow-sm'
+                      : 'text-amber-800 hover:bg-amber-50'
                   }`}
                 >
-                  <ShieldAlert className="w-3.5 h-3.5 text-amber-700" />
+                  <ShieldAlert className={`w-3.5 h-3.5 ${activeTab === 'crossing' ? 'text-white' : 'text-amber-700'}`} />
                   <span>Geçit Föyü</span>
                   {point.levelCrossing && Object.values(point.levelCrossing).some(Boolean) && (
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-white"></span>
                   )}
                 </button>
               )}
@@ -639,11 +639,11 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
                   onClick={() => setActiveTab('culvert')}
                   className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
                     activeTab === 'culvert'
-                      ? 'bg-indigo-600 text-white shadow-md ring-2 ring-indigo-400/50'
-                      : 'text-indigo-800 hover:bg-indigo-100/80 hover:text-indigo-950'
+                      ? 'bg-[#D32F2F] text-white shadow-sm'
+                      : 'text-[#212529] hover:bg-white'
                   }`}
                 >
-                  <Sliders className="w-3.5 h-3.5 text-indigo-300" />
+                  <Sliders className={`w-3.5 h-3.5 ${activeTab === 'culvert' ? 'text-white' : 'text-[#D32F2F]'}`} />
                   <span>Menfez Föyü</span>
                   {point.culvert && Object.values(point.culvert).some(Boolean) && (
                     <span className="w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-white"></span>
@@ -656,13 +656,15 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
                 onClick={() => setActiveTab('notes')}
                 className={`flex-1 flex items-center justify-center gap-1 px-2.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   activeTab === 'notes'
-                    ? 'bg-slate-900 text-white shadow-sm'
-                    : 'text-slate-600 hover:bg-white hover:text-slate-900'
+                    ? 'bg-[#D32F2F] text-white shadow-sm'
+                    : 'text-[#6C757D] hover:bg-white hover:text-[#212529]'
                 }`}
               >
-                <MessageSquare className="w-3.5 h-3.5 text-sky-400" />
+                <MessageSquare className={`w-3.5 h-3.5 ${activeTab === 'notes' ? 'text-white' : 'text-[#D32F2F]'}`} />
                 <span>Notlar</span>
-                <span className="text-[10px] font-black px-1.5 py-0.2 rounded-full bg-slate-200 text-slate-800 ml-0.5">
+                <span className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ml-0.5 ${
+                  activeTab === 'notes' ? 'bg-white/20 text-white' : 'bg-[#DEE2E6] text-[#212529]'
+                }`}>
                   {notesList.length}
                 </span>
               </button>
@@ -672,13 +674,15 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
                 onClick={() => setActiveTab('photos')}
                 className={`flex-1 flex items-center justify-center gap-1 px-2.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   activeTab === 'photos'
-                    ? 'bg-slate-900 text-white shadow-sm ring-1 ring-slate-800'
-                    : 'text-slate-600 hover:bg-white hover:text-slate-900'
+                    ? 'bg-[#D32F2F] text-white shadow-sm'
+                    : 'text-[#6C757D] hover:bg-white hover:text-[#212529]'
                 }`}
               >
-                <ImageIcon className="w-3.5 h-3.5 text-amber-400" />
+                <ImageIcon className={`w-3.5 h-3.5 ${activeTab === 'photos' ? 'text-white' : 'text-[#D32F2F]'}`} />
                 <span>Fotoğraflar</span>
-                <span className="text-[10px] font-black px-1.5 py-0.2 rounded-full bg-amber-200 text-amber-950 ml-0.5">
+                <span className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ml-0.5 ${
+                  activeTab === 'photos' ? 'bg-white/20 text-white' : 'bg-[#DEE2E6] text-[#212529]'
+                }`}>
                   {photosList.length}
                 </span>
               </button>
@@ -796,41 +800,41 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
                   </div>
                 </div>
 
-                {/* İç Kutu 3: Google Earth 3D & Canlı Uydu Görünümü Bölümü (Tam onarılmış, doğrudan koordinat arama & pimli harita) */}
-                <div className="bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 text-white p-3.5 rounded-xl shadow-md border border-slate-700/80 space-y-3">
+                {/* İç Kutu 3: Google Earth 3D & Canlı Uydu Görünümü Bölümü */}
+                <div className="bg-[#F8F9FA] text-[#212529] p-3.5 rounded-xl shadow-2xs border border-[#DEE2E6] space-y-3">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30 flex-shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-200 flex-shrink-0">
                         <Globe className="w-4 h-4" />
                       </div>
                       <div>
-                        <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
+                        <h4 className="text-xs font-bold text-[#212529] flex items-center gap-1.5">
                           <span>Google Earth 3D &amp; Uydu Görünümü</span>
-                          <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded font-mono">
+                          <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.2 rounded font-roboto-mono font-bold">
                             Canlı Konum
                           </span>
                         </h4>
-                        <p className="text-[11px] text-slate-300">
+                        <p className="text-[11px] text-[#6C757D]">
                           Resmi 3D Google Earth veya kırmızı işaretçili Google Harita uydusunda görüntüleyin
                         </p>
                       </div>
                     </div>
                     {hasValidCoords && (
-                      <span className="text-[11px] font-mono text-emerald-300 bg-emerald-950/70 px-2.5 py-1 rounded-md border border-emerald-800/60">
+                      <span className="text-[11px] font-roboto-mono text-emerald-800 bg-white px-2.5 py-1 rounded-md border border-[#DEE2E6] font-bold">
                         {latNum.toFixed(6)}, {lngNum.toFixed(6)}
                       </span>
                     )}
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800">
-                    {/* Google Earth'e Git Butonu - Doğrudan arama & koordinat sabitleme */}
+                  <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[#DEE2E6]">
+                    {/* Google Earth'e Git Butonu */}
                     <a
                       id="drawer-info-open-google-earth-btn"
                       href={primaryEarthUrl || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={handleOpenEarthClick}
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-3.5 py-2 rounded-xl font-bold text-xs shadow-md transition-all active:scale-[0.98] cursor-pointer"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl font-bold text-xs shadow-sm transition-all active:scale-[0.98] cursor-pointer"
                       title="Google Earth 3D Web uygulamasında bu noktayı ara ve görüntüle (Koordinat panoya da kopyalanır)"
                     >
                       <Globe className="w-4 h-4 text-white" />
@@ -845,10 +849,10 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
                         href={googleEarthFlyUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 hover:text-white px-3 py-2 rounded-xl font-semibold text-xs border border-emerald-700/60 transition-all active:scale-[0.98] cursor-pointer shadow-xs"
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-white hover:bg-emerald-50 text-emerald-700 px-3 py-2 rounded-xl font-semibold text-xs border border-emerald-300 transition-all active:scale-[0.98] cursor-pointer shadow-2xs"
                         title="3D Uçuş Modunda Aç (@lat,lng kamera açısı)"
                       >
-                        <Navigation className="w-3.5 h-3.5 text-emerald-400 rotate-45" />
+                        <Navigation className="w-3.5 h-3.5 text-emerald-600 rotate-45" />
                         <span>3D Uçuş</span>
                       </a>
                     )}
@@ -858,10 +862,10 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
                       type="button"
                       id="drawer-info-kml-download-btn"
                       onClick={handleDownloadKML}
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white px-3 py-2 rounded-xl font-semibold text-xs border border-slate-700 transition-all active:scale-[0.98] cursor-pointer shadow-xs"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white hover:bg-[#F8F9FA] text-[#212529] px-3 py-2 rounded-xl font-semibold text-xs border border-[#DEE2E6] transition-all active:scale-[0.98] cursor-pointer shadow-2xs"
                       title="Bu noktanın KML dosyasını indirip doğrudan Google Earth Pro / Masaüstü uygulamasında tam nokta olarak açın"
                     >
-                      <Download className="w-3.5 h-3.5 text-emerald-400" />
+                      <Download className="w-3.5 h-3.5 text-emerald-600" />
                       <span>KML İndir (Earth Pro)</span>
                     </button>
 
@@ -871,10 +875,10 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
                       href={mapsSatellitePinUrl || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white px-3 py-2 rounded-xl font-semibold text-xs border border-slate-700 transition-all active:scale-[0.98] cursor-pointer"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white hover:bg-[#D32F2F]/5 text-[#D32F2F] px-3 py-2 rounded-xl font-semibold text-xs border border-[#D32F2F]/30 transition-all active:scale-[0.98] cursor-pointer"
                       title="Google Haritalar Uydu Katmanında Kırmızı İşaretçi ile Aç"
                     >
-                      <MapPin className="w-3.5 h-3.5 text-sky-400" />
+                      <MapPin className="w-3.5 h-3.5 text-[#D32F2F]" />
                       <span>Pimli Uydu Haritası</span>
                       <ExternalLink className="w-3 h-3 opacity-70" />
                     </a>
@@ -883,17 +887,17 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
                     <button
                       type="button"
                       onClick={handleCopyCoords}
-                      className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-medium border border-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer ml-auto"
+                      className="px-3 py-2 bg-white hover:bg-[#F8F9FA] text-[#212529] rounded-xl text-xs font-medium border border-[#DEE2E6] transition-colors flex items-center gap-1.5 cursor-pointer ml-auto"
                       title="Koordinatları Kopyala"
                     >
                       {copied ? (
                         <>
-                          <Check className="w-3.5 h-3.5 text-emerald-400" />
-                          <span className="text-emerald-300">Kopyalandı</span>
+                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                          <span className="text-emerald-700">Kopyalandı</span>
                         </>
                       ) : (
                         <>
-                          <Copy className="w-3.5 h-3.5" />
+                          <Copy className="w-3.5 h-3.5 text-[#6C757D]" />
                           <span>Kopyala</span>
                         </>
                       )}
@@ -1305,7 +1309,7 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
                         id="submit-note-btn"
                         type="submit"
                         disabled={isAddingNote || !newNoteText.trim()}
-                        className="bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                        className="bg-[#D32F2F] hover:bg-[#B71C1C] disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>{isAddingNote ? 'Ekleniyor...' : 'Not Ekle'}</span>
@@ -1383,7 +1387,7 @@ export const PointDetailDrawer: React.FC<PointDetailDrawerProps> = ({
                       id="upload-photo-btn"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isUploadingPhoto}
-                      className="w-full sm:w-auto flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm cursor-pointer"
+                      className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#D32F2F] hover:bg-[#B71C1C] text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm cursor-pointer"
                     >
                       <Camera className="w-4 h-4" />
                       <span>{isUploadingPhoto ? 'Yükleniyor...' : 'Kamera / Fotoğraf Yükle'}</span>

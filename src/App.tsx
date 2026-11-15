@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { RailwayPoint, RailwayPointCategory, FilterOptions } from './types.ts';
-import { WorkLog, TakyidatSpeedRestriction, FieldWorkItem } from './types.ts';
+import { WorkLog, TakyidatSpeedRestriction, FieldWorkItem, BulkPointChanges } from './types.ts';
 import {
   fetchRailwayPoints,
   getLocalCachedPoints,
@@ -8,6 +8,7 @@ import {
   updateExistingPoint,
   deletePointById,
   bulkDeleteRailwayPoints,
+  bulkUpdateRailwayPoints,
   addPointNote,
   deletePointNote,
   addPointPhoto,
@@ -48,6 +49,7 @@ import { TechnicalNavDock } from './components/TechnicalNavDock.tsx';
 import { TechnicalTopHud } from './components/TechnicalTopHud.tsx';
 import { TechnicalFooter } from './components/TechnicalFooter.tsx';
 import { PointListSidebar } from './components/PointListSidebar.tsx';
+import { BulkEditPointsModal } from './components/BulkEditPointsModal.tsx';
 import { ColorPaletteTabBar } from './components/ColorPaletteTabBar.tsx';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal.tsx';
 import { LoginModal } from './components/LoginModal.tsx';
@@ -91,6 +93,8 @@ export default function App() {
   const [selectedPoint, setSelectedPoint] = useState<RailwayPoint | null>(null);
   const [pointToDelete, setPointToDelete] = useState<RailwayPoint | null>(null);
   const [isDeletingPoint, setIsDeletingPoint] = useState<boolean>(false);
+  const [bulkEditPointsTarget, setBulkEditPointsTarget] = useState<RailwayPoint[] | null>(null);
+  const [sidebarSelectionResetKey, setSidebarSelectionResetKey] = useState<number>(0);
 
   // Category Colors Palette State (Makaslar kırmızı, KM mavi, Geçitler sarı, etc.)
   const [categoryColors, setCategoryColors] = useState<Record<RailwayPointCategory, CategoryColorConfig>>(loadCategoryColors);
@@ -720,6 +724,26 @@ export default function App() {
     } finally {
       setIsDeletingPoint(false);
     }
+  };
+
+  const handleBulkUpdatePoints = async (ids: string[], changes: BulkPointChanges) => {
+    if (!canEdit) {
+      showToast('Toplu düzenleme yetkisi yalnızca Sistem Yöneticisine aittir.');
+      return;
+    }
+    if (!ids || ids.length === 0) return;
+    const updatedList = await bulkUpdateRailwayPoints(ids, changes, bulkEditPointsTarget || points);
+    const updatedMap = new Map<string, RailwayPoint>(updatedList.map((p) => [p.id, p]));
+    setPoints((prev) =>
+      sortPointsByKm(prev.map((p) => updatedMap.get(p.id) || p))
+    );
+    if (selectedPoint && updatedMap.has(selectedPoint.id)) {
+      setSelectedPoint(updatedMap.get(selectedPoint.id) || null);
+    }
+    broadcastLocalChange();
+    setSidebarSelectionResetKey((k) => k + 1);
+    setBulkEditPointsTarget(null);
+    showToast(`${updatedList.length || ids.length} adet KM kaydı aynı anda güncellendi.`);
   };
 
   // Add Note
@@ -1394,7 +1418,8 @@ export default function App() {
   // If verifying session
   if (authLoading) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-slate-950 text-white flex-col font-sans">
+      <div className="flex h-screen w-screen items-center justify-center bg-[#F8F9FA] text-[#212529] flex-col font-poppins">
+        <div className="gov-bar fixed top-0 inset-x-0 h-[5px]" />
         <TrainLoadingAnimation
           message="TCDD KM TAKİP Yükleniyor..."
           subMessage="712 Şefliği Saha Koordinasyon Portalı"
@@ -1411,9 +1436,9 @@ export default function App() {
         {toastMessage && (
           <div
             id="toast-notification"
-            className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center gap-2.5 text-xs font-semibold animate-in slide-in-from-bottom-5 duration-200"
+            className="fixed bottom-6 right-6 z-50 bg-white text-[#212529] px-4 py-3 rounded-xl shadow-xl border border-[#DEE2E6] flex items-center gap-2.5 text-xs font-semibold animate-in slide-in-from-bottom-5 duration-200 font-poppins"
           >
-            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>{toastMessage}</span>
           </div>
         )}
@@ -1475,10 +1500,19 @@ export default function App() {
                 setActiveTab('map');
               }
             }}
-            isOpen={isSidebarOpen}
-            onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+            isOpen={viewMode === 'list' || isSidebarOpen}
+            onToggle={() => {
+              if (viewMode === 'list') {
+                setViewMode('map');
+                setActiveTab('map');
+              } else {
+                setIsSidebarOpen(!isSidebarOpen);
+              }
+            }}
             onDeletePoint={(point) => setPointToDelete(point)}
             onBulkDeletePoints={handleBulkDeletePoints}
+            onOpenBulkEdit={(pts) => setBulkEditPointsTarget(pts)}
+            selectionResetKey={sidebarSelectionResetKey}
             searchQuery={filters.search}
             onSearchChange={(val) => setFilters((prev) => ({ ...prev, search: val }))}
           />
@@ -1716,6 +1750,15 @@ export default function App() {
           }
         }}
         onClose={() => setPointToDelete(null)}
+      />
+
+      {/* Bulk Edit Selected KM Points Modal */}
+      <BulkEditPointsModal
+        isOpen={!!bulkEditPointsTarget}
+        onClose={() => setBulkEditPointsTarget(null)}
+        selectedPoints={bulkEditPointsTarget || []}
+        allExistingLines={availableLines}
+        onApplyBulkEdit={handleBulkUpdatePoints}
       />
 
       {/* Mobile Install & QR Code Modal */}

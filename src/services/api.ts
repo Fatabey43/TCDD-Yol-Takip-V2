@@ -1,4 +1,4 @@
-import { RailwayPoint, PointNote, PointPhoto, TakyidatSpeedRestriction, FieldWorkItem } from '../types.ts';
+import { RailwayPoint, PointNote, PointPhoto, TakyidatSpeedRestriction, FieldWorkItem, BulkPointChanges } from '../types.ts';
 import { DEFAULT_SAMPLE_IDS } from '../data/samplePoints.ts';
 import { extractKmFromText } from '../utils/categoryColors.ts';
 import { compressImage } from '../utils/imageCompressor.ts';
@@ -45,6 +45,15 @@ export function addPendingSyncItem(item: PendingSyncItem) {
 export function removePendingSyncItem(id: string) {
   try {
     const queue = getPendingSyncQueue().filter((q) => q.id !== id);
+    localStorage.setItem(PENDING_SYNC_KEY, JSON.stringify(queue));
+  } catch {}
+}
+
+export function removePendingSyncItemsBatch(ids: string[]) {
+  if (!Array.isArray(ids) || ids.length === 0) return;
+  try {
+    const idSet = new Set(ids);
+    const queue = getPendingSyncQueue().filter((q) => !idSet.has(q.id));
     localStorage.setItem(PENDING_SYNC_KEY, JSON.stringify(queue));
   } catch {}
 }
@@ -145,18 +154,24 @@ function getUserCustomPoints(): Record<string, RailwayPoint> {
   return {};
 }
 
-function recordUserCustomPoint(point: RailwayPoint) {
-  if (!point || !point.id || isDefaultSamplePoint(point.id)) return;
+function recordUserCustomPointsBatch(points: RailwayPoint[]) {
+  if (!Array.isArray(points) || points.length === 0) return;
   try {
     const map = getUserCustomPoints();
-    map[point.id] = {
-      ...point,
-      updatedAt: point.updatedAt || new Date().toISOString(),
-    };
+    const nowIso = new Date().toISOString();
+    let changed = false;
+    for (const point of points) {
+      if (!point || !point.id || isDefaultSamplePoint(point.id)) continue;
+      map[point.id] = {
+        ...point,
+        updatedAt: point.updatedAt || nowIso,
+      };
+      changed = true;
+    }
+    if (!changed) return;
     try {
       localStorage.setItem(USER_CUSTOM_KEY, JSON.stringify(map));
-    } catch (quotaErr) {
-      // If quota exceeded, store lightweight version in localStorage (IndexedDB has full data)
+    } catch {
       const lightweightMap: Record<string, any> = {};
       for (const [k, v] of Object.entries(map)) {
         lightweightMap[k] = {
@@ -170,8 +185,13 @@ function recordUserCustomPoint(point: RailwayPoint) {
       localStorage.setItem(USER_CUSTOM_KEY, JSON.stringify(lightweightMap));
     }
   } catch (err) {
-    console.warn('Kullanıcı nokta kaydı uyarısı:', err);
+    console.warn('Toplu kullanıcı nokta kaydı uyarısı:', err);
   }
+}
+
+function recordUserCustomPoint(point: RailwayPoint) {
+  if (!point || !point.id || isDefaultSamplePoint(point.id)) return;
+  recordUserCustomPointsBatch([point]);
 }
 
 function removeUserCustomPoint(id: string) {
@@ -1389,333 +1409,202 @@ export async function deleteTakyidatById(id: string): Promise<boolean> {
   }
 }
 
-// ---------------- DEMİRYOLU ARAZİSİ & TAPU KADASTRO (PARSEL) API ----------------
-const PARCELS_STORAGE_KEY = 'demiryolu_parcels_cache_v1';
-const PARCELS_BACKUP_STORAGE_KEY = 'demiryolu_parcels_backup_v1';
-const DELETED_PARCELS_KEY = 'demiryolu_parcels_deleted_ids_v1';
+export function applyBulkChangesToPoint(
+  existing: RailwayPoint,
+  changes: BulkPointChanges,
+  indexSeed: number = 0
+): RailwayPoint {
+  const nowIso = new Date().toISOString();
 
-export function getDeletedParcelIds(): Set<string> {
-  const set = new Set<string>();
-  try {
-    const raw = localStorage.getItem(DELETED_PARCELS_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        parsed.forEach((id) => {
-          if (typeof id === 'string') set.add(id);
-        });
-      }
+  let nextTitle = existing.title || '';
+  if (changes.titleOperation && changes.titleOperation.mode !== 'none') {
+    const op = changes.titleOperation;
+    if (op.mode === 'replace' && op.value?.trim()) {
+      nextTitle = op.value.trim();
+    } else if (op.mode === 'prefix' && op.value?.trim()) {
+      const prefix = op.value.trim();
+      nextTitle = nextTitle.startsWith(prefix) ? nextTitle : `${prefix} ${nextTitle}`.trim();
+    } else if (op.mode === 'suffix' && op.value?.trim()) {
+      const suffix = op.value.trim();
+      nextTitle = nextTitle.endsWith(suffix) ? nextTitle : `${nextTitle} ${suffix}`.trim();
+    } else if (op.mode === 'find_replace' && op.findText && op.findText.length > 0) {
+      nextTitle = nextTitle.split(op.findText).join(op.replaceText || '');
     }
-  } catch {}
-  return set;
-}
-
-export function saveDeletedParcelIds(set: Set<string>) {
-  try {
-    localStorage.setItem(DELETED_PARCELS_KEY, JSON.stringify(Array.from(set)));
-  } catch {}
-}
-
-export function addDeletedParcelId(id: string) {
-  if (!id) return;
-  const set = getDeletedParcelIds();
-  set.add(id);
-  saveDeletedParcelIds(set);
-}
-
-export function addDeletedParcelIds(ids: string[]) {
-  if (!Array.isArray(ids) || ids.length === 0) return;
-  const set = getDeletedParcelIds();
-  ids.forEach((id) => {
-    if (id) set.add(id);
-  });
-  saveDeletedParcelIds(set);
-}
-
-export function getLocalCachedParcels(): RailwayParcel[] {
-  try {
-    const deletedIds = getDeletedParcelIds();
-    const raw = localStorage.getItem(PARCELS_STORAGE_KEY) || localStorage.getItem(PARCELS_BACKUP_STORAGE_KEY);
-    if (raw) {
-      const arr = JSON.parse(raw);
-      if (Array.isArray(arr) && arr.length > 0) {
-        return arr.filter((p) => p && p.id && !deletedIds.has(p.id));
-      }
-    }
-  } catch {}
-  return [];
-}
-
-export function saveLocalCachedParcels(list: RailwayParcel[]): void {
-  try {
-    const deletedIds = getDeletedParcelIds();
-    const clean = (list || []).filter((p) => p && p.id && !deletedIds.has(p.id));
-    const json = JSON.stringify(clean);
-    localStorage.setItem(PARCELS_STORAGE_KEY, json);
-    if (clean.length > 0) {
-      localStorage.setItem(PARCELS_BACKUP_STORAGE_KEY, json);
-    } else {
-      localStorage.removeItem(PARCELS_BACKUP_STORAGE_KEY);
-    }
-    // Also save to IndexedDB asynchronously for GB-capacity and persistence across sessions/iframes
-    saveParcelsToIDB(clean).catch(() => {});
-  } catch {
-    // If localStorage quota exceeded, IndexedDB still saves full coordinates
-    saveParcelsToIDB(list).catch(() => {});
-  }
-}
-
-export async function fetchParcelsList(): Promise<RailwayParcel[]> {
-  const deletedIds = getDeletedParcelIds();
-
-  // 1. Sync deleted parcel IDs from server
-  try {
-    const delRes = await fetch('/api/parcels/deleted-ids', { cache: 'no-store' });
-    if (delRes.ok) {
-      const serverDeleted = await delRes.json();
-      if (Array.isArray(serverDeleted)) {
-        serverDeleted.forEach((id: string) => {
-          if (typeof id === 'string') deletedIds.add(id);
-        });
-        saveDeletedParcelIds(deletedIds);
-      }
-    }
-  } catch {}
-
-  let local = getLocalCachedParcels().filter((p) => !deletedIds.has(p.id));
-  let idbParcels: RailwayParcel[] = [];
-  try {
-    const rawIdb = await getParcelsFromIDB();
-    idbParcels = (rawIdb || []).filter((p) => p && p.id && !deletedIds.has(p.id));
-  } catch {}
-
-  // Merge local and IDB parcels to form the best local state
-  const localMap = new Map<string, RailwayParcel>();
-  local.forEach((p) => {
-    if (p && p.id && !deletedIds.has(p.id)) localMap.set(p.id, p);
-  });
-  idbParcels.forEach((p) => {
-    if (p && p.id && !deletedIds.has(p.id)) localMap.set(p.id, p);
-  });
-  const mergedLocal = Array.from(localMap.values());
-
-  try {
-    const res = await fetch(`/api/parcels?_t=${Date.now()}`, { cache: 'no-store' });
-    if (res.ok) {
-      const serverList = await res.json();
-      if (Array.isArray(serverList)) {
-        // Any parcel present on server is active and definitely not deleted
-        let deletedModified = false;
-        serverList.forEach((sp: any) => {
-          if (sp && sp.id && deletedIds.has(sp.id)) {
-            deletedIds.delete(sp.id);
-            deletedModified = true;
-          }
-        });
-        if (deletedModified) {
-          saveDeletedParcelIds(deletedIds);
-        }
-
-        const cleanServer = serverList.filter((p: any) => p && p.id && !deletedIds.has(p.id));
-        if (cleanServer.length > 0) {
-          // Merge server with any local items that might have been added offline
-          const combinedMap = new Map<string, RailwayParcel>();
-          mergedLocal.forEach((p) => combinedMap.set(p.id, p));
-          cleanServer.forEach((p: RailwayParcel) => combinedMap.set(p.id, p));
-          const allParcels = Array.from(combinedMap.values());
-          saveLocalCachedParcels(allParcels);
-          return allParcels;
-        } else if (mergedLocal.length > 0) {
-          // Preserve local/IDB parcels and automatically sync to server
-          saveParcelsBatch(mergedLocal).catch(() => {});
-          return mergedLocal;
-        } else {
-          saveLocalCachedParcels([]);
-          clearParcelsFromIDB().catch(() => {});
-          return [];
-        }
-      }
-    }
-  } catch (err) {
-    console.warn('Parseller sunucudan çekilemedi, yerel ve IndexedDB önbelleği kullanılıyor:', err);
   }
 
-  return mergedLocal;
-}
+  let nextDescription = existing.description || '';
+  if (changes.descriptionOperation && changes.descriptionOperation.mode !== 'none') {
+    const dop = changes.descriptionOperation;
+    if (dop.mode === 'replace') {
+      nextDescription = (dop.value || '').trim();
+    } else if (dop.mode === 'append' && dop.value?.trim()) {
+      const appendText = dop.value.trim();
+      nextDescription = nextDescription ? `${nextDescription}\n${appendText}` : appendText;
+    } else if (dop.mode === 'clear') {
+      nextDescription = '';
+    }
+  }
 
-export async function saveNewParcel(
-  entry: Omit<RailwayParcel, 'id' | 'createdAt' | 'updatedAt'>
-): Promise<RailwayParcel> {
-  const startKmNum = entry.startKm ? (parseKmToNumber(entry.startKm) ?? undefined) : undefined;
-  const endKmNum = entry.endKm ? (parseKmToNumber(entry.endKm) ?? undefined) : undefined;
-  const tempId = `parsel-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+  const nextCategory = changes.category ? changes.category : existing.category;
+  const nextLineName = changes.lineName?.trim() ? changes.lineName.trim() : existing.lineName;
+  const nextLocationDesc = changes.setLocationDesc
+    ? (changes.locationDesc || '').trim()
+    : existing.locationDesc;
 
-  const newObj: RailwayParcel = {
-    ...entry,
-    id: tempId,
-    startKmNum,
-    endKmNum,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
+  let nextNotes = Array.isArray(existing.notes) ? [...existing.notes] : [];
+  if (changes.addNote && changes.addNote.text.trim()) {
+    const newNote: PointNote = {
+      id: `note-${Date.now()}-${indexSeed}-${Math.random().toString(36).substring(2, 6)}`,
+      text: changes.addNote.text.trim(),
+      author: (changes.addNote.author || 'Yol Bakım Şefliği').trim(),
+      createdAt: nowIso,
+    };
+    nextNotes = [newNote, ...nextNotes];
+  }
 
-  const local = getLocalCachedParcels();
-  const updatedList = [newObj, ...local.filter((p) => p.id !== newObj.id)];
-  saveLocalCachedParcels(updatedList);
+  let nextWorkLogs = Array.isArray(existing.workLogs) ? [...existing.workLogs] : [];
+  if (changes.addWorkLog && changes.addWorkLog.title.trim()) {
+    const newLog = {
+      ...changes.addWorkLog,
+      id: `work-${Date.now()}-${indexSeed}-${Math.random().toString(36).substring(2, 6)}`,
+      title: changes.addWorkLog.title.trim(),
+      description: (changes.addWorkLog.description || '').trim(),
+    };
+    nextWorkLogs = [newLog, ...nextWorkLogs];
+  }
 
-  try {
-    const res = await fetch('/api/parcels', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newObj),
+  let nextLevelCrossing = existing.levelCrossing;
+  if (changes.crossingPatch && Object.keys(changes.crossingPatch).length > 0) {
+    const cleanPatch: Record<string, any> = {};
+    Object.entries(changes.crossingPatch).forEach(([k, v]) => {
+      if (v !== undefined && String(v).trim() !== '') {
+        cleanPatch[k] = typeof v === 'string' ? v.trim() : v;
+      }
     });
-    if (res.ok) {
-      const created = await res.json();
-      const finalList = [created, ...local.filter((p) => p.id !== tempId && p.id !== created.id)];
-      saveLocalCachedParcels(finalList);
-      return created;
+    if (Object.keys(cleanPatch).length > 0) {
+      nextLevelCrossing = { ...(existing.levelCrossing || {}), ...cleanPatch };
     }
-  } catch (err) {
-    console.warn('Parsel çevrimdışı kaydedildi:', err);
   }
-  return newObj;
-}
 
-export async function updateExistingParcel(entry: RailwayParcel): Promise<RailwayParcel> {
-  const startKmNum = entry.startKm ? (parseKmToNumber(entry.startKm) ?? entry.startKmNum) : entry.startKmNum;
-  const endKmNum = entry.endKm ? (parseKmToNumber(entry.endKm) ?? entry.endKmNum) : entry.endKmNum;
-
-  const updatedObj: RailwayParcel = {
-    ...entry,
-    startKmNum,
-    endKmNum,
-    updatedAt: new Date().toISOString(),
-  };
-
-  const local = getLocalCachedParcels();
-  const updatedList = local.map((p) => (p.id === updatedObj.id ? updatedObj : p));
-  saveLocalCachedParcels(updatedList);
-
-  try {
-    const res = await fetch(`/api/parcels/${encodeURIComponent(entry.id)}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedObj),
+  let nextCulvert = existing.culvert;
+  if (changes.culvertPatch && Object.keys(changes.culvertPatch).length > 0) {
+    const cleanPatch: Record<string, any> = {};
+    Object.entries(changes.culvertPatch).forEach(([k, v]) => {
+      if (v !== undefined && String(v).trim() !== '') {
+        cleanPatch[k] = typeof v === 'string' ? v.trim() : v;
+      }
     });
-    if (res.ok) {
-      const serverUpdated = await res.json();
-      saveLocalCachedParcels(local.map((p) => (p.id === serverUpdated.id ? serverUpdated : p)));
-      return serverUpdated;
+    if (Object.keys(cleanPatch).length > 0) {
+      nextCulvert = { ...(existing.culvert || {}), ...cleanPatch };
     }
-  } catch (err) {
-    console.warn('Parsel güncellemesi çevrimdışı kaydedildi:', err);
   }
-  return updatedObj;
+
+  return normalizePoint({
+    ...existing,
+    title: nextTitle,
+    category: nextCategory,
+    lineName: nextLineName,
+    locationDesc: nextLocationDesc,
+    description: nextDescription,
+    notes: nextNotes,
+    workLogs: nextWorkLogs,
+    levelCrossing: nextLevelCrossing,
+    culvert: nextCulvert,
+    updatedAt: nowIso,
+  });
 }
 
-export async function deleteParcelById(id: string): Promise<boolean> {
-  addDeletedParcelId(id);
-  const local = getLocalCachedParcels();
-  const filtered = local.filter((p) => p.id !== id);
-  saveLocalCachedParcels(filtered);
-  try {
-    const idbList = await getParcelsFromIDB();
-    saveParcelsToIDB(idbList.filter((p) => p.id !== id)).catch(() => {});
-  } catch {}
-
-  try {
-    const res = await fetch(`/api/parcels/${encodeURIComponent(id)}`, { method: 'DELETE' });
-    return res.ok;
-  } catch {
-    return true;
-  }
-}
-
-export async function bulkDeleteParcels(ids: string[]): Promise<boolean> {
-  if (!Array.isArray(ids) || ids.length === 0) return true;
-  addDeletedParcelIds(ids);
+// Bulk update multiple selected railway points at once
+export async function bulkUpdateRailwayPoints(
+  ids: string[],
+  changes: BulkPointChanges,
+  sourcePoints?: RailwayPoint[]
+): Promise<RailwayPoint[]> {
+  if (!Array.isArray(ids) || ids.length === 0) return [];
   const idsSet = new Set(ids);
-  const local = getLocalCachedParcels();
-  const filtered = local.filter((p) => !idsSet.has(p.id));
-  saveLocalCachedParcels(filtered);
-  try {
-    const idbList = await getParcelsFromIDB();
-    saveParcelsToIDB(idbList.filter((p) => !idsSet.has(p.id))).catch(() => {});
-  } catch {}
-
-  try {
-    const res = await fetch('/api/parcels/bulk-delete', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ids }),
+  const local = getLocalCachedPoints();
+  const baseMap = new Map<string, RailwayPoint>();
+  local.forEach((pt) => {
+    if (pt && pt.id) baseMap.set(pt.id, pt);
+  });
+  // Prefer richer sourcePoints from React state / IDB if available so no fields are lost
+  if (Array.isArray(sourcePoints)) {
+    sourcePoints.forEach((sp) => {
+      if (!sp || !sp.id) return;
+      const existing = baseMap.get(sp.id);
+      if (!existing) {
+        baseMap.set(sp.id, sp);
+      } else {
+        baseMap.set(sp.id, {
+          ...existing,
+          ...sp,
+          photos: (sp.photos && sp.photos.length > 0) ? sp.photos : (existing.photos || []),
+          notes: (sp.notes && sp.notes.length > 0) ? sp.notes : (existing.notes || []),
+          workLogs: (sp.workLogs && sp.workLogs.length > 0) ? sp.workLogs : (existing.workLogs || []),
+        });
+      }
     });
-    return res.ok;
-  } catch {
-    return true;
   }
-}
 
-export async function clearAllParcels(): Promise<boolean> {
-  const local = getLocalCachedParcels();
-  let idbParcels: RailwayParcel[] = [];
-  try {
-    idbParcels = await getParcelsFromIDB();
-  } catch {}
-  const allIds = new Set<string>();
-  local.forEach((p) => { if (p?.id) allIds.add(p.id); });
-  (idbParcels || []).forEach((p) => { if (p?.id) allIds.add(p.id); });
-
-  addDeletedParcelIds(Array.from(allIds));
-  saveLocalCachedParcels([]);
-  try {
-    await clearParcelsFromIDB();
-  } catch {}
-
-  try {
-    const res = await fetch('/api/parcels', { method: 'DELETE' });
-    return res.ok;
-  } catch {
-    return true;
-  }
-}
-
-export async function saveParcelsBatch(list: RailwayParcel[]): Promise<{ success: boolean; count: number }> {
-  const deletedIds = getDeletedParcelIds();
-  const cleanIncoming = (list || []).filter((p) => p && p.id && !deletedIds.has(p.id));
-
-  const local = getLocalCachedParcels();
-  let idbList: RailwayParcel[] = [];
-  try {
-    idbList = (await getParcelsFromIDB()) || [];
-  } catch {}
-
-  const map = new Map<string, RailwayParcel>();
-  local.forEach((p) => {
-    if (p && p.id && !deletedIds.has(p.id)) map.set(p.id, p);
-  });
-  idbList.forEach((p) => {
-    if (p && p.id && !deletedIds.has(p.id)) map.set(p.id, p);
-  });
-  cleanIncoming.forEach((p) => {
-    if (p && p.id && !deletedIds.has(p.id)) map.set(p.id, p);
+  const locallyUpdatedMap = new Map<string, RailwayPoint>();
+  let idx = 0;
+  ids.forEach((id) => {
+    const pt = baseMap.get(id);
+    if (!pt) return;
+    const updated = applyBulkChangesToPoint(pt, changes, idx++);
+    locallyUpdatedMap.set(updated.id, updated);
+    baseMap.set(updated.id, updated);
   });
 
-  const combined = Array.from(map.values());
-  saveLocalCachedParcels(combined);
+  const locallyUpdatedList = Array.from(locallyUpdatedMap.values());
+  recordUserCustomPointsBatch(locallyUpdatedList);
+  saveLocalCachedPoints(Array.from(baseMap.values()));
 
   try {
-    const res = await fetch('/api/parcels', {
+    const res = await fetch('/api/points/bulk-update', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(combined),
+      body: JSON.stringify({ ids, changes }),
     });
     if (res.ok) {
-      return await res.json();
+      const data = await res.json();
+      const serverMap = new Map<string, RailwayPoint>();
+      if (Array.isArray(data?.updatedPoints)) {
+        data.updatedPoints.forEach((sp: RailwayPoint) => {
+          const norm = normalizePoint(sp);
+          serverMap.set(norm.id, norm);
+        });
+      }
+
+      // If any selected points existed only locally and weren't on server yet, import them too
+      const missingOnServer = locallyUpdatedList.filter((lp) => !serverMap.has(lp.id));
+      if (missingOnServer.length > 0) {
+        fetch('/api/points/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ points: missingOnServer, replaceAll: false }),
+        }).catch(() => {});
+        missingOnServer.forEach((mp) => serverMap.set(mp.id, mp));
+      }
+
+      const finalUpdatedList = Array.from(serverMap.values());
+      removePendingSyncItemsBatch(finalUpdatedList.map((p) => p.id));
+      recordUserCustomPointsBatch(finalUpdatedList);
+      finalUpdatedList.forEach((p) => baseMap.set(p.id, p));
+      saveLocalCachedPoints(Array.from(baseMap.values()));
+      return finalUpdatedList;
+    } else {
+      locallyUpdatedList.forEach((pt) => {
+        addPendingSyncItem({ id: pt.id, type: 'upsert', point: pt, timestamp: Date.now() });
+      });
     }
-  } catch (err) {
-    console.warn('Toplu parsel aktarımı çevrimdışı tamamlandı:', err);
+  } catch {
+    locallyUpdatedList.forEach((pt) => {
+      addPendingSyncItem({ id: pt.id, type: 'upsert', point: pt, timestamp: Date.now() });
+    });
   }
-  return { success: true, count: combined.length };
+
+  return locallyUpdatedList;
 }
 
 // Bulk delete railway points

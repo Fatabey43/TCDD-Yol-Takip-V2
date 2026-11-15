@@ -274,36 +274,37 @@ export const TakyidatModal: React.FC<TakyidatModalProps> = ({
   return (
     <div
       id="takyidat-modal-backdrop"
-      className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-0 sm:p-4 overflow-hidden"
+      className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-0 sm:p-4 overflow-hidden font-poppins"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-none sm:rounded-2xl max-w-3xl w-full shadow-2xl border-0 sm:border border-slate-200 overflow-hidden flex flex-col h-[100dvh] sm:h-[88vh] max-h-[100dvh] sm:max-h-[88vh] min-h-0 relative"
+        className="bg-white rounded-none sm:rounded-2xl max-w-3xl w-full shadow-2xl border-0 sm:border border-[#DEE2E6] overflow-hidden flex flex-col h-[100dvh] sm:h-[88vh] max-h-[100dvh] sm:max-h-[88vh] min-h-0 relative text-[#212529]"
         onClick={(e) => e.stopPropagation()}
       >
+        <div className="gov-bar w-full h-[5px] shrink-0" />
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-red-950 via-slate-900 to-slate-900 text-white border-b border-red-500/30">
+        <div className="flex items-center justify-between px-6 py-4 bg-white text-[#212529] border-b border-[#DEE2E6] shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-red-600 flex items-center justify-center shadow-lg text-white shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-[#D32F2F]/10 border border-[#D32F2F]/20 flex items-center justify-center text-[#D32F2F] shrink-0">
               <Gauge className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-black text-sm sm:text-base tracking-tight text-white">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-black text-sm sm:text-base tracking-tight text-[#212529]">
                   TCDD TAKYİDAT &amp; HIZ KISITLAMALARI
                 </h3>
-                <span className="text-[10px] bg-red-500/20 text-red-300 border border-red-500/40 px-2 py-0.5 rounded-full font-mono font-bold">
+                <span className="text-[10px] bg-[#D32F2F]/10 text-[#D32F2F] border border-[#D32F2F]/20 px-2 py-0.5 rounded-full font-roboto-mono font-bold">
                   {restrictions.filter((r) => r.status === 'active').length} Aktif Hız Tahdidi
                 </span>
               </div>
-              <p className="text-[11px] text-slate-300">
+              <p className="text-[11px] text-[#6C757D]">
                 Demiryolu hat kesimleri geçici &amp; kalıcı hız sınırları, yol emirleri ve harita görünümü
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+            className="p-1.5 text-[#6C757D] hover:text-[#D32F2F] rounded-lg hover:bg-[#F8F9FA] transition-colors cursor-pointer"
             title="Kapat"
           >
             <X className="w-5 h-5" />
@@ -311,20 +312,20 @@ export const TakyidatModal: React.FC<TakyidatModalProps> = ({
         </div>
 
         {/* Navigation Tabs: Tahdit Listesi vs Hız Tahditleri Analizi */}
-        <div className="bg-slate-900 px-6 pt-1.5 flex items-center gap-2 border-b border-slate-800 flex-shrink-0">
+        <div className="bg-[#F8F9FA] px-6 pt-1.5 flex items-center gap-2 border-b border-[#DEE2E6] flex-shrink-0">
           <button
             type="button"
             id="tab-takyidat-list"
             onClick={() => setMainTab('list')}
             className={`px-4 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
               mainTab === 'list'
-                ? 'border-red-500 text-white bg-slate-800/90 rounded-t-xl shadow-xs'
-                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 rounded-t-xl'
+                ? 'border-[#D32F2F] text-[#D32F2F] bg-white rounded-t-xl shadow-2xs'
+                : 'border-transparent text-[#6C757D] hover:text-[#212529] hover:bg-white/60 rounded-t-xl'
             }`}
           >
-            <Gauge className="w-4 h-4 text-red-500" />
+            <Gauge className="w-4 h-4 text-[#D32F2F]" />
             <span>Tahdit Listesi &amp; Düzenleme</span>
-            <span className="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded-full text-slate-300 font-mono">
+            <span className="text-[10px] bg-[#DEE2E6]/70 px-1.5 py-0.5 rounded-full text-[#212529] font-roboto-mono">
               {restrictions.length}
             </span>
           </button>
@@ -335,13 +336,13 @@ export const TakyidatModal: React.FC<TakyidatModalProps> = ({
             onClick={() => setMainTab('analytics')}
             className={`px-4 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
               mainTab === 'analytics'
-                ? 'border-amber-500 text-white bg-slate-800/90 rounded-t-xl shadow-xs'
-                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 rounded-t-xl'
+                ? 'border-[#D32F2F] text-[#D32F2F] bg-white rounded-t-xl shadow-2xs'
+                : 'border-transparent text-[#6C757D] hover:text-[#212529] hover:bg-white/60 rounded-t-xl'
             }`}
           >
-            <BarChart2 className="w-4 h-4 text-amber-500" />
+            <BarChart2 className="w-4 h-4 text-[#D32F2F]" />
             <span>Hız Tahditleri Analizi</span>
-            <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-1.5 py-0.5 rounded-full font-mono font-bold">
+            <span className="text-[10px] bg-[#D32F2F]/10 text-[#D32F2F] border border-[#D32F2F]/20 px-1.5 py-0.5 rounded-full font-roboto-mono font-bold">
               Çizelge &amp; Profil
             </span>
           </button>
@@ -370,9 +371,9 @@ export const TakyidatModal: React.FC<TakyidatModalProps> = ({
         ) : (
           <>
             {/* Action Toolbar */}
-        <div className="bg-slate-100 px-6 py-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2.5">
+        <div className="bg-[#F8F9FA] px-6 py-3 border-b border-[#DEE2E6] flex flex-wrap items-center justify-between gap-2.5">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs font-semibold text-slate-600 mr-1 flex items-center gap-1">
+            <span className="text-xs font-semibold text-[#6C757D] mr-1 flex items-center gap-1">
               <Filter className="w-3.5 h-3.5" />
               <span>Filtrele:</span>
             </span>
@@ -380,8 +381,8 @@ export const TakyidatModal: React.FC<TakyidatModalProps> = ({
               onClick={() => setFilterStatus('all')}
               className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 filterStatus === 'all'
-                  ? 'bg-slate-900 text-white shadow-xs'
-                  : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-300'
+                  ? 'bg-[#D32F2F] text-white shadow-xs'
+                  : 'bg-white text-[#212529] hover:bg-[#F8F9FA] border border-[#DEE2E6]'
               }`}
             >
               Tümü ({restrictions.length})
@@ -390,8 +391,8 @@ export const TakyidatModal: React.FC<TakyidatModalProps> = ({
               onClick={() => setFilterStatus('active')}
               className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 filterStatus === 'active'
-                  ? 'bg-red-600 text-white shadow-xs'
-                  : 'bg-white text-red-700 hover:bg-red-50 border border-red-200'
+                  ? 'bg-[#D32F2F] text-white shadow-xs'
+                  : 'bg-white text-[#D32F2F] hover:bg-red-50 border border-[#D32F2F]/30'
               }`}
             >
               Aktif Hız Tahditleri ({restrictions.filter((r) => r.status === 'active').length})
@@ -415,10 +416,10 @@ export const TakyidatModal: React.FC<TakyidatModalProps> = ({
                   type="button"
                   id="takyidat-pick-map-btn"
                   onClick={() => handleTriggerMapPick('both')}
-                  className="flex items-center gap-1.5 bg-gradient-to-r from-sky-700 to-blue-700 hover:from-sky-600 hover:to-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+                  className="flex items-center gap-1.5 bg-white hover:bg-[#D32F2F]/5 border border-[#D32F2F]/30 text-[#D32F2F] text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
                   title="Harita üzerinden dokunarak başlangıç ve bitiş KM seçip ekle"
                 >
-                  <Crosshair className="w-3.5 h-3.5 text-sky-200" />
+                  <Crosshair className="w-3.5 h-3.5" />
                   <span>Haritadan Seçerek Ekle</span>
                 </button>
               )}
@@ -428,10 +429,10 @@ export const TakyidatModal: React.FC<TakyidatModalProps> = ({
                   type="button"
                   id="takyidat-pick-points-btn"
                   onClick={handleOpenAddWithManualPicker}
-                  className="flex items-center gap-1.5 bg-sky-950 hover:bg-sky-900 border border-sky-600 text-sky-200 hover:text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+                  className="flex items-center gap-1.5 bg-white hover:bg-[#F8F9FA] border border-[#DEE2E6] text-[#212529] text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
                   title="Kayıtlı demiryolu noktalarından manuel seçerek ekle"
                 >
-                  <ListFilter className="w-3.5 h-3.5 text-sky-400" />
+                  <ListFilter className="w-3.5 h-3.5 text-[#D32F2F]" />
                   <span>Manuel Nokta Seç</span>
                 </button>
               )}
@@ -439,7 +440,7 @@ export const TakyidatModal: React.FC<TakyidatModalProps> = ({
               <button
                 id="takyidat-open-add-btn"
                 onClick={handleOpenAdd}
-                className="flex items-center gap-1.5 bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+                className="flex items-center gap-1.5 bg-[#D32F2F] hover:bg-[#B71C1C] text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Yeni Takyidat Ekle</span>
@@ -957,7 +958,7 @@ export const TakyidatModal: React.FC<TakyidatModalProps> = ({
                               onFocusSegment(item.startKmNum, item.endKmNum);
                               onClose();
                             }}
-                            className="flex items-center gap-1 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold px-2.5 py-1.5 rounded-xl shadow-xs transition-colors cursor-pointer"
+                            className="flex items-center gap-1 bg-[#D32F2F] hover:bg-[#B71C1C] text-white text-xs font-bold px-2.5 py-1.5 rounded-xl shadow-xs transition-colors cursor-pointer"
                             title="Haritada bu kesime git"
                           >
                             <MapPin className="w-3.5 h-3.5" />
@@ -1103,14 +1104,14 @@ export const TakyidatModal: React.FC<TakyidatModalProps> = ({
         )}
 
         {/* Modal Footer */}
-        <div className="px-6 py-3 bg-slate-900 text-slate-300 text-xs flex items-center justify-between border-t border-slate-800">
+        <div className="px-6 py-3 bg-[#F8F9FA] text-[#6C757D] text-xs flex items-center justify-between border-t border-[#DEE2E6]">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
             <span className="text-[11px]">Tüm takyidat hız sınırları harita üzerinde sarı-kırmızı çizgiler ve hız rozetleri olarak canlı gösterilir.</span>
           </div>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-colors cursor-pointer text-xs"
+            className="px-4 py-1.5 bg-[#D32F2F] hover:bg-[#B71C1C] text-white font-bold rounded-xl transition-colors cursor-pointer text-xs"
           >
             Kapat
           </button>
@@ -1122,26 +1123,27 @@ export const TakyidatModal: React.FC<TakyidatModalProps> = ({
         {manualPickTarget && (
           <div
             id="takyidat-point-picker-submodal"
-            className="absolute inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-150"
+            className="absolute inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-150"
             onClick={() => setManualPickTarget(null)}
           >
             <div
-              className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-150"
+              className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-[#DEE2E6] overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-150 text-[#212529]"
               onClick={(e) => e.stopPropagation()}
             >
+              <div className="gov-bar w-full h-[5px] shrink-0" />
               {/* Header */}
-              <div className="px-5 py-3.5 bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 text-white flex items-center justify-between border-b border-sky-500/30">
+              <div className="px-5 py-3.5 bg-white text-[#212529] flex items-center justify-between border-b border-[#DEE2E6]">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold">
+                  <div className="w-9 h-9 rounded-xl bg-[#D32F2F]/10 border border-[#D32F2F]/20 text-[#D32F2F] flex items-center justify-center font-bold">
                     <ListFilter className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="font-extrabold text-sm text-white">
+                    <h4 className="font-extrabold text-sm text-[#212529]">
                       {manualPickTarget === 'start'
                         ? 'Başlangıç KM İçin Kayıtlı Nokta Seç'
                         : 'Bitiş KM İçin Kayıtlı Nokta Seç'}
                     </h4>
-                    <p className="text-[11px] text-slate-300">
+                    <p className="text-[11px] text-[#6C757D]">
                       Tıkladığınız noktanın demiryolu kilometresi forma aktarılacaktır
                     </p>
                   </div>
@@ -1149,7 +1151,7 @@ export const TakyidatModal: React.FC<TakyidatModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setManualPickTarget(null)}
-                  className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+                  className="p-1.5 text-[#6C757D] hover:text-[#D32F2F] rounded-lg hover:bg-[#F8F9FA] transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -1169,7 +1171,7 @@ export const TakyidatModal: React.FC<TakyidatModalProps> = ({
                       setManualPickTarget(null);
                       handleTriggerMapPick(tgt);
                     }}
-                    className="px-2.5 py-1 bg-amber-600 hover:bg-amber-500 text-white text-[11px] font-bold rounded-lg shadow-2xs whitespace-nowrap cursor-pointer transition-all active:scale-95"
+                    className="px-2.5 py-1 bg-[#D32F2F] hover:bg-[#B71C1C] text-white text-[11px] font-bold rounded-lg shadow-2xs whitespace-nowrap cursor-pointer transition-all active:scale-95"
                   >
                     Haritadan Seç ➔
                   </button>
@@ -1177,21 +1179,21 @@ export const TakyidatModal: React.FC<TakyidatModalProps> = ({
               )}
 
               {/* Search & Filter */}
-              <div className="p-3 bg-slate-50 border-b border-slate-200 space-y-2">
+              <div className="p-3 bg-[#F8F9FA] border-b border-[#DEE2E6] space-y-2">
                 <div className="relative">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                  <Search className="w-4 h-4 text-[#6C757D] absolute left-3 top-2.5" />
                   <input
                     type="text"
                     value={pointSearchQuery}
                     onChange={(e) => setPointSearchQuery(e.target.value)}
                     placeholder="KM ara (örn: 54, 54+250), nokta adı veya hat..."
-                    className="w-full bg-white border border-slate-300 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-sky-500"
+                    className="w-full bg-white border border-[#DEE2E6] rounded-xl pl-9 pr-3 py-2 text-xs text-[#212529] focus:outline-hidden focus:ring-2 focus:ring-[#D32F2F]/15 focus:border-[#D32F2F]"
                     autoFocus
                   />
                   {pointSearchQuery && (
                     <button
                       onClick={() => setPointSearchQuery('')}
-                      className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+                      className="absolute right-2.5 top-2.5 text-[#6C757D] hover:text-[#212529]"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
@@ -1205,8 +1207,8 @@ export const TakyidatModal: React.FC<TakyidatModalProps> = ({
                       onClick={() => setPointLineFilter('all')}
                       className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-colors cursor-pointer ${
                         pointLineFilter === 'all'
-                          ? 'bg-slate-900 text-white'
-                          : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
+                          ? 'bg-[#D32F2F] text-white'
+                          : 'bg-white border border-[#DEE2E6] text-[#6C757D] hover:bg-[#F8F9FA]'
                       }`}
                     >
                       Tüm Hatlar ({points.length})
@@ -1218,8 +1220,8 @@ export const TakyidatModal: React.FC<TakyidatModalProps> = ({
                         onClick={() => setPointLineFilter(line)}
                         className={`px-2.5 py-1 rounded-lg font-bold text-[11px] whitespace-nowrap transition-colors cursor-pointer ${
                           pointLineFilter === line
-                            ? 'bg-sky-700 text-white'
-                            : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
+                            ? 'bg-[#D32F2F] text-white'
+                            : 'bg-white border border-[#DEE2E6] text-[#6C757D] hover:bg-[#F8F9FA]'
                         }`}
                       >
                         {line}
@@ -1278,7 +1280,7 @@ export const TakyidatModal: React.FC<TakyidatModalProps> = ({
                           </div>
                         </div>
 
-                        <div className="shrink-0 flex items-center gap-1.5 text-sky-600 text-xs font-bold bg-sky-50 px-2 py-1 rounded-lg border border-sky-200 group-hover:bg-sky-600 group-hover:text-white transition-colors">
+                        <div className="shrink-0 flex items-center gap-1.5 text-[#D32F2F] text-xs font-bold bg-[#D32F2F]/10 px-2 py-1 rounded-lg border border-[#D32F2F]/20 group-hover:bg-[#D32F2F] group-hover:text-white transition-colors">
                           <span>Seç</span>
                           <Navigation className="w-3 h-3 rotate-90" />
                         </div>

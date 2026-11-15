@@ -225,32 +225,33 @@ export const OfflineMapModal: React.FC<OfflineMapModalProps> = ({
     <>
       <div
         id="offline-map-modal-backdrop"
-        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5"
+        className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 font-poppins"
         onClick={onClose}
       >
         <div
           id="offline-map-modal-content"
-          className="bg-white rounded-2xl w-full max-w-xl h-[100dvh] sm:h-[88vh] max-h-[100dvh] sm:max-h-[88vh] min-h-0 flex flex-col shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+          className="bg-white rounded-2xl w-full max-w-xl h-[100dvh] sm:h-[88vh] max-h-[100dvh] sm:max-h-[88vh] min-h-0 flex flex-col shadow-2xl border border-[#DEE2E6] overflow-hidden animate-in fade-in zoom-in-95 duration-150 text-[#212529]"
           onClick={(e) => e.stopPropagation()}
         >
+          <div className="gov-bar w-full h-[5px] shrink-0" />
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 bg-slate-900 text-white shrink-0">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-[#DEE2E6] bg-white text-[#212529] shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-sky-500/20 border border-sky-400/30 flex items-center justify-center text-sky-400">
+              <div className="w-9 h-9 rounded-xl bg-[#D32F2F]/10 border border-[#D32F2F]/20 flex items-center justify-center text-[#D32F2F]">
                 <HardDriveDownload className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-base font-extrabold text-white leading-tight">
+                <h2 className="text-base font-extrabold text-[#212529] leading-tight">
                   Çevrimdışı Harita &amp; Önbellek
                 </h2>
-                <p className="text-xs text-slate-300">
+                <p className="text-xs text-[#6C757D]">
                   İnternetsiz sahalar için yerel harita depolama yönetimi
                 </p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+              className="p-1.5 text-[#6C757D] hover:text-[#D32F2F] rounded-lg hover:bg-[#F8F9FA] transition-colors cursor-pointer"
               title="Kapat"
             >
               <X className="w-5 h-5" />
@@ -258,7 +259,7 @@ export const OfflineMapModal: React.FC<OfflineMapModalProps> = ({
           </div>
 
           {/* Scrollable Body */}
-          <div className="flex-1 overflow-y-auto prominent-scrollbar p-5 space-y-4 text-slate-800 text-xs min-h-0 touch-pan-y overscroll-contain">
+          <div className="flex-1 overflow-y-auto prominent-scrollbar p-5 space-y-4 text-[#212529] text-xs min-h-0 touch-pan-y overscroll-contain">
             {/* Top Status Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {/* Card 1: Connection Status */}
@@ -336,24 +337,24 @@ export const OfflineMapModal: React.FC<OfflineMapModalProps> = ({
             </div>
 
             {/* Informative Banner about Vector Baseline Map */}
-            <div className="p-3 bg-sky-50 border border-sky-200 rounded-xl flex items-start gap-2.5 text-sky-900">
-              <Info className="w-4 h-4 text-sky-600 shrink-0 mt-0.5" />
-              <div className="text-[11px] leading-relaxed">
-                <span className="font-bold">Temel Hat Haritası Garantisi: </span>
+            <div className="p-3 bg-[#F8F9FA] border border-[#DEE2E6] rounded-xl flex items-start gap-2.5 text-[#212529]">
+              <Info className="w-4 h-4 text-[#D32F2F] shrink-0 mt-0.5" />
+              <div className="text-[11px] leading-relaxed text-[#6C757D]">
+                <span className="font-bold text-[#212529]">Temel Hat Haritası Garantisi: </span>
                 İnternetsiz sahalarda hiçbir karo indirilmemiş olsa dahi, sisteminizdeki kayıtlı tüm noktalar (makaslar, menfezler, geçitler ve istasyonlar) ile demiryolu ray hattı vektörel şematik olarak haritada kesintisiz çizilir.
               </div>
             </div>
 
             {/* Download Packages Section */}
-            <div className="border border-slate-200 rounded-xl p-4 bg-white shadow-2xs space-y-3">
+            <div className="border border-[#DEE2E6] rounded-xl p-4 bg-white shadow-2xs space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-bold text-slate-900 text-xs">Hat Haritasını İndir &amp; Önbelleğe Al</h3>
-                  <p className="text-[11px] text-slate-500">
+                  <h3 className="font-bold text-[#212529] text-xs">Hat Haritasını İndir &amp; Önbelleğe Al</h3>
+                  <p className="text-[11px] text-[#6C757D]">
                     Sahaya çıkmadan önce aşağıdaki hat koridorlarını cihazınıza indirin
                   </p>
                 </div>
-                <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-semibold">
+                <span className="text-[10px] bg-[#F8F9FA] border border-[#DEE2E6] text-[#6C757D] px-2 py-0.5 rounded-md font-roboto-mono font-semibold">
                   Zoom 8–12
                 </span>
               </div>
@@ -365,8 +366,8 @@ export const OfflineMapModal: React.FC<OfflineMapModalProps> = ({
                   onClick={() => setSelectedPackage('all')}
                   className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                     selectedPackage === 'all'
-                      ? 'border-sky-500 bg-sky-50/50 ring-1 ring-sky-500/20'
-                      : 'border-slate-200 hover:border-slate-300 bg-white'
+                      ? 'border-[#D32F2F] bg-[#D32F2F]/5 ring-1 ring-[#D32F2F]/20'
+                      : 'border-[#DEE2E6] hover:border-[#D32F2F]/40 bg-white'
                   }`}
                 >
                   <input
@@ -374,18 +375,18 @@ export const OfflineMapModal: React.FC<OfflineMapModalProps> = ({
                     name="package"
                     checked={selectedPackage === 'all'}
                     onChange={() => setSelectedPackage('all')}
-                    className="mt-0.5 text-sky-600 focus:ring-sky-500"
+                    className="mt-0.5 accent-[#D32F2F] text-[#D32F2F] focus:ring-[#D32F2F]"
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-900 text-xs">
+                      <span className="font-bold text-[#212529] text-xs">
                         Tüm Hatlar (Eskişehir-Konya &amp; Alayunt-Balıkesir)
                       </span>
-                      <span className="text-[10px] font-bold text-sky-700 bg-sky-100 px-1.5 py-0.2 rounded">
+                      <span className="text-[10px] font-bold text-[#D32F2F] bg-[#D32F2F]/10 px-1.5 py-0.2 rounded font-roboto-mono">
                         ~6 - 8 MB
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
+                    <p className="text-[11px] text-[#6C757D] mt-0.5">
                       Her iki ana demiryolu hattının tüm güzergahını, ara istasyonlarını ve 10 km çevre tamponunu kapsar.
                     </p>
                   </div>
@@ -396,8 +397,8 @@ export const OfflineMapModal: React.FC<OfflineMapModalProps> = ({
                   onClick={() => setSelectedPackage('esk-konya')}
                   className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                     selectedPackage === 'esk-konya'
-                      ? 'border-sky-500 bg-sky-50/50 ring-1 ring-sky-500/20'
-                      : 'border-slate-200 hover:border-slate-300 bg-white'
+                      ? 'border-[#D32F2F] bg-[#D32F2F]/5 ring-1 ring-[#D32F2F]/20'
+                      : 'border-[#DEE2E6] hover:border-[#D32F2F]/40 bg-white'
                   }`}
                 >
                   <input
@@ -405,18 +406,18 @@ export const OfflineMapModal: React.FC<OfflineMapModalProps> = ({
                     name="package"
                     checked={selectedPackage === 'esk-konya'}
                     onChange={() => setSelectedPackage('esk-konya')}
-                    className="mt-0.5 text-sky-600 focus:ring-sky-500"
+                    className="mt-0.5 accent-[#D32F2F] text-[#D32F2F] focus:ring-[#D32F2F]"
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-900 text-xs">
+                      <span className="font-bold text-[#212529] text-xs">
                         Eskişehir - Konya Hattı Koridoru
                       </span>
-                      <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded">
+                      <span className="text-[10px] font-bold text-[#6C757D] bg-[#F8F9FA] px-1.5 py-0.2 rounded font-roboto-mono">
                         ~4 MB
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
+                    <p className="text-[11px] text-[#6C757D] mt-0.5">
                       Enveriye, Alayunt, Kütahya, Afyonkarahisar, Akşehir, Ilgın ve Konya hattı boyunca harita parçaları.
                     </p>
                   </div>
@@ -427,8 +428,8 @@ export const OfflineMapModal: React.FC<OfflineMapModalProps> = ({
                   onClick={() => setSelectedPackage('ala-bal')}
                   className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                     selectedPackage === 'ala-bal'
-                      ? 'border-sky-500 bg-sky-50/50 ring-1 ring-sky-500/20'
-                      : 'border-slate-200 hover:border-slate-300 bg-white'
+                      ? 'border-[#D32F2F] bg-[#D32F2F]/5 ring-1 ring-[#D32F2F]/20'
+                      : 'border-[#DEE2E6] hover:border-[#D32F2F]/40 bg-white'
                   }`}
                 >
                   <input
@@ -436,18 +437,18 @@ export const OfflineMapModal: React.FC<OfflineMapModalProps> = ({
                     name="package"
                     checked={selectedPackage === 'ala-bal'}
                     onChange={() => setSelectedPackage('ala-bal')}
-                    className="mt-0.5 text-sky-600 focus:ring-sky-500"
+                    className="mt-0.5 accent-[#D32F2F] text-[#D32F2F] focus:ring-[#D32F2F]"
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-900 text-xs">
+                      <span className="font-bold text-[#212529] text-xs">
                         Alayunt - Balıkesir Hattı Koridoru
                       </span>
-                      <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded">
+                      <span className="text-[10px] font-bold text-[#6C757D] bg-[#F8F9FA] px-1.5 py-0.2 rounded font-roboto-mono">
                         ~3 MB
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
+                    <p className="text-[11px] text-[#6C757D] mt-0.5">
                       Kütahya, Tavşanlı, Değirmenözü, Dursunbey ve Balıkesir güzergahı boyunca harita parçaları.
                     </p>
                   </div>
@@ -459,8 +460,8 @@ export const OfflineMapModal: React.FC<OfflineMapModalProps> = ({
                     onClick={() => setSelectedPackage('viewport')}
                     className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                       selectedPackage === 'viewport'
-                        ? 'border-sky-500 bg-sky-50/50 ring-1 ring-sky-500/20'
-                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                        ? 'border-[#D32F2F] bg-[#D32F2F]/5 ring-1 ring-[#D32F2F]/20'
+                        : 'border-[#DEE2E6] hover:border-[#D32F2F]/40 bg-white'
                     }`}
                   >
                     <input
@@ -468,7 +469,7 @@ export const OfflineMapModal: React.FC<OfflineMapModalProps> = ({
                       name="package"
                       checked={selectedPackage === 'viewport'}
                       onChange={() => setSelectedPackage('viewport')}
-                      className="mt-0.5 text-sky-600 focus:ring-sky-500"
+                      className="mt-0.5 accent-[#D32F2F] text-[#D32F2F] focus:ring-[#D32F2F]"
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
@@ -489,31 +490,31 @@ export const OfflineMapModal: React.FC<OfflineMapModalProps> = ({
 
               {/* Action Button & Live Progress */}
               {isDownloading ? (
-                <div className="p-3 bg-slate-900 text-white rounded-xl space-y-2.5">
+                <div className="p-3 bg-[#F8F9FA] border border-[#DEE2E6] text-[#212529] rounded-xl space-y-2.5">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-sky-400 flex items-center gap-1.5">
+                    <span className="font-bold text-[#D32F2F] flex items-center gap-1.5">
                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                       <span>İndiriliyor...</span>
                     </span>
-                    <span className="font-mono font-bold text-slate-300">
+                    <span className="font-roboto-mono font-bold text-[#212529]">
                       %{downloadProgress?.percentage || 0}
                     </span>
                   </div>
 
                   {/* Progress Bar */}
-                  <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                  <div className="w-full bg-[#DEE2E6] rounded-full h-2 overflow-hidden">
                     <div
-                      className="bg-sky-500 h-full rounded-full transition-all duration-200"
+                      className="bg-[#D32F2F] h-full rounded-full transition-all duration-200"
                       style={{ width: `${downloadProgress?.percentage || 0}%` }}
                     />
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-slate-400">
+                  <div className="flex items-center justify-between text-[11px] text-[#6C757D]">
                     <span>{downloadProgress?.statusText || 'Başlatılıyor...'}</span>
                     <button
                       type="button"
                       onClick={handleCancelDownload}
-                      className="text-rose-400 hover:text-rose-300 font-bold flex items-center gap-1 cursor-pointer"
+                      className="text-[#D32F2F] hover:text-[#B71C1C] font-bold flex items-center gap-1 cursor-pointer"
                     >
                       <Square className="w-3 h-3 fill-current" />
                       <span>İptal Et</span>
@@ -524,7 +525,7 @@ export const OfflineMapModal: React.FC<OfflineMapModalProps> = ({
                 <button
                   type="button"
                   onClick={handleStartDownload}
-                  className="w-full py-2.5 px-4 bg-sky-600 hover:bg-sky-700 active:scale-[0.99] text-white font-bold rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-2.5 px-4 bg-[#D32F2F] hover:bg-[#B71C1C] active:scale-[0.99] text-white font-bold rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <HardDriveDownload className="w-4 h-4" />
                   <span>Seçilen Hat Haritasını Cihaza İndir</span>
@@ -533,12 +534,12 @@ export const OfflineMapModal: React.FC<OfflineMapModalProps> = ({
             </div>
 
             {/* Auto Caching & Maintenance Notice */}
-            <div className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+            <div className="flex items-center justify-between p-3.5 bg-[#F8F9FA] border border-[#DEE2E6] rounded-xl">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
                 <div>
-                  <span className="font-bold text-slate-900 text-xs block">Otomatik Arka Plan Önbellekleme</span>
-                  <span className="text-[10px] text-slate-500">
+                  <span className="font-bold text-[#212529] text-xs block">Otomatik Arka Plan Önbellekleme</span>
+                  <span className="text-[10px] text-[#6C757D]">
                     Haritada gezinirken görüntülediğiniz tüm bölgeler kalıcı olarak cihazınızda saklanır.
                   </span>
                 </div>
@@ -547,7 +548,7 @@ export const OfflineMapModal: React.FC<OfflineMapModalProps> = ({
                 type="button"
                 onClick={() => setIsClearModalOpen(true)}
                 disabled={stats.tileCount === 0}
-                className="shrink-0 ml-3 text-xs font-semibold text-rose-600 hover:text-rose-800 hover:bg-rose-50 px-2.5 py-1.5 rounded-lg border border-rose-200 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                className="shrink-0 ml-3 text-xs font-semibold text-[#D32F2F] hover:text-[#B71C1C] hover:bg-[#D32F2F]/10 px-2.5 py-1.5 rounded-lg border border-[#D32F2F]/30 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Önbelleği Boşalt
               </button>
@@ -555,14 +556,14 @@ export const OfflineMapModal: React.FC<OfflineMapModalProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="px-5 py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs shrink-0">
-            <span className="text-[11px] text-slate-500">
+          <div className="px-5 py-3 border-t border-[#DEE2E6] bg-[#F8F9FA] flex items-center justify-between text-xs shrink-0">
+            <span className="text-[11px] text-[#6C757D]">
               TCDD 712 Yol Bakım Şefliği Çevrimdışı Altyapısı
             </span>
             <button
               type="button"
               onClick={onClose}
-              className="bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 py-1.5 rounded-lg transition-colors cursor-pointer"
+              className="bg-[#D32F2F] hover:bg-[#B71C1C] text-white font-bold px-4 py-1.5 rounded-lg transition-colors cursor-pointer"
             >
               Tamam
             </button>

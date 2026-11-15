@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { RailwayPoint, RailwayPointCategory } from '../types.ts';
 import { CategoryColorConfig, DEFAULT_CATEGORY_COLORS, formatKmDisplay } from '../utils/categoryColors.ts';
 import { getTextStyleInline } from '../utils/textStyleHelper.ts';
@@ -9,13 +9,13 @@ import {
   Navigation,
   MessageSquare,
   Image,
-  ChevronRight,
   Trash2,
   Globe,
   X,
   CheckSquare,
   Square,
   Search,
+  Edit3,
 } from 'lucide-react';
 
 interface PointListSidebarProps {
@@ -27,6 +27,8 @@ interface PointListSidebarProps {
   categoryColors?: Record<RailwayPointCategory, CategoryColorConfig>;
   onDeletePoint?: (point: RailwayPoint) => void;
   onBulkDeletePoints?: (ids: string[]) => Promise<void>;
+  onOpenBulkEdit?: (selectedPoints: RailwayPoint[]) => void;
+  selectionResetKey?: number;
   searchQuery?: string;
   onSearchChange?: (val: string) => void;
 }
@@ -40,18 +42,34 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
   categoryColors = DEFAULT_CATEGORY_COLORS,
   onDeletePoint,
   onBulkDeletePoints,
+  onOpenBulkEdit,
+  selectionResetKey = 0,
   searchQuery = '',
   onSearchChange,
 }) => {
-  const { canDelete } = useAuth();
+  const { canEdit, canDelete } = useAuth();
+  const canSelectPoints = canEdit || canDelete;
   const sortedPoints = useMemo(() => sortPointsByKm(points), [points]);
 
-  // Selection & Bulk Delete State
+  // Selection & Bulk Actions State
   const [isSelectMode, setIsSelectMode] = useState<boolean>(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkDeleting, setIsBulkDeleting] = useState<boolean>(false);
   const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState<boolean>(false);
   const [singlePointToDelete, setSinglePointToDelete] = useState<RailwayPoint | null>(null);
+
+  // Reset selection when parent signals completion of a bulk edit
+  useEffect(() => {
+    if (selectionResetKey > 0) {
+      setSelectedIds(new Set());
+      setIsSelectMode(false);
+    }
+  }, [selectionResetKey]);
+
+  const selectedPointsList = useMemo(
+    () => sortedPoints.filter((p) => selectedIds.has(p.id)),
+    [sortedPoints, selectedIds]
+  );
 
   // Scroll Container Ref
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -134,8 +152,9 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5">
-            {canDelete && sortedPoints.length > 0 && (
+            {canSelectPoints && sortedPoints.length > 0 && (
               <button
+                id="sidebar-select-mode-btn"
                 type="button"
                 onClick={() => {
                   setIsSelectMode((prev) => !prev);
@@ -146,7 +165,7 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
                     ? 'bg-[#D32F2F] text-white border-[#D32F2F] shadow-xs'
                     : 'bg-[#F8F9FA] text-[#495057] border-[#DEE2E6] hover:text-[#212529] hover:bg-slate-100'
                 }`}
-                title="Toplu silme ve seçim modunu aç/kapat"
+                title="Toplu düzenleme ve silme için seçim modunu aç/kapat"
               >
                 {isSelectMode ? <CheckSquare className="w-3.5 h-3.5" /> : <Square className="w-3.5 h-3.5" />}
                 <span>{isSelectMode ? 'BİTİR' : 'SEÇ'}</span>
@@ -189,9 +208,9 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
       </div>
 
       {/* Bulk Action Bar (when in select mode) */}
-      {isSelectMode && canDelete && sortedPoints.length > 0 && (
-        <div className="bg-[#F8F9FA] border-b border-[#DEE2E6] px-4 py-2 flex items-center justify-between gap-2 flex-wrap text-xs shrink-0">
-          <div className="flex items-center gap-2">
+      {isSelectMode && canSelectPoints && sortedPoints.length > 0 && (
+        <div className="bg-[#F8F9FA] border-b border-[#DEE2E6] px-3 sm:px-4 py-2 flex flex-col gap-2 text-xs shrink-0">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
             <button
               type="button"
               onClick={handleSelectAll}
@@ -204,23 +223,45 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
               )}
               <span>TÜMÜNÜ SEÇ ({sortedPoints.length})</span>
             </button>
-            {selectedIds.size > 0 && (
+
+            {selectedIds.size > 0 ? (
               <span className="bg-[#D32F2F]/10 text-[#D32F2F] font-bold px-2 py-0.5 rounded-full text-[10px] font-roboto-mono">
-                {selectedIds.size} SEÇİLDİ
+                {selectedIds.size} KM SEÇİLDİ
+              </span>
+            ) : (
+              <span className="text-[10px] text-[#6C757D] font-medium">
+                Düzenlemek için KM seçin
               </span>
             )}
           </div>
 
-          {selectedIds.size > 0 && (
-            <button
-              type="button"
-              onClick={() => setIsBulkDeleteModalOpen(true)}
-              className="flex items-center gap-1 bg-[#D32F2F] hover:bg-[#B71C1C] text-white font-bold px-2.5 py-1 rounded-lg text-xs shadow-xs transition-colors cursor-pointer"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>SİL ({selectedIds.size})</span>
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {canEdit && onOpenBulkEdit && (
+              <button
+                id="sidebar-bulk-edit-btn"
+                type="button"
+                disabled={selectedPointsList.length === 0}
+                onClick={() => onOpenBulkEdit(selectedPointsList)}
+                className="flex-1 flex items-center justify-center gap-1.5 bg-[#212529] hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow-xs transition-colors cursor-pointer"
+              >
+                <Edit3 className="w-3.5 h-3.5 text-amber-400" />
+                <span>TOPLU DÜZENLE ({selectedPointsList.length})</span>
+              </button>
+            )}
+
+            {canDelete && (
+              <button
+                id="sidebar-bulk-delete-btn"
+                type="button"
+                disabled={selectedPointsList.length === 0}
+                onClick={() => setIsBulkDeleteModalOpen(true)}
+                className="flex items-center justify-center gap-1 bg-[#D32F2F] hover:bg-[#B71C1C] disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow-xs transition-colors cursor-pointer shrink-0"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>SİL ({selectedPointsList.length})</span>
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -276,7 +317,7 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
                 }`}
               >
                 {/* Checkbox if select mode is active */}
-                {isSelectMode && canDelete && (
+                {isSelectMode && canSelectPoints && (
                   <div
                     onClick={(e) => toggleSelectPoint(point.id, e)}
                     className="pr-1 cursor-pointer shrink-0"

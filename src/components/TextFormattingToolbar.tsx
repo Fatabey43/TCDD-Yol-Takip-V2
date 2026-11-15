@@ -93,16 +93,16 @@ export const TextFormattingToolbar: React.FC<TextFormattingToolbarProps> = ({
 
   return (
     <div
-      className={`bg-slate-50 border border-slate-200/90 rounded-xl p-2 flex flex-wrap items-center gap-2 text-slate-700 shadow-2xs ${className}`}
+      className={`bg-[#F8F9FA] border border-[#DEE2E6] rounded-xl p-2 flex flex-wrap items-center gap-2 text-[#212529] shadow-2xs ${className}`}
     >
       {/* 1. Font Family Selector */}
       <div className="flex items-center gap-1">
-        <Type className="w-3.5 h-3.5 text-slate-400 ml-0.5" />
+        <Type className="w-3.5 h-3.5 text-[#6C757D] ml-0.5" />
         <select
           id="text-font-family-select"
           value={currentStyle.fontFamily || 'sans'}
           onChange={(e) => handleFontFamily(e.target.value as FontFamilyType)}
-          className="text-xs bg-white border border-slate-200 rounded-lg px-2 py-1 font-medium focus:ring-1 focus:ring-sky-500 focus:outline-none cursor-pointer"
+          className="text-xs bg-white border border-[#DEE2E6] rounded-lg px-2 py-1 font-medium focus:border-[#D32F2F] focus:ring-1 focus:ring-[#D32F2F]/20 focus:outline-none cursor-pointer"
           title="Yazı Tipi / Font Seçin"
         >
           {FONT_FAMILY_OPTIONS.map((opt) => (
@@ -113,7 +113,7 @@ export const TextFormattingToolbar: React.FC<TextFormattingToolbarProps> = ({
         </select>
       </div>
 
-      <div className="h-4 w-px bg-slate-200" />
+      <div className="h-4 w-px bg-[#DEE2E6]" />
 
       {/* 2. Bold, Italic, Underline */}
       <div className="flex items-center gap-0.5">
@@ -123,8 +123,8 @@ export const TextFormattingToolbar: React.FC<TextFormattingToolbarProps> = ({
           onClick={handleToggleBold}
           className={`p-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
             currentStyle.fontWeight === 'bold'
-              ? 'bg-sky-600 text-white shadow-xs font-bold'
-              : 'hover:bg-slate-200 text-slate-700'
+              ? 'bg-[#D32F2F] text-white shadow-xs font-bold'
+              : 'hover:bg-[#DEE2E6]/60 text-[#212529]'
           }`}
           title="Kalın (Bold)"
         >
@@ -137,8 +137,8 @@ export const TextFormattingToolbar: React.FC<TextFormattingToolbarProps> = ({
           onClick={handleToggleItalic}
           className={`p-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
             currentStyle.fontStyle === 'italic'
-              ? 'bg-sky-600 text-white shadow-xs'
-              : 'hover:bg-slate-200 text-slate-700'
+              ? 'bg-[#D32F2F] text-white shadow-xs'
+              : 'hover:bg-[#DEE2E6]/60 text-[#212529]'
           }`}
           title="İtalik (Eğik)"
         >
@@ -151,8 +151,8 @@ export const TextFormattingToolbar: React.FC<TextFormattingToolbarProps> = ({
           onClick={handleToggleUnderline}
           className={`p-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
             currentStyle.textDecoration === 'underline'
-              ? 'bg-sky-600 text-white shadow-xs'
-              : 'hover:bg-slate-200 text-slate-700'
+              ? 'bg-[#D32F2F] text-white shadow-xs'
+              : 'hover:bg-[#DEE2E6]/60 text-[#212529]'
           }`}
           title="Altı Çizili"
         >
@@ -160,11 +160,11 @@ export const TextFormattingToolbar: React.FC<TextFormattingToolbarProps> = ({
         </button>
       </div>
 
-      <div className="h-4 w-px bg-slate-200" />
+      <div className="h-4 w-px bg-[#DEE2E6]" />
 
       {/* 3. Text Color Selector & Swatches */}
       <div className="flex items-center gap-1.5">
-        <Palette className="w-3.5 h-3.5 text-slate-400" />
+        <Palette className="w-3.5 h-3.5 text-[#6C757D]" />
         <div className="flex items-center gap-1">
           {TEXT_COLOR_SWATCHES.map((swatch) => {
             const isSelected = currentStyle.color?.toLowerCase() === swatch.hex.toLowerCase();
@@ -175,8 +175,8 @@ export const TextFormattingToolbar: React.FC<TextFormattingToolbarProps> = ({
                 onClick={() => handleColor(swatch.hex)}
                 className={`w-4 h-4 rounded-full transition-transform border cursor-pointer ${
                   isSelected
-                    ? 'scale-125 ring-2 ring-sky-500 ring-offset-1 border-white shadow-xs'
-                    : 'border-slate-300 hover:scale-110'
+                    ? 'scale-125 ring-2 ring-[#D32F2F] ring-offset-1 border-white shadow-xs'
+                    : 'border-[#DEE2E6] hover:scale-110'
                 }`}
                 style={{ backgroundColor: swatch.hex }}
                 title={swatch.name}
@@ -186,7 +186,7 @@ export const TextFormattingToolbar: React.FC<TextFormattingToolbarProps> = ({
 
           {/* HTML Color Picker */}
           <label
-            className="w-4 h-4 rounded-full overflow-hidden cursor-pointer border border-slate-300 relative ml-0.5"
+            className="w-4 h-4 rounded-full overflow-hidden cursor-pointer border border-[#DEE2E6] relative ml-0.5"
             title="Özel Yazı Rengi Seç"
           >
             <input
@@ -206,15 +206,15 @@ export const TextFormattingToolbar: React.FC<TextFormattingToolbarProps> = ({
       {/* 4. Satır Şekli & Hizalama */}
       {showAlignment && (
         <>
-          <div className="h-4 w-px bg-slate-200" />
+          <div className="h-4 w-px bg-[#DEE2E6]" />
           <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={() => handleTextAlign('left')}
               className={`p-1 rounded text-xs transition-colors cursor-pointer ${
                 currentStyle.textAlign === 'left' || !currentStyle.textAlign
-                  ? 'bg-slate-200 text-sky-700 font-bold'
-                  : 'hover:bg-slate-200 text-slate-600'
+                  ? 'bg-[#D32F2F]/10 text-[#D32F2F] font-bold'
+                  : 'hover:bg-[#DEE2E6]/60 text-[#6C757D]'
               }`}
               title="Sola Hizala"
             >
@@ -226,8 +226,8 @@ export const TextFormattingToolbar: React.FC<TextFormattingToolbarProps> = ({
               onClick={() => handleTextAlign('center')}
               className={`p-1 rounded text-xs transition-colors cursor-pointer ${
                 currentStyle.textAlign === 'center'
-                  ? 'bg-slate-200 text-sky-700 font-bold'
-                  : 'hover:bg-slate-200 text-slate-600'
+                  ? 'bg-[#D32F2F]/10 text-[#D32F2F] font-bold'
+                  : 'hover:bg-[#DEE2E6]/60 text-[#6C757D]'
               }`}
               title="Ortala"
             >
@@ -239,8 +239,8 @@ export const TextFormattingToolbar: React.FC<TextFormattingToolbarProps> = ({
               onClick={() => handleTextAlign('right')}
               className={`p-1 rounded text-xs transition-colors cursor-pointer ${
                 currentStyle.textAlign === 'right'
-                  ? 'bg-slate-200 text-sky-700 font-bold'
-                  : 'hover:bg-slate-200 text-slate-600'
+                  ? 'bg-[#D32F2F]/10 text-[#D32F2F] font-bold'
+                  : 'hover:bg-[#DEE2E6]/60 text-[#6C757D]'
               }`}
               title="Sağa Hizala"
             >
@@ -256,7 +256,7 @@ export const TextFormattingToolbar: React.FC<TextFormattingToolbarProps> = ({
           id="text-line-spacing-select"
           value={currentStyle.lineHeight || 'normal'}
           onChange={(e) => handleLineHeight(e.target.value as LineHeightType)}
-          className="text-[11px] bg-white border border-slate-200 rounded px-1.5 py-1 text-slate-700 focus:ring-1 focus:ring-sky-500 focus:outline-none cursor-pointer"
+          className="text-[11px] bg-white border border-[#DEE2E6] rounded px-1.5 py-1 text-[#212529] focus:border-[#D32F2F] focus:ring-1 focus:ring-[#D32F2F]/20 focus:outline-none cursor-pointer"
           title="Satır Şekli / Satır Aralığı"
         >
           <option value="tight">Sıkışık Satır</option>

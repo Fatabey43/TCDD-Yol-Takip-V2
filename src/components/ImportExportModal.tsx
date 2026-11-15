@@ -56,7 +56,7 @@ const CATEGORY_DEFINITIONS: {
     shortLabel: 'Otomatik',
     icon: '🤖',
     badgeClass: 'bg-slate-100 text-slate-700 border-slate-200',
-    btnActiveClass: 'bg-slate-800 text-white border-slate-900 shadow-xs',
+    btnActiveClass: 'bg-[#D32F2F] text-white border-[#B71C1C] shadow-xs',
   },
   {
     value: 'culvert',
@@ -222,7 +222,7 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({
     if (detected.length === 0) {
       setStatusMessage({
         type: 'error',
-        text: 'Dosya içeriğinde geçerli nokta veya kadastro parseli tespit edilemedi. Lütfen geçerli bir KML, Excel veya CBS dosyası yükleyin.',
+        text: 'Dosya içeriğinde geçerli demiryolu noktası tespit edilemedi. Lütfen geçerli bir KML, Excel veya CBS dosyası yükleyin.',
       });
       setParsedPreview([]);
     } else {
@@ -416,49 +416,52 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({
   return (
     <div
       id="import-export-modal"
-      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto font-poppins"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden my-6"
+        className="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-[#DEE2E6] overflow-hidden my-6 text-[#212529]"
         onClick={(e) => e.stopPropagation()}
       >
+        <div className="gov-bar w-full h-[5px] shrink-0" />
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 bg-slate-900 text-white">
-          <div className="flex items-center gap-2">
-            <Upload className="w-5 h-5 text-sky-400" />
+        <div className="flex items-center justify-between px-6 py-4 bg-white text-[#212529] border-b border-[#DEE2E6]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[#D32F2F]/10 border border-[#D32F2F]/20 flex items-center justify-center text-[#D32F2F]">
+              <Upload className="w-4 h-4" />
+            </div>
             <h3 className="font-bold text-base">KML / Excel / CBS Veri Yönetimi</h3>
           </div>
           <button
             id="close-import-export-btn"
             onClick={onClose}
-            className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+            className="p-1.5 text-[#6C757D] hover:text-[#D32F2F] rounded-lg hover:bg-[#F8F9FA] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tab Selection */}
-        <div className="flex border-b border-slate-200">
+        <div className="flex border-b border-[#DEE2E6] bg-[#F8F9FA]">
           <button
             id="tab-import-btn"
             onClick={() => setActiveTab('import')}
             className={`flex-1 py-3 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'import'
-                ? 'border-b-2 border-sky-600 text-sky-700 bg-sky-50/50'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'border-b-2 border-[#D32F2F] text-[#D32F2F] bg-white'
+                : 'text-[#6C757D] hover:text-[#212529]'
             }`}
           >
             <Upload className="w-3.5 h-3.5" />
-            <span>KML / Excel / Kadastro İçe Aktar</span>
+            <span>KML / Excel İçe Aktar</span>
           </button>
           <button
             id="tab-export-btn"
             onClick={() => setActiveTab('export')}
             className={`flex-1 py-3 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'export'
-                ? 'border-b-2 border-sky-600 text-sky-700 bg-sky-50/50'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'border-b-2 border-[#D32F2F] text-[#D32F2F] bg-white'
+                : 'text-[#6C757D] hover:text-[#212529]'
             }`}
           >
             <Download className="w-3.5 h-3.5" />
@@ -471,14 +474,14 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({
           {activeTab === 'import' ? (
             <div className="space-y-4">
               {/* Category Selector Banner & Quick Buttons */}
-              <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-3.5 space-y-2.5">
+              <div className="bg-[#F8F9FA] border border-[#DEE2E6] rounded-2xl p-3.5 space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <Layers className="w-4 h-4 text-sky-600" />
+                  <label className="text-xs font-bold text-[#212529] flex items-center gap-1.5">
+                    <Layers className="w-4 h-4 text-[#D32F2F]" />
                     <span>İçe Aktarılacak Kategori:</span>
                   </label>
-                  <span className="text-[11px] text-slate-500">
-                    Menfez, Kadastro veya Makas seçebilirsiniz
+                  <span className="text-[11px] text-[#6C757D]">
+                    Menfez, Geçit veya Makas seçebilirsiniz
                   </span>
                 </div>
 
@@ -494,7 +497,7 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({
                         className={`flex items-center justify-center gap-1 px-2 py-1.5 rounded-xl text-[11px] font-semibold transition-all border cursor-pointer ${
                           isSelected
                             ? cat.btnActiveClass
-                            : 'bg-white text-slate-700 border-slate-200 hover:border-sky-300 hover:bg-sky-50/50'
+                            : 'bg-white text-[#212529] border-[#DEE2E6] hover:border-[#D32F2F]/40 hover:bg-[#D32F2F]/5'
                         }`}
                       >
                         <span>{cat.icon}</span>
@@ -505,9 +508,9 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({
                 </div>
 
                 {/* Target Line name */}
-                <div className="pt-2 border-t border-slate-200/70">
+                <div className="pt-2 border-t border-[#DEE2E6]">
                   <div className="flex items-center gap-2">
-                    <label className="text-[11px] font-bold text-slate-700 whitespace-nowrap">
+                    <label className="text-[11px] font-bold text-[#212529] whitespace-nowrap">
                       Hat / Mıntıka:
                     </label>
                     <input
@@ -516,7 +519,7 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({
                       value={targetLine}
                       onChange={(e) => setTargetLine(e.target.value)}
                       placeholder="Örn: Enveriye - Konya Hattı"
-                      className="flex-1 px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                      className="flex-1 px-2.5 py-1.5 border border-[#DEE2E6] rounded-lg text-xs bg-white focus:border-[#D32F2F] focus:ring-2 focus:ring-[#D32F2F]/15 focus:outline-none"
                     />
                   </div>
                 </div>
@@ -524,7 +527,7 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({
 
               {/* File Dropzone */}
               <div
-                className="border-2 border-dashed border-slate-300 hover:border-sky-500 rounded-2xl p-5 text-center cursor-pointer transition-colors bg-white hover:bg-sky-50/30"
+                className="border-2 border-dashed border-[#DEE2E6] hover:border-[#D32F2F] rounded-2xl p-5 text-center cursor-pointer transition-colors bg-white hover:bg-[#D32F2F]/[0.03]"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <input
@@ -537,7 +540,7 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({
                   id="file-import-input"
                 />
                 <div className="flex items-center justify-center gap-2 mb-1.5">
-                  <Upload className="w-6 h-6 text-sky-600" />
+                  <Upload className="w-6 h-6 text-[#D32F2F]" />
                   <span className="text-xl">
                     {importCategory === 'culvert'
                       ? '🕳️'
@@ -550,10 +553,10 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({
                       : '🗺️'}
                   </span>
                 </div>
-                <p className="text-xs font-bold text-slate-800">
+                <p className="text-xs font-bold text-[#212529]">
                   KML, Excel (.xlsx), GeoJSON veya CSV dosyalarını seçin ya da sürükleyin (Çoklu Dosya / Ctrl+A)
                 </p>
-                <p className="text-[11px] text-slate-500 mt-0.5">
+                <p className="text-[11px] text-[#6C757D] mt-0.5">
                   {importCategory === 'auto'
                     ? 'Nokta türleri dosyadaki isimlerden (Makas, Menfez vb.) otomatik tespit edilir'
                     : `Yüklenen tüm noktalar "${CATEGORY_DEFINITIONS.find((c) => c.value === importCategory)?.label}" olarak aktarılacaktır.`}
@@ -561,8 +564,8 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({
               </div>
 
               {/* Paste Raw Text Details */}
-              <details className="text-xs text-slate-600">
-                <summary className="cursor-pointer font-semibold hover:text-slate-900 py-1">
+              <details className="text-xs text-[#6C757D]">
+                <summary className="cursor-pointer font-semibold hover:text-[#212529] py-1">
                   veya KML / GeoJSON / CSV metnini buraya yapıştırın
                 </summary>
                 <div className="mt-2 space-y-2">
@@ -572,13 +575,13 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({
                     placeholder="<kml>...</kml> veya lat,lng,name..."
                     value={rawText}
                     onChange={(e) => setRawText(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl font-mono text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                    className="w-full px-3 py-2 border border-[#DEE2E6] bg-[#F8F9FA] rounded-xl font-roboto-mono text-xs focus:bg-white focus:border-[#D32F2F] focus:ring-2 focus:ring-[#D32F2F]/15 focus:outline-none"
                   />
                   <button
                     id="parse-raw-text-btn"
                     type="button"
                     onClick={handleParseRawText}
-                    className="bg-slate-800 hover:bg-slate-900 text-white text-xs px-3 py-1.5 rounded-lg font-medium cursor-pointer"
+                    className="bg-[#D32F2F] hover:bg-[#B71C1C] text-white text-xs px-3.5 py-1.5 rounded-lg font-bold cursor-pointer transition-colors"
                   >
                     Metni Çözümle
                   </button>
@@ -624,7 +627,7 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({
                           const val = e.target.value as RailwayPointCategory;
                           if (val) handleBulkChangeAllPreview(val);
                         }}
-                        className="text-[11px] font-semibold bg-slate-100 border border-slate-300 rounded-lg px-2 py-1 focus:ring-1 focus:ring-sky-500"
+                        className="text-[11px] font-semibold bg-[#F8F9FA] border border-[#DEE2E6] rounded-lg px-2 py-1 focus:border-[#D32F2F] focus:ring-1 focus:ring-[#D32F2F]/20 focus:outline-none"
                         defaultValue=""
                       >
                         <option value="" disabled>
@@ -643,13 +646,13 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({
                   </div>
 
                   {!excelMergeStats && (
-                    <label className="flex items-center gap-1.5 cursor-pointer text-slate-600 text-xs select-none">
+                    <label className="flex items-center gap-1.5 cursor-pointer text-[#6C757D] text-xs select-none">
                       <input
                         id="replace-all-checkbox"
                         type="checkbox"
                         checked={replaceAll}
                         onChange={(e) => setReplaceAll(e.target.checked)}
-                        className="rounded text-sky-600"
+                        className="rounded accent-[#D32F2F] text-[#D32F2F]"
                       />
                       <span>Mevcut kayıtları sil, sıfırdan yükle</span>
                     </label>
@@ -712,7 +715,7 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({
                     id="apply-import-btn"
                     onClick={handleApplyImport}
                     disabled={isProcessing}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full bg-[#D32F2F] hover:bg-[#B71C1C] text-white font-bold py-2.5 rounded-xl text-xs shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Upload className="w-4 h-4" />
                     <span>

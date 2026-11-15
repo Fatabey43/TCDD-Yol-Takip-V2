@@ -71,17 +71,18 @@ export const MobileInstallModal: React.FC<MobileInstallModalProps> = ({
   return (
     <div
       id="mobile-install-modal"
-      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto font-poppins"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden my-6 flex flex-col"
+        className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-[#DEE2E6] overflow-hidden my-6 flex flex-col text-[#212529]"
         onClick={(e) => e.stopPropagation()}
       >
+        <div className="gov-bar w-full h-[5px] shrink-0" />
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 bg-slate-900 text-white">
+        <div className="flex items-center justify-between px-6 py-4 bg-white text-[#212529] border-b border-[#DEE2E6]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-300 flex items-center justify-center bg-white shrink-0 shadow-xs">
+            <div className="w-9 h-9 rounded-full overflow-hidden border border-[#DEE2E6] flex items-center justify-center bg-white shrink-0 shadow-xs">
               <img
                 src="/tcdd_logo_badge.svg"
                 alt="TCDD Takip 712 Kısım Şefliği Logo"
@@ -89,32 +90,32 @@ export const MobileInstallModal: React.FC<MobileInstallModalProps> = ({
               />
             </div>
             <div>
-              <h3 className="font-bold text-sm">TCDD KM TAKİP Yükleme Rehberi</h3>
-              <p className="text-[11px] text-red-300">712 Şefliği • Mobil ve Masaüstü Kurulum</p>
+              <h3 className="font-bold text-sm text-[#212529]">TCDD KM TAKİP Yükleme Rehberi</h3>
+              <p className="text-[11px] font-semibold text-[#D32F2F]">712 Şefliği • Mobil ve Masaüstü Kurulum</p>
             </div>
           </div>
           <button
             id="close-mobile-install-modal-btn"
             onClick={onClose}
-            className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+            className="p-1.5 text-[#6C757D] hover:text-[#D32F2F] rounded-lg hover:bg-[#F8F9FA] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Content */}
-        <div className="p-5 space-y-4 max-h-[80vh] overflow-y-auto text-slate-800">
+        <div className="p-5 space-y-4 max-h-[80vh] overflow-y-auto prominent-scrollbar min-h-0 touch-pan-y overscroll-contain text-[#212529]">
           {/* Native Install Button (if browser supports beforeinstallprompt) */}
           {deferredPrompt && (
-            <div className="bg-sky-50 border border-sky-200 rounded-xl p-3 flex items-center justify-between gap-3">
+            <div className="bg-[#D32F2F]/5 border border-[#D32F2F]/20 rounded-xl p-3 flex items-center justify-between gap-3">
               <div>
-                <div className="text-xs font-bold text-sky-900">Uygulama Yüklemeye Hazır</div>
-                <div className="text-[11px] text-sky-700">Tek tıkla ana ekranınıza ekleyin.</div>
+                <div className="text-xs font-bold text-[#212529]">Uygulama Yüklemeye Hazır</div>
+                <div className="text-[11px] text-[#6C757D]">Tek tıkla ana ekranınıza ekleyin.</div>
               </div>
               <button
                 id="native-pwa-install-btn"
                 onClick={onTriggerInstall}
-                className="bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg shadow-sm transition-colors flex items-center gap-1.5 whitespace-nowrap"
+                className="bg-[#D32F2F] hover:bg-[#B71C1C] text-white text-xs font-bold px-3.5 py-2 rounded-lg shadow-sm transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Şimdi Yükle</span>
@@ -123,11 +124,11 @@ export const MobileInstallModal: React.FC<MobileInstallModalProps> = ({
           )}
 
           {/* QR Code Section (Scan with phone camera) */}
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center">
-            <span className="inline-block text-[11px] font-bold text-sky-700 uppercase tracking-wider bg-sky-100 px-2.5 py-0.5 rounded-full mb-2">
+          <div className="bg-[#F8F9FA] border border-[#DEE2E6] rounded-2xl p-4 text-center">
+            <span className="inline-block text-[11px] font-bold text-[#D32F2F] uppercase tracking-wider bg-[#D32F2F]/10 border border-[#D32F2F]/20 px-2.5 py-0.5 rounded-full mb-2">
               1. Yöntem: Kameranızla QR Kodu Okutun
             </span>
-            <p className="text-xs text-slate-600 mb-3">
+            <p className="text-xs text-[#6C757D] mb-3">
               Telefonunuzun kamerasını aşağıdaki QR koda tutarak uygulamayı doğrudan telefonunuzda açabilirsiniz:
             </p>
 
@@ -178,14 +179,14 @@ export const MobileInstallModal: React.FC<MobileInstallModalProps> = ({
             </div>
 
             {/* URL Selector Tabs */}
-            <div className="mt-3 bg-slate-100 p-1.5 rounded-xl flex items-center gap-1 text-[11px]">
+            <div className="mt-3 bg-[#DEE2E6]/50 p-1.5 rounded-xl flex items-center gap-1 text-[11px]">
               <button
                 type="button"
                 onClick={() => setSelectedUrlType('shared')}
-                className={`flex-1 py-1.5 px-2 rounded-lg font-medium transition-all ${
+                className={`flex-1 py-1.5 px-2 rounded-lg font-medium transition-all cursor-pointer ${
                   selectedUrlType === 'shared'
-                    ? 'bg-white shadow-xs text-sky-700 font-bold'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white shadow-xs text-[#D32F2F] font-bold'
+                    : 'text-[#6C757D] hover:text-[#212529]'
                 }`}
               >
                 Genel Paylaşım Linki (Önerilen)
@@ -193,10 +194,10 @@ export const MobileInstallModal: React.FC<MobileInstallModalProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedUrlType('current')}
-                className={`flex-1 py-1.5 px-2 rounded-lg font-medium transition-all ${
+                className={`flex-1 py-1.5 px-2 rounded-lg font-medium transition-all cursor-pointer ${
                   selectedUrlType === 'current'
-                    ? 'bg-white shadow-xs text-sky-700 font-bold'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white shadow-xs text-[#D32F2F] font-bold'
+                    : 'text-[#6C757D] hover:text-[#212529]'
                 }`}
               >
                 Mevcut Çalışma Bağlantısı
@@ -250,14 +251,14 @@ export const MobileInstallModal: React.FC<MobileInstallModalProps> = ({
               2. Yöntem: Telefonda Ana Ekrana Ekleme (Kurulum)
             </div>
 
-            <div className="flex border-b border-slate-200 mb-3">
+            <div className="flex border-b border-[#DEE2E6] mb-3">
               <button
                 id="install-tab-android-btn"
                 onClick={() => setActiveDeviceTab('android')}
-                className={`flex-1 py-2 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 ${
+                className={`flex-1 py-2 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
                   activeDeviceTab === 'android'
-                    ? 'border-b-2 border-sky-600 text-sky-700 bg-sky-50/50'
-                    : 'text-slate-500 hover:text-slate-800'
+                    ? 'border-b-2 border-[#D32F2F] text-[#D32F2F] bg-[#D32F2F]/5'
+                    : 'text-[#6C757D] hover:text-[#212529]'
                 }`}
               >
                 <Smartphone className="w-3.5 h-3.5" />
@@ -266,10 +267,10 @@ export const MobileInstallModal: React.FC<MobileInstallModalProps> = ({
               <button
                 id="install-tab-iphone-btn"
                 onClick={() => setActiveDeviceTab('iphone')}
-                className={`flex-1 py-2 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 ${
+                className={`flex-1 py-2 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
                   activeDeviceTab === 'iphone'
-                    ? 'border-b-2 border-sky-600 text-sky-700 bg-sky-50/50'
-                    : 'text-slate-500 hover:text-slate-800'
+                    ? 'border-b-2 border-[#D32F2F] text-[#D32F2F] bg-[#D32F2F]/5'
+                    : 'text-[#6C757D] hover:text-[#212529]'
                 }`}
               >
                 <Apple className="w-3.5 h-3.5" />
@@ -278,10 +279,10 @@ export const MobileInstallModal: React.FC<MobileInstallModalProps> = ({
               <button
                 id="install-tab-desktop-btn"
                 onClick={() => setActiveDeviceTab('desktop')}
-                className={`flex-1 py-2 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 ${
+                className={`flex-1 py-2 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
                   activeDeviceTab === 'desktop'
-                    ? 'border-b-2 border-sky-600 text-sky-700 bg-sky-50/50'
-                    : 'text-slate-500 hover:text-slate-800'
+                    ? 'border-b-2 border-[#D32F2F] text-[#D32F2F] bg-[#D32F2F]/5'
+                    : 'text-[#6C757D] hover:text-[#212529]'
                 }`}
               >
                 <Monitor className="w-3.5 h-3.5" />
@@ -291,9 +292,9 @@ export const MobileInstallModal: React.FC<MobileInstallModalProps> = ({
 
             {/* Android Instructions */}
             {activeDeviceTab === 'android' && (
-              <div className="space-y-2.5 text-xs text-slate-700 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+              <div className="space-y-2.5 text-xs text-[#212529] bg-[#F8F9FA] p-3.5 rounded-xl border border-[#DEE2E6]">
                 <div className="flex items-start gap-2.5">
-                  <span className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5">
+                  <span className="w-5 h-5 rounded-full bg-[#D32F2F] text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5">
                     1
                   </span>
                   <span>
@@ -301,7 +302,7 @@ export const MobileInstallModal: React.FC<MobileInstallModalProps> = ({
                   </span>
                 </div>
                 <div className="flex items-start gap-2.5">
-                  <span className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5">
+                  <span className="w-5 h-5 rounded-full bg-[#D32F2F] text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5">
                     2
                   </span>
                   <span>
@@ -309,7 +310,7 @@ export const MobileInstallModal: React.FC<MobileInstallModalProps> = ({
                   </span>
                 </div>
                 <div className="flex items-start gap-2.5">
-                  <span className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5">
+                  <span className="w-5 h-5 rounded-full bg-[#D32F2F] text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5">
                     3
                   </span>
                   <span>
@@ -329,9 +330,9 @@ export const MobileInstallModal: React.FC<MobileInstallModalProps> = ({
 
             {/* iPhone Instructions */}
             {activeDeviceTab === 'iphone' && (
-              <div className="space-y-2.5 text-xs text-slate-700 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+              <div className="space-y-2.5 text-xs text-[#212529] bg-[#F8F9FA] p-3.5 rounded-xl border border-[#DEE2E6]">
                 <div className="flex items-start gap-2.5">
-                  <span className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5">
+                  <span className="w-5 h-5 rounded-full bg-[#D32F2F] text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5">
                     1
                   </span>
                   <span>
@@ -339,15 +340,15 @@ export const MobileInstallModal: React.FC<MobileInstallModalProps> = ({
                   </span>
                 </div>
                 <div className="flex items-start gap-2.5">
-                  <span className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5">
+                  <span className="w-5 h-5 rounded-full bg-[#D32F2F] text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5">
                     2
                   </span>
                   <span>
-                    Ekranın en altındaki <strong>Paylaş</strong> simgesine (kare içinden yukarı ok çıkan buton <Share2 className="w-3.5 h-3.5 inline text-sky-600" />) dokunun.
+                    Ekranın en altındaki <strong>Paylaş</strong> simgesine (kare içinden yukarı ok çıkan buton <Share2 className="w-3.5 h-3.5 inline text-[#D32F2F]" />) dokunun.
                   </span>
                 </div>
                 <div className="flex items-start gap-2.5">
-                  <span className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5">
+                  <span className="w-5 h-5 rounded-full bg-[#D32F2F] text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5">
                     3
                   </span>
                   <span>
@@ -379,9 +380,9 @@ export const MobileInstallModal: React.FC<MobileInstallModalProps> = ({
 
             {/* Desktop PC Instructions */}
             {activeDeviceTab === 'desktop' && (
-              <div className="space-y-2.5 text-xs text-slate-700 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+              <div className="space-y-2.5 text-xs text-[#212529] bg-[#F8F9FA] p-3.5 rounded-xl border border-[#DEE2E6]">
                 <div className="flex items-start gap-2.5">
-                  <span className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5">
+                  <span className="w-5 h-5 rounded-full bg-[#D32F2F] text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5">
                     1
                   </span>
                   <span>
@@ -389,7 +390,7 @@ export const MobileInstallModal: React.FC<MobileInstallModalProps> = ({
                   </span>
                 </div>
                 <div className="flex items-start gap-2.5">
-                  <span className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5">
+                  <span className="w-5 h-5 rounded-full bg-[#D32F2F] text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5">
                     2
                   </span>
                   <span>
@@ -397,7 +398,7 @@ export const MobileInstallModal: React.FC<MobileInstallModalProps> = ({
                   </span>
                 </div>
                 <div className="flex items-start gap-2.5">
-                  <span className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5">
+                  <span className="w-5 h-5 rounded-full bg-[#D32F2F] text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5">
                     3
                   </span>
                   <span>
@@ -426,11 +427,11 @@ export const MobileInstallModal: React.FC<MobileInstallModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end">
+        <div className="p-4 bg-[#F8F9FA] border-t border-[#DEE2E6] flex justify-end">
           <button
             id="modal-got-it-btn"
             onClick={onClose}
-            className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-5 py-2 rounded-xl transition-colors"
+            className="bg-[#D32F2F] hover:bg-[#B71C1C] text-white text-xs font-semibold px-5 py-2 rounded-xl transition-colors cursor-pointer"
           >
             Anladım, Kapat
           </button>

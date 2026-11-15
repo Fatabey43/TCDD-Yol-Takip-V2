@@ -116,7 +116,7 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
     return (
       <div
         id="live-km-indicator-minimized"
-        className="absolute bottom-16 sm:bottom-4 left-2 sm:left-4 z-20 bg-slate-900/90 text-white backdrop-blur-md border border-slate-700/80 rounded-2xl shadow-xl px-2.5 py-1.5 sm:px-3.5 sm:py-2 flex items-center gap-2 sm:gap-2.5 animate-in fade-in select-none text-xs"
+        className="absolute bottom-16 sm:bottom-4 left-2 sm:left-4 z-20 bg-white/95 text-[#212529] backdrop-blur-md border border-[#DEE2E6] rounded-2xl shadow-xl px-2.5 py-1.5 sm:px-3.5 sm:py-2 flex items-center gap-2 sm:gap-2.5 animate-in fade-in select-none text-xs font-poppins"
       >
         <span
           className="relative flex h-2.5 w-2.5"
@@ -127,17 +127,17 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
         </span>
         <button
           onClick={() => setIsMinimized(false)}
-          className="flex items-center gap-1.5 text-xs font-bold font-mono tracking-tight cursor-pointer hover:text-sky-300 transition-colors"
+          className="flex items-center gap-1.5 text-xs font-bold font-roboto-mono tracking-tight cursor-pointer hover:text-[#D32F2F] transition-colors"
           title="Detayları Göster"
         >
           <span>{nearestKm ? `KM ${nearestKm.chainageKm}` : 'Konum Aranıyor...'}</span>
-          <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
+          <ChevronUp className="w-3.5 h-3.5 text-[#6C757D]" />
         </button>
 
         {gpsLocation && (
           <span
             title={`GPS Hassasiyeti: ±${gpsQuality.accuracyMeters}m (${gpsQuality.text})`}
-            className={`text-[9px] font-bold font-mono px-1.5 py-0.5 rounded border flex items-center gap-1 ${gpsQuality.badgeBg} ${gpsQuality.badgeText} ${gpsQuality.badgeBorder}`}
+            className={`text-[9px] font-bold font-roboto-mono px-1.5 py-0.5 rounded border flex items-center gap-1 ${gpsQuality.badgeBg} ${gpsQuality.badgeText} ${gpsQuality.badgeBorder}`}
           >
             <span className={`w-1.5 h-1.5 rounded-full ${gpsQuality.dotColor}`}></span>
             <span>±{gpsQuality.accuracyMeters}m</span>
@@ -146,7 +146,7 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
 
         <button
           onClick={onPanToMyLocation}
-          className="p-1 hover:bg-slate-800 rounded-lg text-slate-300 hover:text-white transition-colors cursor-pointer"
+          className="p-1 hover:bg-[#F8F9FA] rounded-lg text-[#6C757D] hover:text-[#D32F2F] transition-colors cursor-pointer"
           title="Haritada Bu Konuma Odaklan"
         >
           <MapPin className="w-3.5 h-3.5" />
@@ -154,7 +154,7 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
         {onClose && (
           <button
             onClick={onClose}
-            className="p-1 text-slate-400 hover:text-rose-400 rounded-lg transition-colors cursor-pointer"
+            className="p-1 text-[#6C757D] hover:text-[#D32F2F] rounded-lg transition-colors cursor-pointer"
             title="Canlı Konumu Kapat"
           >
             <X className="w-3.5 h-3.5" />
@@ -167,10 +167,10 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
   return (
     <div
       id="live-km-indicator"
-      className="absolute bottom-16 sm:bottom-4 left-2 sm:left-4 z-20 bg-white/95 backdrop-blur-sm border border-slate-200 rounded-2xl shadow-xl p-2.5 sm:p-3.5 text-slate-800 w-[290px] sm:w-[310px] max-w-[calc(100vw-1rem)] animate-in fade-in slide-in-from-bottom-2 duration-150"
+      className="absolute bottom-16 sm:bottom-4 left-2 sm:left-4 z-20 bg-white/95 backdrop-blur-sm border border-[#DEE2E6] rounded-2xl shadow-xl p-2.5 sm:p-3.5 text-[#212529] w-[290px] sm:w-[310px] max-w-[calc(100vw-1rem)] animate-in fade-in slide-in-from-bottom-2 duration-150 font-poppins"
     >
       {/* Top Header Row */}
-      <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
+      <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-[#DEE2E6]">
         <div className="flex items-center gap-2">
           <span className="relative flex h-2.5 w-2.5">
             <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${gpsQuality.pingColor} opacity-75`}></span>
@@ -178,7 +178,7 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
           </span>
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-black uppercase tracking-wider text-sky-800 flex items-center gap-1">
+              <span className="text-[10px] font-black uppercase tracking-wider text-[#D32F2F] flex items-center gap-1">
                 <Radio className={`w-3 h-3 ${gpsQuality.badgeText} animate-pulse`} />
                 <span>{isManualPointMode ? 'Referans Noktası' : 'Canlı GPS Konumu'}</span>
               </span>
@@ -193,7 +193,7 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
               )}
             </div>
             {nearestKm?.lineName && (
-              <span className="text-[10px] text-slate-500 font-semibold truncate max-w-[140px]">
+              <span className="text-[10px] text-[#6C757D] font-semibold truncate max-w-[140px]">
                 {nearestKm.lineName}
               </span>
             )}
@@ -204,26 +204,26 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
           {onOpenSelectPoint && (
             <button
               onClick={onOpenSelectPoint}
-              className="px-1.5 py-1 text-slate-700 hover:text-sky-700 hover:bg-slate-100 rounded-lg transition-colors flex items-center gap-1 text-[10px] font-bold bg-slate-50 border border-slate-200 cursor-pointer shadow-2xs"
+              className="px-1.5 py-1 text-[#212529] hover:text-[#D32F2F] hover:bg-[#F8F9FA] rounded-lg transition-colors flex items-center gap-1 text-[10px] font-bold bg-[#F8F9FA] border border-[#DEE2E6] cursor-pointer shadow-2xs"
               title="Başka Noktayı Canlı Referans Seç"
             >
-              <ListFilter className="w-3 h-3 text-sky-600" />
+              <ListFilter className="w-3 h-3 text-[#D32F2F]" />
               <span>Nokta Seç</span>
             </button>
           )}
 
           <button
             onClick={onPanToMyLocation}
-            className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 text-[#6C757D] hover:text-[#D32F2F] hover:bg-[#F8F9FA] rounded-lg transition-colors cursor-pointer"
             title="Haritada Bu Konuma Odaklan"
           >
-            <MapPin className="w-3.5 h-3.5 text-sky-600" />
+            <MapPin className="w-3.5 h-3.5 text-[#D32F2F]" />
           </button>
 
           <button
             onClick={onRefreshGps}
-            className={`p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer ${
-              isLocating ? 'animate-spin text-sky-600' : ''
+            className={`p-1.5 text-[#6C757D] hover:text-[#212529] hover:bg-[#F8F9FA] rounded-lg transition-colors cursor-pointer ${
+              isLocating ? 'animate-spin text-[#D32F2F]' : ''
             }`}
             title="GPS Konumunu Şimdi Yenile"
           >
@@ -232,7 +232,7 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
 
           <button
             onClick={() => setIsMinimized(true)}
-            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 text-[#6C757D] hover:text-[#212529] hover:bg-[#F8F9FA] rounded-lg transition-colors cursor-pointer"
             title="Küçült"
           >
             <ChevronDown className="w-3.5 h-3.5" />
@@ -241,7 +241,7 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
           {onClose && (
             <button
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+              className="p-1.5 text-[#6C757D] hover:text-[#D32F2F] hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
               title="Canlı Konumu Kapat"
             >
               <X className="w-3.5 h-3.5" />
@@ -255,25 +255,25 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
         {nearestKm ? (
           <div>
             {/* Chainage KM Display */}
-            <div className="flex items-baseline justify-between gap-2 bg-sky-50/70 border border-sky-100 rounded-xl px-3 py-2">
-              <span className="text-[11px] text-sky-900 font-bold">
+            <div className="flex items-baseline justify-between gap-2 bg-[#D32F2F]/5 border border-[#D32F2F]/20 rounded-xl px-3 py-2">
+              <span className="text-[11px] text-[#212529] font-bold">
                 {isManualPointMode ? 'Referans KM:' : 'Demiryolu KM:'}
               </span>
-              <span className="text-xl sm:text-2xl font-black text-sky-900 font-mono tracking-tight">
+              <span className="text-xl sm:text-2xl font-black text-[#D32F2F] font-roboto-mono tracking-tight">
                 KM {nearestKm.chainageKm}
               </span>
             </div>
 
             {/* Metrics Grid */}
             <div className="mt-2.5 space-y-1 text-xs">
-              <div className="flex items-center justify-between text-slate-600">
+              <div className="flex items-center justify-between text-[#6C757D]">
                 <span className="text-[11px]">Raya Dik Mesafe:</span>
                 <span
-                  className={`font-mono font-bold px-1.5 py-0.5 rounded text-[11px] ${
+                  className={`font-roboto-mono font-bold px-1.5 py-0.5 rounded text-[11px] ${
                     nearestKm.distanceToRailMeters <= 15
                       ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                       : nearestKm.distanceToRailMeters <= 60
-                      ? 'bg-sky-50 text-sky-800 border border-sky-200'
+                      ? 'bg-[#F8F9FA] text-[#212529] border border-[#DEE2E6]'
                       : 'bg-amber-50 text-amber-800 border border-amber-200'
                   }`}
                 >
@@ -281,18 +281,18 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
                 </span>
               </div>
 
-              <div className="flex items-center justify-between text-slate-500 truncate text-[11px]">
+              <div className="flex items-center justify-between text-[#6C757D] truncate text-[11px]">
                 <span>En Yakın Nokta:</span>
-                <span className="font-semibold text-slate-800 truncate ml-2">
+                <span className="font-semibold text-[#212529] truncate ml-2">
                   {nearestKm.nearestPointTitle} ({nearestKm.nearestPointDistance}m)
                 </span>
               </div>
 
               {/* Speed & Colored Signal Quality / Accuracy (Hassasiyet Metre Bazlı) */}
               {gpsLocation && (
-                <div className="flex items-center justify-between text-[10px] pt-1.5 border-t border-slate-100">
-                  <span className="flex items-center gap-1 text-slate-500">
-                    <Gauge className="w-3 h-3 text-slate-400" />
+                <div className="flex items-center justify-between text-[10px] pt-1.5 border-t border-[#DEE2E6]">
+                  <span className="flex items-center gap-1 text-[#6C757D]">
+                    <Gauge className="w-3 h-3 text-[#6C757D]" />
                     <span>Hız: {gpsLocation.speed !== null && gpsLocation.speed !== undefined ? `${gpsLocation.speed} km/s` : 'Sabit'}</span>
                   </span>
 
@@ -305,14 +305,14 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
                       <Signal className="w-3 h-3" />
                       <span className={`w-1.5 h-1.5 rounded-full ${gpsQuality.dotColor} ${gpsQuality.level === 'good' ? 'animate-pulse' : ''}`} />
                     </span>
-                    <span className="font-mono font-bold">±{gpsQuality.accuracyMeters}m</span>
+                    <span className="font-roboto-mono font-bold">±{gpsQuality.accuracyMeters}m</span>
                     <span className="text-[9px] font-bold">({gpsQuality.text})</span>
                   </div>
                 </div>
               )}
 
               {selectedPointTitle && (
-                <div className="text-[10px] text-slate-500 truncate pt-1 border-t border-slate-100 mt-1">
+                <div className="text-[10px] text-[#6C757D] truncate pt-1 border-t border-[#DEE2E6] mt-1">
                   Referans: {selectedPointTitle}
                 </div>
               )}
@@ -324,7 +324,7 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
                 <button
                   type="button"
                   onClick={onAddWorkAtLiveKm}
-                  className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-[0.99]"
+                  className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-[#D32F2F] hover:bg-[#B71C1C] text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-[0.99]"
                 >
                   <Wrench className="w-3.5 h-3.5 stroke-[2.5]" />
                   <span>Bu Konuma İş Ekle</span>
@@ -335,14 +335,14 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
                 <button
                   type="button"
                   onClick={onOpenWorkList}
-                  className="w-full flex items-center justify-between px-3 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded-xl text-[11px] font-semibold transition-all cursor-pointer"
+                  className="w-full flex items-center justify-between px-3 py-1 bg-[#F8F9FA] hover:bg-slate-100 border border-[#DEE2E6] text-[#212529] rounded-xl text-[11px] font-semibold transition-all cursor-pointer"
                 >
                   <span className="flex items-center gap-1.5">
-                    <Wrench className="w-3 h-3 text-amber-600" />
+                    <Wrench className="w-3 h-3 text-[#D32F2F]" />
                     <span>Saha İş Listesi</span>
                   </span>
                   {workListCount !== undefined && workListCount > 0 && (
-                    <span className="bg-amber-500 text-slate-950 font-bold px-1.5 py-0.2 rounded-full text-[10px]">
+                    <span className="bg-[#D32F2F] text-white font-bold px-1.5 py-0.2 rounded-full text-[10px]">
                       {workListCount}
                     </span>
                   )}
@@ -359,11 +359,11 @@ export const LiveKmIndicator: React.FC<LiveKmIndicatorProps> = ({
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-4 text-center">
-            <Navigation2 className="w-7 h-7 text-sky-600 animate-spin mb-2" />
-            <p className="text-xs font-bold text-slate-800">
+            <Navigation2 className="w-7 h-7 text-[#D32F2F] animate-spin mb-2" />
+            <p className="text-xs font-bold text-[#212529]">
               {isLocating ? 'GPS Uyduları Taranıyor...' : 'Demiryolu KM Hesaplanıyor...'}
             </p>
-            <p className="text-[10px] text-slate-500 mt-0.5">
+            <p className="text-[10px] text-[#6C757D] mt-0.5">
               Açık alanda olduğunuzdan emin olun.
             </p>
           </div>

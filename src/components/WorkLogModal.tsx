@@ -61,52 +61,61 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-slate-900 border border-slate-700/80 w-full max-w-xl rounded-2xl shadow-2xl text-white overflow-hidden flex flex-col max-h-[90vh]">
+    <div
+      className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200 font-poppins"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white border border-[#DEE2E6] w-full max-w-xl rounded-2xl shadow-2xl text-[#212529] overflow-hidden flex flex-col max-h-[90vh]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="gov-bar w-full h-[5px] shrink-0" />
+
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-950/40">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#DEE2E6] bg-white shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-[#D32F2F] flex items-center justify-center text-white shadow-xs shrink-0">
               <Wrench className="w-5 h-5" />
             </div>
-            <div>
-              <h3 className="font-extrabold text-base text-white">Saha İşleri &amp; Bakım Defteri</h3>
-              <p className="text-xs text-slate-400">{point.title} {point.kmValue ? `(${point.kmValue})` : ''}</p>
+            <div className="min-w-0">
+              <h3 className="font-extrabold text-base text-[#212529] truncate">Saha İşleri &amp; Bakım Defteri</h3>
+              <p className="text-xs text-[#6C757D] truncate">{point.title} {point.kmValue ? `(${point.kmValue})` : ''}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+            className="p-1.5 text-[#6C757D] hover:text-[#212529] rounded-lg hover:bg-[#F8F9FA] transition-colors cursor-pointer shrink-0"
+            title="Kapat"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Body */}
-        <div className="p-5 overflow-y-auto prominent-scrollbar space-y-4 flex-1">
+        <div className="p-5 overflow-y-auto prominent-scrollbar space-y-4 flex-1 min-h-0 touch-pan-y overscroll-contain">
           {!isAddingNew ? (
             <>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-300">
+                <span className="text-xs font-bold text-[#212529]">
                   Kayıtlı Faaliyetler ({logs.length})
                 </span>
                 <button
                   type="button"
                   onClick={() => setIsAddingNew(true)}
-                  className="px-3 py-1.5 text-xs font-bold text-slate-950 bg-amber-400 hover:bg-amber-300 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="px-3 py-1.5 text-xs font-bold text-white bg-[#D32F2F] hover:bg-[#B71C1C] rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
                 >
                   <Plus className="w-4 h-4" /> Yeni İş Kaydı Ekle
                 </button>
               </div>
 
               {logs.length === 0 ? (
-                <div className="text-center py-10 border border-dashed border-slate-800 rounded-xl text-slate-400 text-xs">
-                  <FileText className="w-8 h-8 mx-auto text-slate-600 mb-2" />
+                <div className="text-center py-10 border border-dashed border-[#DEE2E6] bg-[#F8F9FA] rounded-xl text-[#6C757D] text-xs">
+                  <FileText className="w-8 h-8 mx-auto text-[#ADB5BD] mb-2" />
                   Bu noktada henüz kayıtlı bir bakım veya onarım işi bulunmuyor.
                   <div className="mt-2">
                     <button
                       onClick={() => setIsAddingNew(true)}
-                      className="text-amber-400 hover:underline font-semibold"
+                      className="text-[#D32F2F] hover:underline font-bold cursor-pointer"
                     >
                       İlk iş kaydını oluşturun
                     </button>
@@ -117,26 +126,26 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({
                   {logs.map((log) => (
                     <div
                       key={log.id}
-                      className="bg-slate-800/60 border border-slate-700/80 rounded-xl p-3.5 space-y-2"
+                      className="bg-[#F8F9FA] border border-[#DEE2E6] rounded-xl p-3.5 space-y-2"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <div className="font-bold text-sm text-white flex items-center gap-2">
+                          <div className="font-bold text-sm text-[#212529] flex items-center gap-2 flex-wrap">
                             {log.title}
                             <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase ${
                               log.status === 'tamamlandi'
-                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                : 'bg-amber-50 text-amber-800 border border-amber-200'
                             }`}>
                               {log.status === 'tamamlandi' ? 'Tamamlandı' : log.status === 'devam_ediyor' ? 'Devam Ediyor' : 'Planlandı'}
                             </span>
                           </div>
-                          <div className="flex items-center gap-3 text-[11px] text-slate-400 mt-1">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="w-3.5 h-3.5 text-slate-500" /> {log.performedAt}
+                          <div className="flex items-center gap-3 text-[11px] text-[#6C757D] mt-1 flex-wrap">
+                            <span className="flex items-center gap-1 font-roboto-mono">
+                              <Calendar className="w-3.5 h-3.5 text-[#6C757D]" /> {log.performedAt}
                             </span>
                             <span className="flex items-center gap-1">
-                              <User className="w-3.5 h-3.5 text-slate-500" /> {log.performedBy}
+                              <User className="w-3.5 h-3.5 text-[#6C757D]" /> {log.performedBy}
                             </span>
                             {log.crewCount && (
                               <span>👥 {log.crewCount} Personel</span>
@@ -146,20 +155,20 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({
                         <button
                           type="button"
                           onClick={() => onDeleteWorkLog(point.id, log.id)}
-                          className="p-1.5 text-slate-500 hover:text-red-400 rounded-lg hover:bg-slate-700/50 transition-colors"
+                          className="p-1.5 text-[#6C757D] hover:text-[#D32F2F] rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
                           title="İş Kaydını Sil"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
 
-                      <p className="text-xs text-slate-200 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800 whitespace-pre-wrap">
+                      <p className="text-xs text-[#212529] bg-white p-2.5 rounded-lg border border-[#DEE2E6] whitespace-pre-wrap">
                         {log.description}
                       </p>
 
                       {log.materialsUsed && (
-                        <div className="text-[11px] text-amber-300/90 font-medium">
-                          🛠️ Kullanılan Malzemeler: {log.materialsUsed}
+                        <div className="text-[11px] text-[#6C757D] font-medium">
+                          🛠️ Kullanılan Malzemeler: <span className="text-[#212529] font-semibold">{log.materialsUsed}</span>
                         </div>
                       )}
                     </div>
@@ -169,19 +178,19 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({
             </>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-3.5 animate-in fade-in duration-150">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-                <span className="text-xs font-bold text-amber-400">Yeni Saha İşi / Bakım Kaydı Formu</span>
+              <div className="flex items-center justify-between pb-2 border-b border-[#DEE2E6]">
+                <span className="text-xs font-bold text-[#D32F2F]">Yeni Saha İşi / Bakım Kaydı Formu</span>
                 <button
                   type="button"
                   onClick={() => setIsAddingNew(false)}
-                  className="text-xs text-slate-400 hover:text-white"
+                  className="text-xs text-[#6C757D] hover:text-[#212529] font-semibold cursor-pointer"
                 >
                   Listeye Dön
                 </button>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-[#212529] mb-1">
                   Yapılan İş Başlığı *
                 </label>
                 <input
@@ -190,17 +199,17 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({
                   placeholder="Örn: Balast Takviyesi, Menfez Ağzı Temizliği, Travers Değişimi"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 bg-[#F8F9FA] border border-[#DEE2E6] rounded-xl text-xs text-[#212529] placeholder-[#ADB5BD] focus:outline-none focus:bg-white focus:border-[#D32F2F]"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">İş Türü</label>
+                  <label className="block text-xs font-semibold text-[#212529] mb-1">İş Türü</label>
                   <select
                     value={workType}
                     onChange={(e: any) => setWorkType(e.target.value)}
-                    className="w-full px-2.5 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-2.5 py-2 bg-[#F8F9FA] border border-[#DEE2E6] rounded-xl text-xs text-[#212529] focus:outline-none focus:bg-white focus:border-[#D32F2F]"
                   >
                     <option value="bakim">Rutin Bakım</option>
                     <option value="onarim">Onarım / Tamirat</option>
@@ -212,21 +221,21 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Tarih</label>
+                  <label className="block text-xs font-semibold text-[#212529] mb-1">Tarih</label>
                   <input
                     type="date"
                     value={performedAt}
                     onChange={(e) => setPerformedAt(e.target.value)}
-                    className="w-full px-2.5 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-2.5 py-2 bg-[#F8F9FA] border border-[#DEE2E6] rounded-xl text-xs text-[#212529] focus:outline-none focus:bg-white focus:border-[#D32F2F]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Durum</label>
+                  <label className="block text-xs font-semibold text-[#212529] mb-1">Durum</label>
                   <select
                     value={status}
                     onChange={(e: any) => setStatus(e.target.value)}
-                    className="w-full px-2.5 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-2.5 py-2 bg-[#F8F9FA] border border-[#DEE2E6] rounded-xl text-xs text-[#212529] focus:outline-none focus:bg-white focus:border-[#D32F2F]"
                   >
                     <option value="tamamlandi">Tamamlandı</option>
                     <option value="devam_ediyor">Devam Ediyor</option>
@@ -237,30 +246,30 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">İşi Yapan Ekip / Personel</label>
+                  <label className="block text-xs font-semibold text-[#212529] mb-1">İşi Yapan Ekip / Personel</label>
                   <input
                     type="text"
                     placeholder="Örn: 712 Yol Bakım Ekibi"
                     value={performedBy}
                     onChange={(e) => setPerformedBy(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-[#F8F9FA] border border-[#DEE2E6] rounded-xl text-xs text-[#212529] placeholder-[#ADB5BD] focus:outline-none focus:bg-white focus:border-[#D32F2F]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Personel Sayısı</label>
+                  <label className="block text-xs font-semibold text-[#212529] mb-1">Personel Sayısı</label>
                   <input
                     type="text"
                     placeholder="Örn: 4 Personel + 1 Makine"
                     value={crewCount}
                     onChange={(e) => setCrewCount(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-[#F8F9FA] border border-[#DEE2E6] rounded-xl text-xs text-[#212529] placeholder-[#ADB5BD] focus:outline-none focus:bg-white focus:border-[#D32F2F]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-[#212529] mb-1">
                   Kullanılan Malzeme &amp; Ekipman
                 </label>
                 <input
@@ -268,12 +277,12 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({
                   placeholder="Örn: 4 adet B70 travers, 3 ton balast, 2 torba çimento"
                   value={materialsUsed}
                   onChange={(e) => setMaterialsUsed(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 bg-[#F8F9FA] border border-[#DEE2E6] rounded-xl text-xs text-[#212529] placeholder-[#ADB5BD] focus:outline-none focus:bg-white focus:border-[#D32F2F]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-[#212529] mb-1">
                   Yapılan İşin Detayı ve Saha Notu *
                 </label>
                 <textarea
@@ -282,7 +291,7 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({
                   placeholder="Yapılan işlemler, karşılaşılan durumlar, alınan önlemler..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 resize-none"
+                  className="w-full px-3 py-2 bg-[#F8F9FA] border border-[#DEE2E6] rounded-xl text-xs text-[#212529] placeholder-[#ADB5BD] focus:outline-none focus:bg-white focus:border-[#D32F2F] resize-none"
                 />
               </div>
 
@@ -290,14 +299,14 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsAddingNew(false)}
-                  className="px-3.5 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors"
+                  className="px-3.5 py-2 text-xs font-semibold text-[#6C757D] hover:text-[#212529] rounded-xl hover:bg-[#F8F9FA] transition-colors cursor-pointer"
                 >
                   İptal
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 text-xs font-bold text-slate-950 bg-amber-400 hover:bg-amber-300 rounded-xl transition-all cursor-pointer shadow-md shadow-amber-500/20"
+                  className="px-4 py-2 text-xs font-bold text-white bg-[#D32F2F] hover:bg-[#B71C1C] rounded-xl transition-all cursor-pointer shadow-xs disabled:opacity-60"
                 >
                   {isSubmitting ? 'Kaydediliyor...' : 'İş Kaydını Kaydet'}
                 </button>

@@ -439,6 +439,12 @@ function deduplicatePoints(list: any[]): any[] {
       });
       existing.notes = notes;
 
+      const workLogs = [...(existing.workLogs || [])];
+      (p.workLogs || []).forEach((w: any) => {
+        if (!workLogs.some((existingW: any) => existingW.id === w.id)) workLogs.push(w);
+      });
+      existing.workLogs = workLogs;
+
       if (p.updatedAt && (!existing.updatedAt || p.updatedAt > existing.updatedAt)) {
         existing.updatedAt = p.updatedAt;
       }
@@ -1246,6 +1252,12 @@ app.put('/api/points/:id', (req, res) => {
     }
   }
 
+  // Protect workLogs from being erased when editing metadata
+  let finalWorkLogs = Array.isArray(existing.workLogs) ? existing.workLogs : [];
+  if (Array.isArray(req.body.workLogs)) {
+    finalWorkLogs = req.body.workLogs;
+  }
+
   const updated = {
     ...existing,
     ...req.body,
@@ -1256,6 +1268,7 @@ app.put('/api/points/:id', (req, res) => {
     lng: req.body.lng !== undefined ? Number(req.body.lng) : existing.lng,
     photos: finalPhotos,
     notes: finalNotes,
+    workLogs: finalWorkLogs,
     updatedAt: new Date().toISOString(),
   };
 
@@ -1286,6 +1299,132 @@ app.post('/api/points/bulk-delete', (req, res) => {
   points = points.filter((p) => !idsSet.has(p.id));
   savePoints(points, 'bulk_delete');
   res.json({ success: true, count: points.length, deletedCount: ids.length });
+});
+
+// POST bulk update points (apply the exact same edits/notes/workLogs to multiple selected KMs)
+app.post('/api/points/bulk-update', (req, res) => {
+  const { ids, changes } = req.body || {};
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: 'Güncellenecek nokta ID listesi belirtilmedi' });
+  }
+  if (!changes || typeof changes !== 'object') {
+    return res.status(400).json({ error: 'Uygulanacak düzenleme bilgileri eksik' });
+  }
+
+  const idsSet = new Set<string>(ids);
+  const points = getPoints();
+  const nowIso = new Date().toISOString();
+  const updatedPoints: any[] = [];
+
+  for (let i = 0; i < points.length; i++) {
+    const existing = points[i];
+    if (!existing || !idsSet.has(existing.id)) continue;
+
+    let nextTitle = existing.title || '';
+    if (changes.titleOperation && changes.titleOperation.mode && changes.titleOperation.mode !== 'none') {
+      const op = changes.titleOperation;
+      if (op.mode === 'replace' && typeof op.value === 'string' && op.value.trim()) {
+        nextTitle = op.value.trim();
+      } else if (op.mode === 'prefix' && typeof op.value === 'string' && op.value.trim()) {
+        const prefix = op.value.trim();
+        nextTitle = nextTitle.startsWith(prefix) ? nextTitle : `${prefix} ${nextTitle}`.trim();
+      } else if (op.mode === 'suffix' && typeof op.value === 'string' && op.value.trim()) {
+        const suffix = op.value.trim();
+        nextTitle = nextTitle.endsWith(suffix) ? nextTitle : `${nextTitle} ${suffix}`.trim();
+      } else if (op.mode === 'find_replace' && typeof op.findText === 'string' && op.findText.length > 0) {
+        nextTitle = nextTitle.split(op.findText).join(op.replaceText || '');
+      }
+    }
+
+    let nextDescription = existing.description || '';
+    if (changes.descriptionOperation && changes.descriptionOperation.mode && changes.descriptionOperation.mode !== 'none') {
+      const dop = changes.descriptionOperation;
+      if (dop.mode === 'replace') {
+        nextDescription = (dop.value || '').trim();
+      } else if (dop.mode === 'append' && typeof dop.value === 'string' && dop.value.trim()) {
+        const appendText = dop.value.trim();
+        nextDescription = nextDescription ? `${nextDescription}\n${appendText}` : appendText;
+      } else if (dop.mode === 'clear') {
+        nextDescription = '';
+      }
+    }
+
+    const nextCategory = changes.category ? changes.category : existing.category;
+    const nextLineName = (typeof changes.lineName === 'string' && changes.lineName.trim())
+      ? changes.lineName.trim()
+      : existing.lineName;
+    const nextLocationDesc = changes.setLocationDesc
+      ? (changes.locationDesc || '').trim()
+      : existing.locationDesc;
+
+    let nextNotes = Array.isArray(existing.notes) ? [...existing.notes] : [];
+    if (changes.addNote && typeof changes.addNote.text === 'string' && changes.addNote.text.trim()) {
+      const newNote = {
+        id: `note-${Date.now()}-${i}-${Math.random().toString(36).substring(2, 6)}`,
+        text: changes.addNote.text.trim(),
+        author: (changes.addNote.author || 'Yol Bakım Şefliği').trim(),
+        createdAt: nowIso,
+      };
+      nextNotes = [newNote, ...nextNotes];
+    }
+
+    let nextWorkLogs = Array.isArray(existing.workLogs) ? [...existing.workLogs] : [];
+    if (changes.addWorkLog && typeof changes.addWorkLog.title === 'string' && changes.addWorkLog.title.trim()) {
+      const newLog = {
+        ...changes.addWorkLog,
+        id: `work-${Date.now()}-${i}-${Math.random().toString(36).substring(2, 6)}`,
+        title: changes.addWorkLog.title.trim(),
+        description: (changes.addWorkLog.description || '').trim(),
+      };
+      nextWorkLogs = [newLog, ...nextWorkLogs];
+    }
+
+    let nextLevelCrossing = existing.levelCrossing || null;
+    if (changes.crossingPatch && typeof changes.crossingPatch === 'object' && Object.keys(changes.crossingPatch).length > 0) {
+      const cleanPatch: Record<string, any> = {};
+      Object.entries(changes.crossingPatch).forEach(([k, v]) => {
+        if (v !== undefined && String(v).trim() !== '') {
+          cleanPatch[k] = typeof v === 'string' ? v.trim() : v;
+        }
+      });
+      if (Object.keys(cleanPatch).length > 0) {
+        nextLevelCrossing = { ...(existing.levelCrossing || {}), ...cleanPatch };
+      }
+    }
+
+    let nextCulvert = existing.culvert || null;
+    if (changes.culvertPatch && typeof changes.culvertPatch === 'object' && Object.keys(changes.culvertPatch).length > 0) {
+      const cleanPatch: Record<string, any> = {};
+      Object.entries(changes.culvertPatch).forEach(([k, v]) => {
+        if (v !== undefined && String(v).trim() !== '') {
+          cleanPatch[k] = typeof v === 'string' ? v.trim() : v;
+        }
+      });
+      if (Object.keys(cleanPatch).length > 0) {
+        nextCulvert = { ...(existing.culvert || {}), ...cleanPatch };
+      }
+    }
+
+    const updated = {
+      ...existing,
+      title: nextTitle,
+      category: nextCategory,
+      lineName: nextLineName,
+      locationDesc: nextLocationDesc,
+      description: nextDescription,
+      notes: nextNotes,
+      workLogs: nextWorkLogs,
+      levelCrossing: nextLevelCrossing,
+      culvert: nextCulvert,
+      updatedAt: nowIso,
+    };
+
+    points[i] = updated;
+    updatedPoints.push(updated);
+  }
+
+  savePoints(points, 'bulk_update');
+  res.json({ success: true, count: updatedPoints.length, updatedPoints });
 });
 
 // POST add note to a point
@@ -1447,8 +1586,10 @@ app.post('/api/points/import', (req, res) => {
         textStyle: p.textStyle || null,
         titleTextStyle: p.titleTextStyle || null,
         levelCrossing: p.levelCrossing || null,
+        culvert: p.culvert || null,
         notes: Array.isArray(p.notes) ? p.notes : [],
         photos: Array.isArray(p.photos) ? p.photos : [],
+        workLogs: Array.isArray(p.workLogs) ? p.workLogs : [],
         createdAt: p.createdAt || new Date().toISOString(),
         updatedAt: p.updatedAt || new Date().toISOString(),
       };
@@ -1510,6 +1651,10 @@ app.post('/api/points/import', (req, res) => {
           ? p.levelCrossing
           : (existing.levelCrossing || p.levelCrossing || null);
 
+        const workLogMap = new Map();
+        (existing.workLogs || []).forEach((w: any) => workLogMap.set(w.id, w));
+        (p.workLogs || []).forEach((w: any) => workLogMap.set(w.id, w));
+
         Object.assign(existing, {
           ...p,
           id: existing.id, // keep original ID
@@ -1519,6 +1664,7 @@ app.post('/api/points/import', (req, res) => {
           levelCrossing: finalLevelCrossing,
           photos: Array.from(photoMap.values()),
           notes: Array.from(noteMap.values()),
+          workLogs: Array.from(workLogMap.values()),
           updatedAt: (p.updatedAt && p.updatedAt > existing.updatedAt) ? p.updatedAt : existing.updatedAt,
         });
       } else {

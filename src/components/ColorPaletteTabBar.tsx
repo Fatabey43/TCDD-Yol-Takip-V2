@@ -81,7 +81,7 @@ export const ColorPaletteTabBar: React.FC<ColorPaletteTabBarProps> = ({
           <button
             id="close-palette-tab-btn"
             onClick={() => setActiveTab('map')}
-            className="flex items-center gap-1.5 text-xs font-bold text-white bg-slate-800 hover:bg-slate-900 px-3 py-1.5 rounded-lg shadow-xs transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 text-xs font-bold text-white bg-[#D32F2F] hover:bg-[#B71C1C] px-3 py-1.5 rounded-lg shadow-xs transition-colors cursor-pointer"
             title="Paleti Kapat ve Haritaya Dön"
           >
             <X className="w-3.5 h-3.5" />

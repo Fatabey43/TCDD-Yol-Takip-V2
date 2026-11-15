@@ -231,5 +231,32 @@ export interface FieldWorkItem {
   completedAt?: string;    // Tamamlanma tarihi
 }
 
+/**
+ * Seçili KM noktalarının hepsine aynı anda uygulanacak toplu düzenleme işlemleri
+ */
+export interface BulkPointChanges {
+  category?: RailwayPointCategory;
+  lineName?: string;
+  locationDesc?: string;
+  setLocationDesc?: boolean;
+  titleOperation?: {
+    mode: 'none' | 'replace' | 'prefix' | 'suffix' | 'find_replace';
+    value?: string;
+    findText?: string;
+    replaceText?: string;
+  };
+  descriptionOperation?: {
+    mode: 'none' | 'replace' | 'append' | 'clear';
+    value?: string;
+  };
+  addNote?: {
+    text: string;
+    author: string;
+  };
+  addWorkLog?: Omit<WorkLog, 'id'>;
+  crossingPatch?: Partial<LevelCrossingDetails>;
+  culvertPatch?: Partial<CulvertDetails>;
+}
+
 
 

@@ -114,17 +114,17 @@ export const TrainLoadingAnimation: React.FC<TrainLoadingAnimationProps> = ({
       </div>
 
       {/* Loading Texts */}
-      <h3 className="text-base font-bold text-white tracking-wide flex items-center justify-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+      <h3 className="text-base font-bold text-[#212529] tracking-wide flex items-center justify-center gap-2 font-poppins">
+        <span className="w-2 h-2 rounded-full bg-[#D32F2F] animate-ping" />
         {message}
       </h3>
-      <p className="text-xs text-slate-400 mt-1 font-medium tracking-wider uppercase">
+      <p className="text-xs text-[#6C757D] mt-1 font-semibold tracking-wider uppercase font-poppins">
         {subMessage}
       </p>
 
       {/* Subtle Progress Bar */}
-      <div className="w-48 h-1.5 bg-slate-800 rounded-full mt-4 overflow-hidden border border-slate-700/60">
-        <div className="h-full bg-gradient-to-r from-red-600 via-amber-400 to-red-600 rounded-full w-2/3 animate-pulse" />
+      <div className="w-48 h-1.5 bg-[#DEE2E6] rounded-full mt-4 overflow-hidden">
+        <div className="h-full bg-[#D32F2F] rounded-full w-2/3 animate-pulse" />
       </div>
     </div>
   );
