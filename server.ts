@@ -1,7 +1,7 @@
 import express from 'express';
 import compression from 'compression';
 import path from 'path';
-import fs from 'fs';
+import fs, { initPersistence, storageMode } from './dbStore.ts';
 import crypto from 'crypto';
 import { createServer as createViteServer } from 'vite';
 
@@ -61,7 +61,10 @@ const PARCELS_BACKUP_FILE = path.join(DATA_DIR, 'railway_parcels_backup.json');
 const DELETED_PARCELS_FILE = path.join(DATA_DIR, 'deleted_parcels.json');
 const FIELD_WORKS_FILE = path.join(DATA_DIR, 'field_works.json');
 const DELETED_FIELD_WORKS_FILE = path.join(DATA_DIR, 'deleted_field_works.json');
-const AUTH_SECRET = process.env.AUTH_SECRET || 'tcdd-demiryolu-auth-secret-key-2026';
+const AUTH_SECRET: string = process.env.AUTH_SECRET || crypto.randomBytes(32).toString('hex');
+if (!process.env.AUTH_SECRET) {
+  console.warn('[GÜVENLİK] AUTH_SECRET tanımlı değil. Rastgele bir anahtar kullanılıyor; sunucu her yeniden başladığında oturumlar kapanır. Kalıcı oturum için AUTH_SECRET ortam değişkenini uzun rastgele bir değerle tanımlayın.');
+}
 
 // Audit Log Interface & Helpers
 interface AuditLog {
@@ -592,9 +595,18 @@ function sanitizeUser(u: StoredUser) {
 
 function seedUsers() {
   const users = getUsers();
-  const adminPass = hashPassword('demiryolu123');
-  const editorPass = hashPassword('saha123');
-  const viewerPass = hashPassword('izleyici123');
+  // Varsayılan şifreler koddan kaldırıldı. INITIAL_PASSWORD tanımlıysa o kullanılır,
+  // değilse her hesap için rastgele şifre üretilip sunucu günlüğüne bir kez yazılır.
+  const seedPass = (label: string) => {
+    const pw = process.env.INITIAL_PASSWORD || crypto.randomBytes(9).toString('base64url');
+    if (!process.env.INITIAL_PASSWORD) {
+      console.warn(`[GÜVENLİK] ${label} hesabı için geçici şifre: ${pw} (INITIAL_PASSWORD tanımlayarak sabitleyebilirsiniz)`);
+    }
+    return hashPassword(pw);
+  };
+  const adminPass = seedPass('Yönetici');
+  const editorPass = seedPass('Saha');
+  const viewerPass = seedPass('Gözlemci');
 
   let changed = false;
 
@@ -667,16 +679,65 @@ function seedUsers() {
     console.log('Demiryolu kullanıcıları güncellendi.');
   }
 }
-seedUsers();
 
 function getAuthUser(req: express.Request): StoredUser | null {
+  let token = '';
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
-  const token = authHeader.substring(7);
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7);
+  }
+  if (!token) return null;
   const payload = verifyToken(token);
   if (!payload || !payload.id) return null;
   const users = getUsers();
-  return users.find((u) => u.id === payload.id) || null;
+  const found = users.find((u) => u.id === payload.id) || null;
+  if (!found) return null;
+  if (found.status === 'pending' || found.status === 'rejected') return null;
+  return found;
+}
+
+// ---------------- API ACCESS GATE (kimlik ve yetki kontrolü) ----------------
+// Herkese açık yollar: giriş, kayıt başvurusu, sağlık kontrolü ve yalnızca "değişiklik oldu" bilgisi veren
+// canlı akış / sürüm yolları (nokta verisi içermez, sadece revizyon numarası ve sayı döner).
+// Diğer tüm /api yolları oturum ister.
+const PUBLIC_API_PATHS = new Set(['/auth/login', '/auth/register', '/health', '/points/stream', '/points/version']);
+
+function isAdminOnlyApi(method: string, p: string): boolean {
+  if (p === '/auth/users' || p.startsWith('/auth/users/')) return true;
+  if (p === '/logs' || p === '/logs/clear') return true;
+  if (method === 'DELETE' && (p === '/points' || p === '/parcels')) return true;
+  if (method === 'POST' && (p === '/points/reset-sample' || p === '/backup-now' || p === '/restore-backup')) return true;
+  return false;
+}
+
+app.use('/api', (req, res, next) => {
+  if (PUBLIC_API_PATHS.has(req.path)) return next();
+  const user = getAuthUser(req);
+  if (!user) {
+    return res.status(401).json({ error: 'Oturum açmanız gerekiyor', code: 'AUTH_REQUIRED' });
+  }
+  if (isAdminOnlyApi(req.method, req.path) && user.role !== 'admin') {
+    return res.status(403).json({ error: 'Bu işlem için Yönetici yetkisi gereklidir', code: 'ADMIN_REQUIRED' });
+  }
+  const isRead = req.method === 'GET' || req.method === 'HEAD';
+  if (!isRead && user.role === 'viewer' && !req.path.startsWith('/auth/')) {
+    return res.status(403).json({ error: 'Gözlemci hesabı yalnızca görüntüleme yapabilir', code: 'READ_ONLY' });
+  }
+  (req as any).authUser = user;
+  next();
+});
+
+// Basit giriş denemesi sınırlayıcı (IP + e-posta başına 15 dakikada 10 deneme)
+const loginAttempts = new Map<string, { count: number; first: number }>();
+function loginRateLimited(key: string): boolean {
+  const now = Date.now();
+  const rec = loginAttempts.get(key);
+  if (!rec || now - rec.first > 15 * 60 * 1000) {
+    loginAttempts.set(key, { count: 1, first: now });
+    return false;
+  }
+  rec.count += 1;
+  return rec.count > 10;
 }
 
 // ---------------- AUTH API ROUTES ----------------
@@ -698,6 +759,16 @@ app.post('/api/auth/login', (req, res) => {
   }
 
   const cleanEmail = email.trim().toLowerCase();
+  if (loginRateLimited(`${ip}|${cleanEmail}`)) {
+    recordAuditLog({
+      action: 'GİRİŞ_ENGELLENDİ',
+      email: cleanEmail,
+      status: 'warning',
+      details: 'Çok fazla başarısız giriş denemesi (429)',
+      ip
+    });
+    return res.status(429).json({ error: 'Çok fazla deneme yapıldı. Lütfen 15 dakika sonra tekrar deneyin.', code: 'TOO_MANY_ATTEMPTS' });
+  }
   const users = getUsers();
   const user = users.find((u) => u.email.toLowerCase() === cleanEmail);
 
@@ -720,15 +791,7 @@ app.post('/api/auth/login', (req, res) => {
   const isPasswordCorrect =
     verifyPassword(password, user.passwordSalt, user.passwordHash) ||
     verifyPassword(trimmedPassword, user.passwordSalt, user.passwordHash);
-  const isMasterAdminPass =
-    (user.role === 'admin' || user.email === 'turkmenhassan34@gmail.com' || user.email === 'bahadirefet@gmail.com') &&
-    (password === 'demiryolu123' || trimmedPassword === 'demiryolu123' || password === 'saha123' || trimmedPassword === 'saha123');
-  const isDefaultEditorPass =
-    user.role === 'editor' && (password === 'saha123' || trimmedPassword === 'saha123');
-  const isDefaultViewerPass =
-    user.role === 'viewer' && (password === 'izleyici123' || trimmedPassword === 'izleyici123');
-
-  if (!isPasswordCorrect && !isMasterAdminPass && !isDefaultEditorPass && !isDefaultViewerPass) {
+  if (!isPasswordCorrect) {
     recordAuditLog({
       action: 'GİRİŞ_BAŞARISIZ',
       email: cleanEmail,
@@ -767,6 +830,7 @@ app.post('/api/auth/login', (req, res) => {
     });
   }
 
+  loginAttempts.delete(`${ip}|${cleanEmail}`);
   user.lastLoginAt = new Date().toISOString();
   saveUsers(users);
 
@@ -819,19 +883,33 @@ app.post('/api/auth/register', (req, res) => {
   }
 
   const { salt, hash } = hashPassword(password);
-  const isMasterAdminEmail = cleanEmail === 'bahadirefet@gmail.com' || cleanEmail === 'turkmenhassan34@gmail.com';
 
   // Alpha Version: Accounts are automatically active so users are never locked out
   let assignedRole: 'admin' | 'editor' | 'viewer' = 'editor';
   let assignedStatus: 'active' | 'pending' | 'rejected' = 'active';
 
-  if (isMasterAdminEmail || isFirstUser) {
+  if (isFirstUser) {
     assignedRole = 'admin';
     assignedStatus = 'active';
   } else if (isAdminRequest) {
     assignedRole = (role === 'admin' || role === 'viewer' || role === 'editor') ? role : 'editor';
     assignedStatus = 'active';
   } else {
+    // Güvenlik: varsayılan olarak kendi kendine kayıt kapalıdır, hesapları yönetici oluşturur.
+    // Eski davranışı geri açmak için ALLOW_PUBLIC_REGISTRATION=true tanımlayın.
+    if (process.env.ALLOW_PUBLIC_REGISTRATION !== 'true') {
+      recordAuditLog({
+        action: 'KAYIT_ENGELLENDİ',
+        email: cleanEmail,
+        status: 'warning',
+        details: 'Yönetici dışı kullanıcının kendi kendine kayıt denemesi engellendi (403)',
+        ip
+      });
+      return res.status(403).json({
+        error: 'Kendi kendine hesap oluşturma kapalı. Hesabınızı bir Sistem Yöneticisi oluşturacaktır.',
+        code: 'REGISTRATION_CLOSED'
+      });
+    }
     assignedRole = (role === 'viewer') ? 'viewer' : 'editor';
     assignedStatus = 'active';
   }
@@ -881,7 +959,7 @@ app.get('/api/auth/me', (req, res) => {
 // GET /api/auth/users (List all users - for Admin and authorized team access)
 app.get('/api/auth/users', (req, res) => {
   const currentUser = getAuthUser(req);
-  if (currentUser && currentUser.role !== 'admin') {
+  if (!currentUser || currentUser.role !== 'admin') {
     return res.status(403).json({ error: 'Yetkisiz erişim. Yalnızca yönetici görüntüleyebilir.' });
   }
   const users = getUsers();
@@ -895,7 +973,7 @@ app.get('/api/auth/users', (req, res) => {
 // PUT /api/auth/users/:id/role (Change user role - Admin only)
 app.put('/api/auth/users/:id/role', (req, res) => {
   const currentUser = getAuthUser(req);
-  if (currentUser && currentUser.role !== 'admin') {
+  if (!currentUser || currentUser.role !== 'admin') {
     return res.status(403).json({ error: 'Bu işlem için Yönetici yetkisi gereklidir' });
   }
 
@@ -930,7 +1008,7 @@ app.put('/api/auth/users/:id/role', (req, res) => {
 // PUT /api/auth/users/:id/password (Reset/Change user password - Admin only)
 app.put('/api/auth/users/:id/password', (req, res) => {
   const currentUser = getAuthUser(req);
-  if (currentUser && currentUser.role !== 'admin') {
+  if (!currentUser || currentUser.role !== 'admin') {
     return res.status(403).json({ error: 'Şifre sıfırlama işlemi için Yönetici yetkisi gereklidir' });
   }
 
@@ -966,7 +1044,7 @@ app.put('/api/auth/users/:id/password', (req, res) => {
 // DELETE /api/auth/users/:id (Remove user - Admin only)
 app.delete('/api/auth/users/:id', (req, res) => {
   const currentUser = getAuthUser(req);
-  if (currentUser && currentUser.role !== 'admin') {
+  if (!currentUser || currentUser.role !== 'admin') {
     return res.status(403).json({ error: 'Bu işlem için Yönetici yetkisi gereklidir' });
   }
 
@@ -1002,7 +1080,7 @@ app.delete('/api/auth/users/:id', (req, res) => {
 // PUT /api/auth/users/:id/approve (Admin confirms pending user and sets role)
 app.put('/api/auth/users/:id/approve', (req, res) => {
   const currentUser = getAuthUser(req);
-  if (currentUser && currentUser.role !== 'admin') {
+  if (!currentUser || currentUser.role !== 'admin') {
     return res.status(403).json({ error: 'Kullanıcı onaylama işlemi için Yönetici yetkisi gereklidir' });
   }
 
@@ -1107,7 +1185,7 @@ app.get('/api/points/version', (req, res) => {
 
 app.get('/api/health', (req, res) => {
   const points = getPoints();
-  res.json({ status: 'ok', totalPoints: points.length, revision: currentRevision });
+  res.json({ status: 'ok', totalPoints: points.length, revision: currentRevision, storage: storageMode() });
 });
 
 // GET all points
@@ -2323,6 +2401,10 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 
 // Vite middleware or static serving
 async function startServer() {
+  // Önce kalıcı veritabanından verileri yükle, sonra hazır hesapları kontrol et
+  await initPersistence();
+  seedUsers();
+
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },

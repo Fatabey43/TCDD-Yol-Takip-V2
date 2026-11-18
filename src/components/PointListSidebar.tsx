@@ -112,24 +112,30 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
     }
   };
 
-  // Helper for Technical Shell category sys-tag colors
-  const getCategoryTagInfo = (cat: string) => {
-    switch (cat) {
-      case 'switch':
-        return { label: 'MAKAS', color: '#ef4444' };
-      case 'station':
-        return { label: 'GAR', color: '#16a34a' };
-      case 'crossing':
-        return { label: 'GEÇİT', color: '#eab308' };
-      case 'culvert':
-        return { label: 'MENFEZ', color: '#06b6d4' };
-      case 'bridge':
-        return { label: 'KÖPRÜ', color: '#8b5cf6' };
-      case 'signal':
-        return { label: 'SİNYAL', color: '#ec4899' };
-      default:
-        return { label: 'KM TAŞI', color: '#00ff88' };
-    }
+  // Dynamic category color & label config synchronized with ColorPaletteTabBar
+  const getCategoryTagInfo = (cat: RailwayPointCategory) => {
+    const conf =
+      (categoryColors && categoryColors[cat]) ||
+      DEFAULT_CATEGORY_COLORS[cat] ||
+      DEFAULT_CATEGORY_COLORS.other;
+
+    const labelMap: Record<RailwayPointCategory, string> = {
+      switch: 'MAKAS',
+      km_marker: 'KM TAŞI',
+      crossing: 'GEÇİT',
+      station: 'GAR',
+      bridge: 'KÖPRÜ',
+      culvert: 'MENFEZ',
+      signal: 'SİNYAL',
+      other: 'DİĞER',
+    };
+
+    return {
+      label: labelMap[cat] || conf.shortLabel || 'NOKTA',
+      bg: conf.bg,
+      border: conf.border || conf.bg,
+      text: conf.text || '#ffffff',
+    };
   };
 
   return (
@@ -281,22 +287,6 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
             const cleanKm = formatKmDisplay(point.kmValue, point.title);
             const tagInfo = getCategoryTagInfo(point.category);
 
-            // Variation 6: KM Box Background based on category
-            const getKmBoxBg = (cat: string) => {
-              switch (cat) {
-                case 'switch':
-                  return '#D32F2F'; // TCDD Red
-                case 'culvert':
-                  return '#2B6CB0'; // Railway Blue
-                case 'crossing':
-                  return '#D69E2E'; // Level Crossing Amber
-                case 'station':
-                  return '#2E7D32'; // Station Green
-                default:
-                  return '#D32F2F';
-              }
-            };
-
             return (
               <div
                 key={point.id}
@@ -331,10 +321,14 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
                   </div>
                 )}
 
-                {/* Variation 6: km-box (KM label top, number bottom) */}
+                {/* km-box synchronized with categoryColors palette */}
                 <div
-                  className="km-box w-[64px] sm:w-[76px] h-[46px] sm:h-[54px] rounded-lg sm:rounded-xl flex flex-col items-center justify-center text-white font-roboto-mono shrink-0 shadow-xs"
-                  style={{ backgroundColor: getKmBoxBg(point.category) }}
+                  className="km-box w-[64px] sm:w-[76px] h-[46px] sm:h-[54px] rounded-lg sm:rounded-xl flex flex-col items-center justify-center font-roboto-mono shrink-0 shadow-xs border transition-colors"
+                  style={{
+                    backgroundColor: tagInfo.bg,
+                    borderColor: tagInfo.border,
+                    color: tagInfo.text,
+                  }}
                 >
                   <span className="text-[8px] sm:text-[9px] uppercase tracking-wider font-semibold opacity-85 leading-tight">
                     KM
@@ -355,8 +349,12 @@ export const PointListSidebar: React.FC<PointListSidebarProps> = ({
                       {point.title}
                     </h4>
                     <span
-                      className="text-[8px] sm:text-[9px] font-bold px-1.5 py-0.5 rounded uppercase font-roboto-mono shrink-0"
-                      style={{ color: tagInfo.color, backgroundColor: `${tagInfo.color}15` }}
+                      className="text-[8px] sm:text-[9px] font-bold px-1.5 py-0.5 rounded uppercase font-roboto-mono shrink-0 border"
+                      style={{
+                        color: tagInfo.border,
+                        backgroundColor: `${tagInfo.bg}18`,
+                        borderColor: `${tagInfo.bg}35`,
+                      }}
                     >
                       {tagInfo.label}
                     </span>

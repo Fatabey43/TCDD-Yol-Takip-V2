@@ -1,3 +1,4 @@
+import { authFetch as fetch } from './authFetch.ts';
 import { RailwayPoint, PointNote, PointPhoto, TakyidatSpeedRestriction, FieldWorkItem, BulkPointChanges } from '../types.ts';
 import { DEFAULT_SAMPLE_IDS } from '../data/samplePoints.ts';
 import { extractKmFromText } from '../utils/categoryColors.ts';
